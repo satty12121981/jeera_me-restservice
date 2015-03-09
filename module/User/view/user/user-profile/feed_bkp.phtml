@@ -1,0 +1,810 @@
+ <div id="feedapp" ng-app="feed_app">
+    <!-- Google Map Banner --->
+    <div class="map_banner">
+    	<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d57768.21081668539!2d55.19997523711267!3d25.185910832050453!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1410853103139" width="100%" height="100%" frameborder="0" style="border:0"></iframe>
+        
+        <div class="you-location">YOUR LOCATION <i></i> <a href="javascript:void(0);">Dubai, UAE</a></div>
+    </div><!-- Banner Close --->
+    
+    <!-- Filter Feeds --->
+	<div ng-controller="feedsController">
+    <div class="feed-filter_outer" >
+    	<div class="home-container">
+        	<div class="row">
+            	<div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                	<div class="feed-refresh"><a href="javascript:void(0);"><img src="images/refresh-icon.png" alt="" /></a></div>
+                    <div class="show-sorting">
+                    	Show: 
+                        <span><a href="javascript:void(0);" class="active">All</a></span>
+                        <span><a href="javascript:void(0);">Text</a></span>
+                        <span><a href="javascript:void(0);">Media</a></span>
+                        <span><a href="javascript:void(0);">Event</a></span>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                	<div class="feed-filters">
+                    	Filter By:
+                        <div class="filter_group-outer">
+                            <a href="javascript:void(0);" class="filter_group" data-toggle="dropdown" id="by_group">All Groups<span></span></a>
+                            <ul class="dropdown-menu sort-group_dropdown color-trans arrow_box" role="menu" aria-labelledby="by_group">
+                                <li><a href="javascript:void(0);" class="active"><i></i>All Groups</a></li>
+                                <li><a href="javascript:void(0);"><i></i>Kubricks Point Of View</a></li>
+                                <li><a href="javascript:void(0);"><i></i>History Of NBA Transfers</a></li>
+                                <li><a href="javascript:void(0);"><i></i>Artificial Intelligence</a></li>
+                            </ul>
+                        </div>
+                        <div class="filter_group-outer">
+                            <a href="javascript:void(0);" class="filter_group" data-toggle="dropdown" id="by_activity">All Activity<span></span></a>
+                            <ul class="dropdown-menu sort-group_dropdown color-trans arrow_box" role="menu" aria-labelledby="by_activity">
+                                <li><a href="javascript:void(0);" class="active"><i></i>All Activity</a></li>
+                                <li><a href="javascript:void(0);"><i></i>Interactions</a></li>
+                                <li><a href="javascript:void(0);"><i></i>Posts By Friends</a></li>
+                                <li><a href="javascript:void(0);"><i></i>Events Im Going To</a></li>
+                            </ul>
+                        </div>
+                        
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div><!-- Filter Feeds Close --->
+    
+    <div class="home-container feeds-container">
+    	<div id="timeline" data-columns>
+            <div class="item">
+                <div class="create_status-outer border_radius">
+                	<div class="create_status-header">
+                    	<div class="header-profile_image create_status-profile">
+							<img alt="" ng-if="profile.profile_photo!=null&&profile.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{profile.user_id}}/{{ profile.profile_photo }}">
+							<img alt="" ng-if="profile.profile_photo==null||profile.profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">
+						</div> 
+                        <ul class="color-trans">
+                        	<li><a href="javascript:void(0);" ng-class="{'active': status_selected=='text'}" id="status_header_text" ng-click="status_selected='text'"><i class="text"></i>Text</a></li>
+                            <li><a href="javascript:void(0);"  ng-class="{'active': status_selected=='media'}" id="status_header_media" ng-click="status_selected='media';"><i class="media"></i>Media</a></li>
+                            <li><a href="javascript:void(0);" id="event_tab" ng-class="{'active': status_selected=='event'}" id="status_header_event" ng-click="status_selected='event';enableEvent()"><i class="event"></i>Event</a></li>
+                        </ul>
+                        <div class="clear"></div>
+                    </div>
+                    <div id="status_text" ng-if="status_selected=='text'">
+                        <div class="create_status-textarea">
+                            <textarea name="status" placeholder="Whats on your mind?" ng-model="mypost.statusText"></textarea>
+                        </div>                         
+                    </div>
+                    <div id="status_media" ng-if="status_selected=='media'">
+                    	<div class="status_media-outer">     
+							<div ng-if="media_type=='image'">
+								<div class="drag_drop-media group_drag-drop" id="uplodbtn">
+									<div class="drag-caption"  >
+										<center><div id="ImageUploadStatus"></div></center>
+										<div id="default_img" onClick="getFile()">
+											<img src="<?php echo $this->basePath();?>/public/images/drag_drop-img.png" alt=""   />
+											<br />Choose a photo to upload
+										</div>
+										<div id="uploaded_img" style="display:none">
+											<img src="<?php echo $this->basePath();?>/public/images/drag_drop-img.png" alt="" id="imgUserImage" />
+											<a href="javascript:void(0)" id="removeUploaded">Close</a>
+										</div>
+										<input type="file" name="btnUploadImage" id="btnUploadImage"  style="display:none"  >                                  
+									</div>							
+								</div>
+								<div class="status_media-caption"><input name="caption" type="text" placeholder="Add caption..."  ng-model="mypost.caption" /></div>
+							</div>							 
+							<div id="status-media_video"  ng-if="media_type=='video'">
+								<span ng-if="showVideoImage==0">
+									<div class="status-video_link"><input name="caption" type="text" placeholder="Enter youtube url"  ng-model="mypost.videourl" /></div>
+									<div class="status-video_butn"><a href="javascript:void(0);" class="default_butn_grey" ng-click="addVideo()">Add</a></div>
+									<div class="clear"></div>
+								</span>
+								<span ng-if="showVideoImage==1">
+									<img class="youtube-image" src="http://img.youtube.com/vi/{{videoid}}/0.jpg" />
+									<a href="javascript:void(0)" ng-click="RemoveVideo()">Close</a>
+									<br/>
+								 </span>  
+								<div class="status_media-caption"><input name="caption" type="text" placeholder="Add text..." ng-model="mypost.videoCaption" /></div>
+							</div>
+							 
+                            <div class="status_select-filetype">
+                            	<a href="javascript:void(0);" class="media_photo" ng-class="{'active': media_type=='image'}" ng-click="changeMediaType('image')"></a>                                 
+                                <a href="javascript:void(0);" class="media_video" ng-class="{'active': media_type=='video'}" ng-click="changeMediaType('video')"></a>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    <div id="status_event" ng-if="status_selected=='event'">
+                    	<div class="status_events-outer">
+                        	<div class="event_fields-outer">
+                            	<input name="event_title" type="text" placeholder="Event Title" ng-model="mypost.event_title" />
+                            </div>
+                            <div class="event_fields-outer">
+                            	<div class="event_date-out border_radius">
+                                	<div class="event_date-pick">
+                                        <i class="grey-calender"></i>
+                                        <input name="event_date" id="event_date" type="text" value="" ng-model="mypost.event_date" />
+                                        <div class="clear"></div>
+                                    </div>
+                                    <div class="event_time-pick">
+                                        <input name="event_time" id="event_time" type="text" value="" ng-model="mypost.event_time" />
+                                    </div>
+                                    <div class="clear"></div>
+                                </div>
+                            </div>
+                            <div class="event_fields-outer">
+                            	<div class="event_date-out border_radius">
+                                	<i class="grey-location status_event_location"></i>
+                                    <input class="status_event_location-text" name="event_location" id="event_location" type="text" placeholder="Event Location" ng-model="mypost.event_location" />
+                                    <div class="clear"></div>
+                                </div>
+                            </div>
+                            <div class="status_event_pin-map">
+                            	<div class="status_map_edit"><a href="javascript:void(0);" id="show_event_map-large">Pin / Edit  on Map</a></div>
+                                <div class="status_event_pin-map"><img src="images/event-map-small.jpg" alt="" /></div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="status_event-details">
+                            	<textarea name="event_description" placeholder="Event Description" class="border_radius" ng-model="mypost.event_description" ></textarea>
+                            </div>
+                        </div>
+						
+                        <div class="status_event-map-out" style="display:none;">
+                        	<div class="event_fields-outer">
+                            	<div class="event_date-out border_radius">
+                                	<i class="grey-location status_event_location"></i>
+                                    <input type="text" placeholder="Event Location" name="event_location" class="status_event_location-text">
+                                    <div class="clear"></div>
+                                </div>
+                            </div>
+                            <div class="evenr_map-large">
+                            	<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d57769.38845438569!2d55.220020152796614!3d25.183426991375914!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2s!4v1411461904882" width="100%" height="100%" frameborder="0" style="border:0"></iframe>
+                                <div class="map_close"><a href="javascript:void(0);" id="close_map_event"></a></div>
+                            </div>
+                            
+                        </div>
+                        
+                        
+                        
+                    </div>
+                    <div class="create_status-footer">
+						<div class="postin_group-outer">
+							to: <span><a href="javascript:void(0);" class="filter_group" data-toggle="dropdown" id="post_in_group">{{selectedGroup}}<span></span></a>
+							<ul class="dropdown-menu post-group_dropdown color-trans arrow_box" role="menu" aria-labelledby="post_in_group">
+								<li ng-repeat="item in mygroups"><a href="javascript:void(0);" ng-click="changeGroup(item.group_id,item.group_title)">{{item.group_title}}</a></li>								 
+							</ul></span>
+							<span ng-if="status_selected=='event'">
+							<span><a href="javascript:void(0);" class="filter_group" data-toggle="dropdown" id="post_members">all members<span></span></a>
+							<ul class="dropdown-menu post-group_dropdown color-trans arrow_box" role="menu" aria-labelledby="post_members">
+								<li><a href="javascript:void(0);">Friends</a></li>
+								<li><a href="javascript:void(0);">Friends of Friends</a></li>
+								<li><a href="javascript:void(0);">All members</a></li>
+							</ul></span>
+							</span>
+						</div>
+						<div class="post-butns" ng-switch on="submit.switch">
+							<div ng-switch-when="2" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+							<a href="javascript:void(0);" class="default_butn_violet" ng-click="submitStatus()" ng-switch-when="1"> Post</a></div>
+						<div class="clear"></div>
+					</div>
+                </div>
+            </div>
+            <div class="item">
+                <div class="post-outer border_radius">
+                	<div class="post_header">
+                    	<span class="vertical_align"></span>
+                        <div class="header-profile_image"><img src="images/profile-img-1.jpg" alt="" /></div>
+                        <div class="post_profile-name">
+                        	<a href="javascript:void(0);">Manuella Fratz</a>
+                            <span>posted in <a href="javascript:void(0);">Kubricks Pont Of View</a></span>
+                        </div>
+                        <div class="post_time noti_time"><i></i>10m</div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="post_status-text">
+                    	Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </div>
+                    <div class="post_status-footer">
+                    	<a href="javascript:void(0);" class="post_likes"><i></i>22</a>
+                        <a href="javascript:void(0);" class="post_comments"><i></i>0</a>
+                        <a href="javascript:void(0);" class="post_reply"><i></i>reply</a>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="item">
+                <div class="post-outer border_radius">
+                	<div class="post_header">
+                    	<span class="vertical_align"></span>
+                        <div class="header-profile_image"><img src="images/profile-img-2.jpg" alt="" /></div>
+                        <div class="post_profile-name">
+                        	<a href="javascript:void(0);">Rose Moreno</a>
+                            <span>posted in <a href="javascript:void(0);">Kubricks Pont Of View</a></span>
+                        </div>
+                        <div class="post_time noti_time"><i></i>10m</div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="post_post-image"><a href="javascrip:void(0);"  data-toggle="modal" data-target="#post-img_popup"><img src="images/post-image.jpg" alt="" /></a></div>
+                    <div class="post_status-text">
+                    	Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </div>
+                    <div class="post_status-footer">
+                    	<a href="javascript:void(0);" class="post_likes"><i></i>22</a>
+                        <a href="javascript:void(0);" class="post_comments"><i></i>0</a>
+                        <a href="javascript:void(0);" class="post_reply"><i></i>reply</a>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="post_comment-outer">
+                    	<div class="header-profile_image comment_profile-img">
+                        	<img alt="" src="images/profile-img-4.jpg">
+                        </div>
+                        <div class="post_comment_text">
+                        	<span class="profile_name-comment">Linda Bates</span>cupidatat non proident sunt in culpa qui officia deserunt mollit :D
+                            <div class="comment_likes">
+                            	<a class="post_likes" href="javascript:void(0);"><i></i>9</a>
+                                <div class="post_time noti_time comment_time"><i></i>10m</div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="item">
+                <div class="post-outer border_radius">
+                	<div class="post_header">
+                    	<span class="vertical_align"></span>
+                        <div class="header-profile_image"><img src="images/profile-img-1.jpg" alt="" /></div>
+                        <div class="post_profile-name">
+                        	<a href="javascript:void(0);">Manuella Fratz</a>
+                            <span>posted in <a href="javascript:void(0);">Kubricks Pont Of View</a></span>
+                        </div>
+                        <div class="post_time noti_time"><i></i>10m</div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="post_status-text">
+                    	Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </div>
+                    <div class="post_status-footer">
+                    	<a href="javascript:void(0);" class="post_likes"><i></i>22</a>
+                        <a href="javascript:void(0);" class="post_comments"><i></i>0</a>
+                        <a href="javascript:void(0);" class="post_reply"><i></i>reply</a>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="item">
+                <div class="post-outer border_radius">
+                	<div class="post_header">
+                    	<span class="vertical_align"></span>
+                        <div class="header-profile_image"><img src="images/profile-img-2.jpg" alt="" /></div>
+                        <div class="post_profile-name">
+                        	<a href="javascript:void(0);">Rose Moreno</a>
+                            <span>posted in <a href="javascript:void(0);">Kubricks Pont Of View</a></span>
+                        </div>
+                        <div class="post_time noti_time"><i></i>10m</div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="post_post-image"><a href="javascrip:void(0);"  data-toggle="modal" data-target="#post-img_popup"><img src="images/post-image.jpg" alt="" /></a></div>
+                    <div class="post_status-text">
+                    	Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </div>
+                    <div class="post_status-footer">
+                    	<a href="javascript:void(0);" class="post_likes"><i></i>22</a>
+                        <a href="javascript:void(0);" class="post_comments"><i></i>0</a>
+                        <a href="javascript:void(0);" class="post_reply"><i></i>reply</a>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="item">
+                <div class="post-outer border_radius">
+                	<div class="post_header">
+                    	<span class="vertical_align"></span>
+                        <div class="header-profile_image"><img src="images/profile-img-1.jpg" alt="" /></div>
+                        <div class="post_profile-name">
+                        	<a href="javascript:void(0);">Manuella Fratz</a>
+                            <span>posted in <a href="javascript:void(0);">Kubricks Pont Of View</a></span>
+                        </div>
+                        <div class="post_time noti_time"><i></i>10m</div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="post_status-text">
+                    	Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </div>
+                    <div class="post_status-footer">
+                    	<a href="javascript:void(0);" class="post_likes"><i></i>22</a>
+                        <a href="javascript:void(0);" class="post_comments"><i></i>0</a>
+                        <a href="javascript:void(0);" class="post_reply"><i></i>reply</a>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="item">
+                <div class="post-outer border_radius">
+                	<div class="post_header">
+                    	<span class="vertical_align"></span>
+                        <div class="header-profile_image"><img src="images/profile-img-1.jpg" alt="" /></div>
+                        <div class="post_profile-name">
+                        	<a href="javascript:void(0);">Manuella Fratz</a>
+                            <span>posted in <a href="javascript:void(0);">Kubricks Pont Of View</a></span>
+                        </div>
+                        <div class="post_time noti_time"><i></i>10m</div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="post_status-text">
+                    	Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    </div>
+                    <div class="post_status-footer">
+                    	<a href="javascript:void(0);" class="post_likes"><i></i>22</a>
+                        <a href="javascript:void(0);" class="post_comments"><i></i>0</a>
+                        <a href="javascript:void(0);" class="post_reply"><i></i>reply</a>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="clear"></div>
+    </div>
+
+<!-- Post Images Pop Up -->
+<div class="modal fade" id="post-img_popup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog postimg_popup">
+    <div class="modal-content postimg_content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <div class="clear"></div>
+      </div>
+      <div class="modal-body postimg_body">
+        <div class="post-img_preview-outer">
+        	<div class="post-img_preview">
+            	<div class="post-img_preview_nav">
+                	<div class="image_preview-previous">
+                    	<a href="javascript:void(0);"><i></i></a>
+                    </div>
+                    <div class="image_show-all">
+                    	<a href="javascript:void(0);"><i></i></a>
+                    </div>
+                    <div class="image_preview-next">
+                    	<a href="javascript:void(0);"><i></i></a>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                
+                <div class="pop_image-preview"><img src="images/post-img-preview.jpg" alt="" /></div>
+                
+                <div class="pop_img-footer">in group: <a href="javascript:void(0);">Kubricks Point Of View</a></div>
+                
+            </div>
+        </div>
+        
+        <!-- Popup Right Side -->
+        <div class="image_postdetails">
+        	<div class="post_header">
+                <span class="vertical_align"></span>
+                <div class="header-profile_image"><img alt="" src="images/profile-img-2.jpg"></div>
+                <div class="post_profile-name">
+                    <a href="javascript:void(0);">Rose Moreno</a>
+                    <span>posted in <a href="javascript:void(0);">Kubricks Pont Of View</a></span>
+                </div>
+                <div class="post_time noti_time"><i></i>10m</div>
+                <div class="clear"></div>
+            </div>
+            <div class="post_status-text">
+                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            </div>
+            <div class="post_status-footer">
+                <a class="post_likes" href="javascript:void(0);"><i></i>22</a>
+                <a class="post_comments" href="javascript:void(0);"><i></i>0</a>
+                <a class="post_reply" href="javascript:void(0);"><i></i>reply</a>
+                <div class="clear"></div>
+            </div>
+            <div class="post_comment-outer">
+                <div class="header-profile_image comment_profile-img">
+                    <img src="images/profile-img-4.jpg" alt="">
+                </div>
+                <div class="post_comment_text">
+                    <span class="profile_name-comment">Linda Bates</span>cupidatat non proident sunt in culpa qui officia deserunt mollit :D
+                    <div class="comment_likes">
+                        <a href="javascript:void(0);" class="post_likes"><i></i>9</a>
+                        <div class="post_time noti_time comment_time"><i></i>10m</div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="post_comment-outer">
+                <div class="header-profile_image comment_profile-img">
+                    <img src="images/profile-img-4.jpg" alt="">
+                </div>
+                <div class="post_comment_text">
+                    <span class="profile_name-comment">Linda Bates</span>cupidatat non proident sunt in culpa qui officia deserunt mollit :D
+                    <div class="comment_likes">
+                        <a href="javascript:void(0);" class="post_likes"><i></i>9</a>
+                        <div class="post_time noti_time comment_time"><i></i>10m</div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="post_comment-outer">
+                <div class="header-profile_image comment_profile-img">
+                    <img src="images/profile-img-4.jpg" alt="">
+                </div>
+                <div class="post_comment_text">
+                    <span class="profile_name-comment">Linda Bates</span>cupidatat non proident sunt in culpa qui officia deserunt mollit :D
+                    <div class="comment_likes">
+                        <a href="javascript:void(0);" class="post_likes"><i></i>9</a>
+                        <div class="post_time noti_time comment_time"><i></i>10m</div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div class="post_comment-outer">
+                <div class="header-profile_image comment_profile-img">
+                    <img src="images/profile-img-4.jpg" alt="">
+                </div>
+                <div class="post_comment_text">
+                    <span class="profile_name-comment">Linda Bates</span>cupidatat non proident sunt in culpa qui officia deserunt mollit :D
+                    <div class="comment_likes">
+                        <a href="javascript:void(0);" class="post_likes"><i></i>9</a>
+                        <div class="post_time noti_time comment_time"><i></i>10m</div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <div class="clear"></div>
+            </div>            
+        </div>
+        <div class="clear"></div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+</div>
+</div>
+<div id="map-canvas"></div>
+ <input id="pac-input" class="controls" type="text"    placeholder="Enter a location">
+<script type="text/javascript" src="<?php echo $this->basePath(); ?>/public/js/salvattore.min.js"></script>
+<script src="<?php echo $this->basePath(); ?>/public/js/jquery.plugin.js"></script>
+<script src="<?php echo $this->basePath(); ?>/public/js/jquery.timeentry.js"></script>
+<script>
+	var upladedFile = [];
+	
+	var feedapp = angular.module('feed_app',[]);
+	feedapp.config(function ($httpProvider) {
+		$httpProvider.defaults.transformRequest = function(data){
+			if (data === undefined) {return data;}
+			return $.param(data);
+		}
+	});
+	feedapp.controller('feedsController',function($scope, $http){
+		$scope.profile = {};
+		$scope.profile.profile_name = '<?php echo $userinfo->user_profile_name; ?>';
+		$scope.profile.profile_photo = '<?php echo $userinfo->profile_photo; ?>';
+		$scope.profile.user_id = '<?php echo $userinfo->user_id; ?>';
+		$scope.image_paths = <?php echo json_encode($image_folders); ?>;
+		$scope.status_selected = 'text';
+		$scope.mygroups = <?php echo json_encode($userGroups); ?>;
+		$scope.mypost = {};
+		$scope.mypost.statusText = '';
+		$scope.mypost.group_id = '';
+		$scope.selectedGroup = 'Choose Group';
+		$scope.submit = {};
+		$scope.submit.switch = 1;
+		$scope.media_type = 'image';
+		$scope.showVideoImage = 0;
+		$scope.mypost.videourl = '';
+		$scope.mypost.videoCaption = '';		 
+		$scope.mypost.event_date = '<?php echo date("d-m-Y"); ?>';
+		$scope.changeGroup = function(group_id,groupTitle){
+			$scope.selectedGroup = groupTitle;
+			$scope.mypost.group_id =group_id;
+		}
+		$scope.changeMediaType = function(status){
+			$scope.media_type = status;
+		}
+		$scope.video = [];
+		$scope.addVideo = function(){  
+			 $scope.videoid = $scope.getYouTubeIdFromURL($scope.mypost.videourl);
+			 if($scope.videoid!=false){$scope.showVideoImage = 1;}else{alert("Invalid video url")}
+        }
+		$scope.RemoveVideo = function(){
+			$scope.mypost.videourl = '';
+			$scope.showVideoImage = 0;
+			$scope.videoid = '';
+		}
+		$scope.getYouTubeIdFromURL = function(url){ 
+			var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]{11,11}).*/;
+			var match = url.match(regExp);
+			if (match) if (match.length >= 2) return match[2];
+			return false;
+		}
+		$scope.submitStatus = function(){
+			switch($scope.status_selected){
+				case 'text':
+					$scope.SubmitText();
+				break;
+				case 'media':
+					$scope.SubmitMedia();
+				break;
+				case 'event':
+					alert("event");
+				break;
+			}
+		}
+		$scope.SubmitText = function(){ 
+			if($scope.mypost.statusText==''||$scope.mypost.statusText==undefined){
+				alert("Status is empty.. Please add something before you submit");
+				return false;
+			}
+			if($scope.mypost.group_id==''||$scope.mypost.group_id==undefined){
+				alert("Select one group");
+				return false;
+			}
+			url  = baseurl+'/discussion/ajaxNewDiscussion';
+			$scope.submit.switch =2;
+			$http.post(url,
+			{	
+				group_id:$scope.mypost.group_id,
+				statusText:$scope.mypost.statusText
+			},
+			{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+			).success(function(data, status, headers, config) {
+				if(data.return_array.process_status == 'success'){
+					$scope.submit.switch =1;
+					$scope.mypost.statusText= ''; 
+					$scope.mypost.group_id= '';
+					$scope.selectedGroup = 'Choose Group';
+				}else{
+					alert(data.return_array.process_info);
+					$scope.submit.switch = 1;
+				}				     
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+		$scope.SubmitMedia = function(){  
+			switch($scope.media_type){
+				case 'image':
+					if($scope.mypost.group_id==''||$scope.mypost.group_id==undefined){
+						alert("Select one group");
+						return false;
+					}
+					if(upladedFile.length<=0){
+						alert("Select one file to upload");
+						return false;
+					}
+					$scope.addMedia();
+					
+				break;
+				case 'video':
+					if($scope.mypost.group_id==''||$scope.mypost.group_id==undefined){
+						alert("Select one group");
+						return false;
+					} 
+					if($scope.mypost.videourl==''||$scope.mypost.group_id==undefined){
+						alert("Select one video to upload");
+						return false;
+					}
+					$scope.addMedia(); 
+				break;
+			}
+		}
+		$scope.addMedia =function(){
+			url  = baseurl+'/groups/ajaxAddMedia';
+			$scope.submit.switch =2;
+			var formData = new FormData();	
+			if($scope.media_type == 'image'){
+				formData.append("mediaImage",upladedFile);
+				formData.append("imageCaption",$scope.mypost.caption);
+			}
+			if($scope.media_type == 'video'){
+				formData.append("mediaVideo",$scope.mypost.videourl);
+				formData.append("videoCaption",$scope.mypost.videoCaption);
+			}
+			formData.append("group_id",$scope.mypost.group_id);
+			formData.append("media_type",$scope.media_type);
+			$http.post(url,formData,{withCredentials: true, headers: {'Content-Type': undefined }, transformRequest: angular.identity})
+			.success(function(data, status, headers, config) {
+				if(data.return_array.process_status == 'success'){
+					$scope.submit.switch =1;
+					$scope.mypost.videoCaption= ''; 
+					$scope.mypost.caption= ''; 
+					$scope.mypost.group_id= '';
+					$scope.showVideoImage = 0;
+					$scope.mypost.videourl = ''; 
+					upladedFile = [];
+					$scope.selectedGroup = 'Choose Group';
+					$("#uploaded_img").hide();
+					$("#default_img").show();
+				}else{
+					alert(data.return_array.process_info);
+					$scope.submit.switch = 1;
+				}				     
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+		$scope.enableEvent = function(){
+			
+		}
+	});
+	angular.element(document).ready(function() {	
+		angular.bootstrap(document.getElementById("feedapp"), ["feed_app"]);
+	});
+ 
+ 
+function getFile(){
+        document.getElementById("btnUploadImage").click();
+    }
+	$(document).on("click","#status_header_media",function(){
+	var dropbox = document.getElementById("uplodbtn")
+
+	// init event handlers
+	dropbox.addEventListener("dragenter", dragEnter, false);
+	dropbox.addEventListener("dragexit", dragExit, false);
+	dropbox.addEventListener("dragover", dragOver, false);
+	dropbox.addEventListener("drop", drop, false);
+ 
+});
+
+function dragEnter(evt) {
+	evt.stopPropagation();
+	evt.preventDefault();
+}
+
+function dragExit(evt) {
+	evt.stopPropagation();
+	evt.preventDefault();
+}
+
+function dragOver(evt) {
+	evt.stopPropagation();
+	evt.preventDefault();
+}
+
+function drop(evt) {  
+	evt.stopPropagation();
+	evt.preventDefault();
+
+	var files = evt.dataTransfer.files;
+	var count = files.length;
+
+	// Only call the handler if 1 or more files was dropped.
+	if (count > 0)
+		handleFiles(files);
+}
+
+
+function handleFiles(files) {
+	var file = files[0];
+	upladedFile = files[0];
+	var reader = new FileReader();	 
+	reader.onloadend = handleReaderLoadEnd; 
+	reader.readAsDataURL(file);
+}
+function handleReaderProgress(evt) {
+	if (evt.lengthComputable) {
+		var loaded = (evt.loaded / evt.total);
+		$("#progressbar").progressbar({ value: loaded * 100 });
+	}
+}
+function handleReaderLoadEnd(evt) {
+	var img = document.getElementById("imgUserImage");
+	img.src = evt.target.result;
+	$("#default_img").hide();
+	$("#uploaded_img").show();	 
+}
+$(document).on("click","#removeUploaded",function(){
+	$("#uploaded_img").hide();
+	$("#default_img").show();
+	upladedFile = [];
+});
+$(document).on('change','#btnUploadImage',function(e){
+	fileInput = e.target.files;
+	upladedFile = fileInput[0];
+	var img = document.getElementById("imgUserImage");
+	var reader = new FileReader();
+	reader.readAsDataURL(fileInput[0]);  
+	reader.onload = function(_file) {
+		img.src    = _file.target.result; 
+	};
+	img.src = e.target.result;
+	$("#default_img").hide();
+	$("#uploaded_img").show();
+});
+$(document).on("click","#event_tab",function(){	
+	$( "#event_date" ).datepicker({ changeYear: true , dateFormat: "dd-mm-yy",minDate: new Date(<?php echo date("Y");?>, <?php echo date("m");?> - 1, <?php echo date("d");?>) });
+	$('#event_time').timeEntry();
+	//initialize();
+}); 
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places"></script>
+ <script>
+function initialize() {
+  var mapOptions = {
+    center: new google.maps.LatLng(-33.8688, 151.2195),
+    zoom: 13
+  };
+  var map = new google.maps.Map(document.getElementById('map-canvas'),
+    mapOptions);
+
+  var input = /** @type {HTMLInputElement} */(
+      document.getElementById('event_location'));
+
+  var types = document.getElementById('type-selector');
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(types);
+
+  var autocomplete = new google.maps.places.Autocomplete(input);
+  autocomplete.bindTo('bounds', map);
+
+  var infowindow = new google.maps.InfoWindow();
+  var marker = new google.maps.Marker({
+    map: map,
+    anchorPoint: new google.maps.Point(0, -29),
+	 draggable: true
+  });
+
+  google.maps.event.addListener(autocomplete, 'place_changed', function() {
+    infowindow.close();
+    marker.setVisible(false);
+    var place = autocomplete.getPlace();
+    if (!place.geometry) {
+      return;
+    }
+
+    // If the place has a geometry, then present it on a map.
+    if (place.geometry.viewport) {
+      map.fitBounds(place.geometry.viewport);
+    } else {
+      map.setCenter(place.geometry.location);
+      map.setZoom(17);  // Why 17? Because it looks good.
+    }
+    marker.setIcon(/** @type {google.maps.Icon} */({
+      url: place.icon,
+      size: new google.maps.Size(71, 71),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(17, 34),
+      scaledSize: new google.maps.Size(35, 35)
+    }));
+    marker.setPosition(place.geometry.location);
+    marker.setVisible(true);
+
+    var address = '';
+    if (place.address_components) {
+      address = [
+        (place.address_components[0] && place.address_components[0].short_name || ''),
+        (place.address_components[1] && place.address_components[1].short_name || ''),
+        (place.address_components[2] && place.address_components[2].short_name || '')
+      ].join(' ');
+    }
+
+    infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + address);
+    infowindow.open(map, marker);
+  });
+
+  // Sets a listener on a radio button to change the filter type on Places
+  // Autocomplete.
+  function setupClickListener(id, types) {
+    var radioButton = document.getElementById(id);
+    google.maps.event.addDomListener(radioButton, 'click', function() {
+      autocomplete.setTypes(types);
+    });
+  }
+
+   
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+    </script>

@@ -1,0 +1,14 @@
+<?php 
+foreach($notification_list as $list){ ?>
+<div class="activity-notification">
+	<a href="#"><?php echo $list->user_notification_content; ?></a>
+</div>
+<?php } ?>
+<script>
+      jQuery(document).ready(function ($) {
+        "use strict";
+        $('.notification-list').perfectScrollbar({useBothWheelAxes: true});
+		//$('#message_lists').scrollTop($('#message_lists')[0].scrollHeight);
+		
+      });
+    </script>

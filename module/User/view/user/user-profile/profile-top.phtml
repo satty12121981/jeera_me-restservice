@@ -1,0 +1,325 @@
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery-ui.js','text/javascript'); ?>
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/profile-top.js','text/javascript'); ?>  
+<?php  $this->HeadLink()->appendStylesheet($this->basePath().'/public/css/jquery-ui.css'); ?>
+ <?php  $this->HeadLink()->appendStylesheet($this->basePath().'/public/css/jquery.Jcrop.css'); ?>
+ <?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery.Jcrop.js','text/javascript'); ?>
+ <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places" type="text/javascript" charset="utf-8"></script>
+<div class="profile-cover-outer">
+        	<div class="profile-image" <?php if($myprofile){ ?>id="myprofile_pic" <?php } ?>><?php if($userData->profile_photo!=''){ ?><img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $userData->user_id; ?>/218x192/<?php echo $userData->profile_photo; ?>" alt="<?php echo $userData->user_given_name; ?>" />
+			<?php }else if($userData->user_register_type=='facebook'&&$userData->user_fbid){ ?>
+				<img src="https://graph.facebook.com/<?php echo $userData->user_fbid; ?>/picture?width=218&&height=192" />
+			<?php }else{ ?>	
+			<img src="<?php echo $this->basePath(); ?>/public/images/profile-noimage.jpg" alt="<?php echo $userData->user_given_name; ?>" />
+			<?php  } ?>
+			
+			</div>
+			<?php if($myprofile){ ?>
+			<div id="myprofile_upload_pic" style="display:none">
+				<a href="javascript:void(0)" id="file_profile_pic">Upload new Picture</a>
+				<a href="<?php echo $this->url('memberprofile/photos',array('member_profile'=> $userData->user_profile_name));?>" >Select One from photos</a>
+				<input type="file" id="profile_pic" name="profile_pic" style="display:none" />
+			</div>
+			<?php } ?>
+			<div class="timeline_cover">
+            <div class="profile-cover-img" <?php if($myprofile){ ?> id="myprofile_cover" <?php } ?>>
+			<?php if($userData->timeline_photo!=''){ ?><img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $userData->user_id; ?>/cover/<?php echo $userData->timeline_photo; ?>" alt="<?php echo $userData->user_given_name; ?>" style="position:absolute;top:<?php echo $userData->cover_photo_top; ?>px;left:<?php echo $userData->cover_photo_left; ?>px;" /><?php }else{ ?>	
+			<img src="<?php echo $this->basePath(); ?>/public/images/timeline-noimage.jpg" alt="<?php echo $userData->user_given_name; ?>" />
+			<?php  } ?>
+			</div>
+			</div>
+			<?php if($myprofile){ ?>
+			<div id="myprofile_upload_cover" style="display:none">
+				<a href="javascript:void(0)" id="file_cover_pic">Upload new Picture</a>	
+				<input type="file" id="cover_pic" name="cover_pic" style="display:none" />	
+				<input type="button" id="btn_cover_pic" name="btn_cover_pic" value="Update Cover"  class="blue-butn" style="display:none" />					
+			</div>
+			<?php } ?>
+            <div class="clear"></div>
+        </div>
+        <div class="view-header">
+		<?php if($myprofile){ ?>
+        	<div class="profile-settings-butn"><a href="javascript:void(0)" id="show_hide_settings"><img src="<?php echo $this->basePath(); ?>/public/images/settings-icon.png" alt="" /></a></div>
+		<?php } ?>
+            <div class="profile-heading"><?php echo  $userData->user_given_name; ?></div>
+			<?php if($myprofile){ ?>
+            <div class="profile-complete">
+            	<div class="progress-bar">
+                	<div class="progress" style="width:<?php echo $total_progression; ?>%"></div>
+                    <span><?php echo $total_progression; ?>%</span>
+                </div>
+                <div class="complete-text">Profile <span><?php echo $total_progression; ?>%</span> Complete</div>
+            </div>
+			<?php } ?>
+            <div class="planet-head-right">
+				<?php if($myprofile||empty($userprofilesettings)||(isset($userprofilesettings->profession_field)&&$userprofilesettings->profession_field=='all')||(isset($userprofilesettings->profession_field)&&$userprofilesettings->profession_field=='friends'&&$is_friend)){ ?>
+            	<div class="profession-name"><?php echo $userData->user_profile_profession; ?>&nbsp;</div>
+				<?php } ?>
+				<?php if($myprofile||empty($userprofilesettings)||(isset($userprofilesettings->university_field)&&$userprofilesettings->university_field=='all')||(isset($userprofilesettings->university_field)&&$userprofilesettings->university_field=='friends'&&$is_friend)){ ?>
+                <div class="company-name"><?php echo $userData->user_profile_profession_at; ?>&nbsp;</div>
+				<?php } ?>
+				<?php if($myprofile||empty($userprofilesettings)||(isset($userprofilesettings->dob_field)&&$userprofilesettings->dob_field=='all')||(isset($userprofilesettings->dob_field)&&$userprofilesettings->dob_field=='friends'&&$is_friend)){ ?>
+                <div class="birthday-profil">
+				<?php if($userData->user_profile_dob&&$userData->user_profile_dob!='0000-00-00:00:00'){ ?>
+				<?php echo date("d",strtotime($userData->user_profile_dob)) ?>  <?php echo date("M",strtotime($userData->user_profile_dob)) ?>   (<?php echo date("Y")-date("Y",strtotime($userData->user_profile_dob)); ?>)&nbsp;
+				<?php } ?>
+				</div>
+				<?php } ?>
+				 <div class="invite-friends">
+				 <a href="javascript:void(0)" id="invite_friend">Invite Friends</a>
+				 <div id="invite_friend_container" style="display:none">
+					<div id="invite-msg"></div>
+					<input type="text" id="firstname_invite" value="" name="firstname_invite" placeholder="Name" />
+					<input type="text" id="email_invite" value="" name="email_invite" placeholder="Enter email" />
+					<input type="button" id="btn_invite" value="Invite" name="btn_invite" class="blue-butn" />
+					
+				 </div>
+				</div>
+                <div class="clear"></div>
+            </div>
+			
+            <div class="clear"></div>
+            
+        </div>
+		 <div class="accordion" id="profile-settings-container">
+			<div class="setting-head"></div>
+            <div class="accordion-head"><a href="javascript:void(0);" id="profile-general-setttings">General User Settings</a></div>
+            <div class="accordion-options" style="display:none" id="general-settings-container">
+            	<div class="settings-field-outer">
+                	<div class="settings-label">First name:</div>
+                    <div class="settings-field" id="text_firstname"><?php echo $userData->user_first_name; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" id="edit_firstname" class="edit_profile">Edit</a></div>
+                    <div class="clear"></div>
+                </div>
+				<div class="settings-field-outer">
+                	<div class="settings-label">Middle name:</div>
+                    <div class="settings-field" id="text_middlename"><?php echo $userData->user_middle_name; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" id="edit_middlename" class="edit_profile">Edit</a></div>
+                    <div class="clear"></div>
+                </div>
+				<div class="settings-field-outer">
+                	<div class="settings-label">Last name:</div>
+                    <div class="settings-field" id="text_lastname"><?php echo $userData->user_last_name; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" id="edit_lastname" class="edit_profile">Edit</a></div>
+                    <div class="clear"></div>
+                </div>
+				<div class="settings-field-outer">
+                	<div class="settings-label">Display name:</div>
+                    <div class="settings-field" id="text_givenname"><?php echo $userData->user_given_name; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" class="edit_profile" id="edit_givenname">Edit</a></div>
+                    <div class="clear"></div>
+                </div>
+                <div class="settings-field-outer">
+                	<div class="settings-label">Email addres:</div>
+                    <div class="settings-field" id="text_email"><?php echo $userData->user_email; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" class="edit_profile" id="edit_email">Edit</a></div>
+					<div class="field-edit"><a href="javascript:void(0)" class="privacy_settings" id="email"><img src="<?php echo $this->basePath(); ?>/public/images/setting.png" /></a></div>
+					
+					<div id="email_visibility" style="display:none" class="visibility_container">
+						<input type="radio" class="privacy_select" name="email_field" value="all" <?php if($userprofilesettings){echo ($userprofilesettings->email_field == 'all') ? 'checked' : ''; }?>  >&nbsp;Every one<br>
+						<input type="radio" class="privacy_select" name="email_field" value="friends" <?php if($userprofilesettings){echo ($userprofilesettings->email_field == 'friends') ? 'checked' : ''; }?>>&nbsp;Friends<br>
+						<input type="radio" class="privacy_select" name="email_field" value="none" <?php if($userprofilesettings){echo ($userprofilesettings->email_field == 'none') ? 'checked' : ''; }?>>&nbsp;No One
+					</div>
+                    <div class="clear"></div>
+                </div>
+				<div class="settings-field-outer"  id="email_varification_code">
+                	
+                </div>
+                <div class="settings-field-outer">
+                	<div class="settings-label">Mobile number:</div>
+                    <div class="settings-field" id="text_mobile"><?php echo $userData->user_profile_phone; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" class="edit_profile" id="edit_mobile">Edit</a></div>
+					<div class="field-edit"><a href="javascript:void(0)" class="privacy_settings" id="mobile"><img src="<?php echo $this->basePath(); ?>/public/images/setting.png" /></a></div>
+					<div id="mobile_visibility" style="display:none" class="visibility_container">
+						<input type="radio" name="phone_field" class="privacy_select" value="all" <?php if($userprofilesettings){echo ($userprofilesettings->phone_field == 'all') ? 'checked' : ''; }?> >&nbsp;Every one<br>
+						<input type="radio" name="phone_field" class="privacy_select" value="friends" <?php if($userprofilesettings){echo ($userprofilesettings->phone_field == 'friends') ? 'checked' : ''; }?> >&nbsp;Friends<br>
+						<input type="radio" name="phone_field" class="privacy_select" value="none" <?php if($userprofilesettings){echo ($userprofilesettings->phone_field == 'none') ? 'checked' : ''; }?> >&nbsp;No One
+					</div>
+                    <div class="clear"></div>
+                </div>
+                <div class="settings-field-outer">
+                	<div class="settings-label">Location:</div>
+                    <div class="settings-field" id="text_location"><?php echo $userData->user_profile_current_location; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" class="edit_profile" id="edit_location">Edit</a></div>
+					<div class="field-edit"><a href="javascript:void(0)" class="privacy_settings" id="user_location"><img src="<?php echo $this->basePath(); ?>/public/images/setting.png" /></a></div>
+					<div id="user_location_visibility" style="display:none" class="visibility_container">
+						<input type="radio" name="location_field" class="privacy_select" value="all" <?php if($userprofilesettings){echo ($userprofilesettings->location_field == 'all') ? 'checked' : ''; }?>  >&nbsp;Every one<br>
+						<input type="radio" name="location_field" class="privacy_select" value="friends" <?php if($userprofilesettings){echo ($userprofilesettings->location_field == 'friends') ? 'checked' : ''; }?>  >&nbsp;Friends<br>
+						<input type="radio" name="location_field" class="privacy_select" value="none" <?php if($userprofilesettings){echo ($userprofilesettings->location_field == 'none') ? 'checked' : ''; }?>  >&nbsp;No One
+					</div>
+                    <div class="clear"></div>
+                </div>
+				<div class="settings-field-outer">
+                	<div class="settings-label">Date of Birth:</div>
+                    <div class="settings-field" id="text_dob"><?php echo $userData->user_profile_dob; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" class="edit_profile" id="edit_dob">Edit</a></div>
+					<div class="field-edit"><a href="javascript:void(0)" class="privacy_settings" id="dob"><img src="<?php echo $this->basePath(); ?>/public/images/setting.png" /></a></div>
+					<div id="dob_visibility" style="display:none" class="visibility_container">
+						<input type="radio" name="dob_field" class="privacy_select" value="all" <?php if($userprofilesettings){echo ($userprofilesettings->dob_field == 'all') ? 'checked' : ''; }?> >&nbsp;Every one<br>
+						<input type="radio" name="dob_field" class="privacy_select" value="friends" <?php if($userprofilesettings){echo ($userprofilesettings->dob_field == 'friends') ? 'checked' : ''; }?> >&nbsp;Friends<br>
+						<input type="radio" name="dob_field" class="privacy_select" value="none" <?php if($userprofilesettings){echo ($userprofilesettings->dob_field == 'none') ? 'checked' : ''; }?> >&nbsp;No One
+					</div>
+                    <div class="clear"></div>
+                </div>
+				<div class="settings-field-outer">
+                	<div class="settings-label">University:</div>
+                    <div class="settings-field" id="text_professionat"><?php echo $userData->user_profile_profession_at; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" class="edit_profile" id="edit_professionat">Edit</a></div>
+					<div class="field-edit"><a href="javascript:void(0)" class="privacy_settings" id="professionat"><img src="<?php echo $this->basePath(); ?>/public/images/setting.png" /></a></div>
+					<div id="professionat_visibility" style="display:none" class="visibility_container">
+						<input type="radio" name="university_field" class="privacy_select" value="all" <?php if($userprofilesettings){echo ($userprofilesettings->university_field == 'all') ? 'checked' : ''; }?>  >&nbsp;Every one<br>
+						<input type="radio" name="university_field" class="privacy_select" value="friends" <?php if($userprofilesettings){echo ($userprofilesettings->university_field == 'friends') ? 'checked' : ''; }?>  >&nbsp;Friends<br>
+						<input type="radio" name="university_field" class="privacy_select" value="none" <?php if($userprofilesettings){echo ($userprofilesettings->university_field == 'none') ? 'checked' : ''; }?>  >&nbsp;No One
+					</div>
+                    <div class="clear"></div>
+                </div>
+				<div class="settings-field-outer">
+                	<div class="settings-label">Profession:</div>
+                    <div class="settings-field" id="text_profession"><?php echo $userData->user_profile_profession; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" class="edit_profile"  id="edit_profession">Edit</a></div>
+					<div class="field-edit"><a href="javascript:void(0)" class="privacy_settings" id="profession"><img src="<?php echo $this->basePath(); ?>/public/images/setting.png" /></a></div>
+					<div id="profession_visibility" style="display:none" class="visibility_container">
+						<input type="radio" name="profession_field" class="privacy_select" value="all" <?php if($userprofilesettings){echo ($userprofilesettings->profession_field == 'all') ? 'checked' : ''; }?>>&nbsp;Every one<br>
+						<input type="radio" name="profession_field" class="privacy_select" value="friends" <?php if($userprofilesettings){echo ($userprofilesettings->profession_field == 'friends') ? 'checked' : ''; }?>>&nbsp;Friends<br>
+						<input type="radio" name="profession_field" class="privacy_select" value="none" <?php if($userprofilesettings){echo ($userprofilesettings->profession_field == 'none') ? 'checked' : ''; }?>>&nbsp;No One
+					</div>
+                    <div class="clear"></div>
+                </div>
+				<div class="settings-field-outer">
+                	<div class="settings-label">Gender:</div>
+                    <div class="settings-field" id="text_gender"><?php echo $userData->user_gender; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" class="edit_profile" id="edit_gender">Edit</a></div>
+					<div class="field-edit"><a href="javascript:void(0)" class="privacy_settings" id="gender"><img src="<?php echo $this->basePath(); ?>/public/images/setting.png" /></a></div>
+					<div id="gender_visibility" style="display:none" class="visibility_container">
+						<input type="radio" name="gender_field" class="privacy_select" value="all" <?php if($userprofilesettings){echo ($userprofilesettings->gender_field == 'all') ? 'checked' : ''; }?> >&nbsp;Every one<br>
+						<input type="radio" name="gender_field" class="privacy_select" value="friends" <?php if($userprofilesettings){echo ($userprofilesettings->gender_field == 'friends') ? 'checked' : ''; }?> >&nbsp;Friends<br>
+						<input type="radio" name="gender_field" class="privacy_select" value="none" <?php if($userprofilesettings){echo ($userprofilesettings->gender_field == 'none') ? 'checked' : ''; }?> >&nbsp;No One
+					</div>
+                    <div class="clear"></div>
+                </div>
+				<div class="settings-field-outer">
+                	<div class="settings-label">Country:</div>
+                    <div class="settings-field" id="text_country"><?php echo $userData->country_title; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" class="edit_profile" id="edit_country">Edit</a></div>
+					<div class="field-edit"><a href="javascript:void(0)" class="privacy_settings" id="country"><img src="<?php echo $this->basePath(); ?>/public/images/setting.png" /></a></div>
+					<div id="country_visibility" style="display:none" class="visibility_container">
+						<input type="radio" name="country_field" class="privacy_select" value="all" <?php if($userprofilesettings){echo ($userprofilesettings->country_field == 'all') ? 'checked' : ''; }?> >&nbsp;Every one<br>
+						<input type="radio" name="country_field" class="privacy_select" value="friends" <?php if($userprofilesettings){echo ($userprofilesettings->country_field == 'friends') ? 'checked' : ''; }?> >&nbsp;Friends<br>
+						<input type="radio" name="country_field" class="privacy_select" value="none" <?php if($userprofilesettings){echo ($userprofilesettings->country_field == 'none') ? 'checked' : ''; }?> >&nbsp;No One
+					</div>
+                    <div class="clear"></div>
+                </div>
+				<div class="settings-field-outer">
+                	<div class="settings-label">City:</div>
+                    <div class="settings-field" id="text_city"><?php echo $userData->name; ?></div>
+                    <div class="field-edit"><a href="javascript:void(0)" class="edit_profile" id="edit_city">Edit</a></div>
+					<div class="field-edit"><a href="javascript:void(0)" class="privacy_settings" id="city"><img src="<?php echo $this->basePath(); ?>/public/images/setting.png" /></a></div>
+					<div id="city_visibility" class="visibility_container" style="display:none">
+						<input type="radio" name="city_field" class="privacy_select" value="all" <?php if($userprofilesettings){echo ($userprofilesettings->city_field == 'all') ? 'checked' : ''; }?> >&nbsp;Every one<br>
+						<input type="radio" name="city_field" class="privacy_select" value="friends" <?php if($userprofilesettings){echo ($userprofilesettings->city_field == 'friends') ? 'checked' : ''; }?> >&nbsp;Friends<br>
+						<input type="radio" name="city_field" class="privacy_select" value="none" <?php if($userprofilesettings){echo ($userprofilesettings->city_field == 'none') ? 'checked' : ''; }?> >&nbsp;No One
+					</div>
+                    <div class="clear"></div>
+                </div>
+				<div id="profile-action" style="display:none">
+					<input type="button" id="update_profile" class="blue-butn" value="Save Profile">		<input type="button" id="cancel_profile" class="grey-butn" value="Cancel">
+				</div>
+				<div class="settings-field-outer">
+					<div class="settings-label">Change Password:</div>
+					<div class="field-edit"><a href="javascript:void(0)" class="edit_password" id="edit_password">Edit</a></div>
+				</div>
+				<div class="clear"></div>
+				<div id="password_field"></div>
+            </div>
+            
+            <div class="accordion-head"><a href="javascript:void(0);" id="profile-email-settings">Email and other settings</a></div>
+            <div class="accordion-options" style="display:none" id="email-settings-container">
+				<?php foreach($usergroupsettings as $settings){  ?>
+					<div class="accordion-head"><a href="javascript:void(0);"class="group_settings" id="<?php echo $settings->user_group_group_id;  ?>"><?php echo $settings->group_title ?></a></div>
+					<div class="accordion-options" style="display:none" id="group-settings-container-<?php echo $settings->user_group_group_id;  ?>">
+						<div id="activity_alert" >
+							<span class="other_title"><input type="checkbox" name="activity_alert_<?php echo  $settings->user_group_id; ?>" value="yes" <?php if($settings){echo ($settings->activity == 'no') ? '' : 'checked'; }?>>&nbsp;Activity</span>							 
+						</div>
+						<div id="discussion_alert" >
+							<span class="other_title"><input type="checkbox" name="discussion_alert_<?php echo  $settings->user_group_id; ?>" value="yes" <?php if($settings){echo ($settings->discussion == 'no') ? '' : 'checked'; }?>>&nbsp;Discussion</span><br>							 
+						</div>
+						<div id="media_alert" >
+							<span class="other_title"><input type="checkbox" name="media_alert_<?php echo  $settings->user_group_id; ?>" value="yes" <?php if($settings){echo ($settings->media == 'no') ? '' : 'checked'; }?>>&nbsp;Media</span> 					 
+						</div>
+						<div id="member_alert" >
+							<span class="other_title"><input type="checkbox" name="member_alert_<?php echo  $settings->user_group_id; ?>"  value="yes" <?php if($settings){echo ($settings->member == 'no') ? '' : 'checked'; }?>>&nbsp;Member</span>						 
+						</div>
+						<div id="announcement_alert" >
+							<span class="other_title"><input type="checkbox" name="announcement_alert_<?php echo  $settings->user_group_id; ?>"  value="yes" <?php if($settings){echo ($settings->group_announcement == 'no') ? '' : 'checked'; }?>>&nbsp;Organizer announcement</span><br>							 
+						</div>
+						<input type="hidden" class="setting-grpid" id="setting-grpid-<?php echo  $settings->user_group_id; ?>" name="setting-grpid" value="<?php echo  $settings->user_group_group_id; ?>">
+						<div class="email-settings-butn"><input type="button" id="grp-save-<?php echo  $settings->user_group_id; ?>" class="grp-save blue-butn" value="Save" ></div>
+					</div>
+				<?php } ?>
+				<div  class="btn-loadmore"><a href="javascript:void(0)" id="group_settings_loadmore">Loadmore</a></div>
+			</div>
+            <div class="accordion-head"><a href="javascript:void(0);" id="profile-other-settings">Other settings</a></div>
+            <div class="accordion-options" style="display:none" id="other-settings-container">
+				 <div id="general_alert" > 
+					<span class="other_title">Jeera alerts</span><br>
+					<input type="checkbox" name="email_alert" value="event" <?php if($usergeneralsettings){echo ($usergeneralsettings->event_alert == 'yes') ? 'checked' : ''; }?>>&nbsp;Get Event alerts from Jeera<br>
+					<input type="checkbox" name="email_alert" value="survay" <?php if($usergeneralsettings){echo ($usergeneralsettings->survey_alert == 'yes') ? 'checked' : ''; }?>>&nbsp;Participate survey from Jeera<br>
+					<input type="checkbox" name="email_alert" value="feature" <?php if($usergeneralsettings){echo ($usergeneralsettings->new_feature == 'yes') ? 'checked' : ''; }?>>&nbsp;Email alert from Jeera new features
+				</div>
+				<div id="connection_settings" >
+					<span class="other_title">Who can send friend request</span><br>
+					<input type="radio" name="contact_req" value="all"  <?php if($usergeneralsettings){echo ($usergeneralsettings->friend_request == 'all') ? 'checked' : ''; }?>>&nbsp;Any one<br>
+					<input type="radio" name="contact_req" value="mutual"  <?php if($usergeneralsettings){echo ($usergeneralsettings->friend_request == 'mutual') ? 'checked' : ''; }?>>&nbsp;Only friend of friend
+				</div>
+				<div id="message_settings" >
+					<span class="other_title">Who can send messages</span><br>
+					<input type="radio" name="message_setting" value="all" <?php if($usergeneralsettings){echo ($usergeneralsettings->message == 'all') ? 'checked' : ''; }?>>&nbsp;Any one<br>
+					<input type="radio" name="message_setting" value="friends" <?php if($usergeneralsettings){echo ($usergeneralsettings->message == 'friends') ? 'checked' : ''; }?>>&nbsp;Friends<br>
+					<input type="radio" name="message_setting" value="mutual" <?php if($usergeneralsettings){echo ($usergeneralsettings->message == 'mutual') ? 'checked' : ''; }?>>&nbsp;Only friend of friend<br>
+					<input type="radio" name="message_setting" value="group" <?php if($usergeneralsettings){echo ($usergeneralsettings->message == 'group') ? 'checked' : ''; }?>>&nbsp;Member of same planet
+				</div>
+				<br>				 
+				<div class="other-settings-butn"><input type="button" id="other-save" class="blue-butn" name="other-save" value="Save" style="float:left;"></div>
+				<div class="clear"></div>
+			</div>
+        
+        </div>
+		<div class="profile-header">
+        	<div class="bio-head">Bio <?php if($myprofile){ ?><span class="edit"><a href="javascript:void(0)" id="edit-bio">Edit</a></span> <?php } ?></div>
+            <div class="interest-head">Interests<?php if($myprofile){ ?><span class="edit"><a href="javascript:void(0);" id="show_interests">Add more</a></span><?php } ?>
+            	<div class="interest-list" id="interest_popout" style="display:none;">
+                	<div class="pop-close"><a href="javascript:void(0);" id="interest_close"><img src="<?php echo $this->basePath(); ?>/public/images/pop-close.jpg" alt="" /></a></div>
+                    <div id="interest-pop">
+                    	<div class="tag-search">
+                        	<input name="tag_search_text" type="text" placeholder="Search tag" id="tag_search_text" /><input name="" type="image" src="<?php echo $this->basePath(); ?>/public/images/search-butn.png" id="btn_tag_search" />
+                        </div>
+                    	<div class="interest-tags planet-tags">
+                             
+                        </div>
+                   
+                    
+                  </div>
+              	</div>
+                
+            </div>
+            <div class="clear"></div>
+        </div>
+		<div class="bio-text-outer">
+        	<div class="bio-text-profile" id="bio-text-profile"><?php echo $userData->user_profile_about_me ?></div>
+            <div class="interest-tags" id="user_tags">
+				<?php foreach($user_tags as $tags){ ?>
+            	<span id="user_tag_added_<?php echo $tags->tag_id; ?>"><?php echo $tags->tag_title; ?><?php if($myprofile){ ?><a href="javascript:void(0)" id="tag_remove_<?php echo $tags->tag_id; ?>" class="remove_tag"><img src="<?php echo $this->basePath(); ?>/public/images/remove-icon.png" alt="" /></a><?php } ?></span>
+				<?php } ?>                
+            </div>
+            <div class="clear"></div>
+        </div>
+		<?php if($myprofile){  
+			echo $this->planetSugessions;
+		} ?>
+  <div id="profile_popup">    <!-- OUR PopupBox DIV-->
+    <h1>This IS A Cool PopUp</h1>
+    <a id="profile_popup_close">Close</a>   
+	<div id="profile_popup_crop"></div>
+	<div>
+ <div class="clear"></div>	
+	<div id="profile_pic_butn"><input type="button" id="creat_profile_pic" class="blue-butn" value="Save" /></div></div>
+</div>

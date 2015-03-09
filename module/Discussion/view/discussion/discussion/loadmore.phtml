@@ -1,0 +1,89 @@
+ <script>
+	var discussion_page = <?php echo $discussion_page; ?>;
+</script>
+ <script type="text/javascript">
+	iBox.setPath('../');
+	iBox.fade_in_speed = 2000;
+	iBox.padding = 50;
+	iBox.inherit_frames = false;
+</script>
+<div id="discussion_list">
+	<!--flash Messages.Stored in session-->
+	<?php if(isset($flashMessages) && count($flashMessages)) : ?>
+	<ul class="session">
+		<?php foreach ($flashMessages as $msg) : ?>
+		<li><?php echo $msg; ?></li>
+		<?php endforeach; ?>
+	</ul>
+	<?php endif; ?>
+
+	<!--error Message-->
+	<?php if(isset($error) && count($error)) : ?>
+	<ul class="error">
+		<?php foreach ($error as $errormsg) : ?>
+		<li><?php echo $errormsg; ?></li>
+		<?php endforeach; ?>
+	</ul>
+	<?php endif; ?>
+
+	<!--success message-->
+	<?php if(isset($success) && count($success)) : ?>
+	<ul class="success">
+		<?php foreach ($success as $successmsg) : ?>
+		<li><?php echo $successmsg; ?></li>
+		<?php endforeach; ?>
+	</ul>
+	<?php endif; ?>
+	
+	
+	<!-- Add discussion form -->
+	
+	<table class="table" id="table_list">
+		<?php 
+		if(isset($discussions) && count($discussions)) {
+			foreach($discussions as $discussion): 
+			?>
+			<tr>
+				<td width="50%"><?php echo $this->escapeHtmlAttr($discussion->group_discussion_content);?> </td>
+				<td width="10%">
+					<div id="likes_<?php echo $discussion->group_discussion_id;?>">
+						<?php 
+						if ( $discussion->user_check && $discussion->likes_count > 1 ) {
+							echo "<a href=\"javascript:void(0)\" class=\"discussion-unlikes\" id=\"$discussion->group_discussion_id\">UnLike</a>&nbsp;&nbsp;You&nbsp;+&nbsp;";
+							echo ($discussion->likes_count-2);
+						} else if ($discussion->user_check && $discussion->likes_count == 1 ) {
+							echo "<a href=\"javascript:void(0)\" class=\"discussion-unlikes\" id=\"$discussion->group_discussion_id\">UnLike</a>&nbsp;&nbsp;You&nbsp;";
+						} else{
+							echo "<a href=\"javascript:void(0)\" class=\"discussion-likes\" id=\"$discussion->group_discussion_id\">Like</a>&nbsp;&nbsp;".$discussion->likes_count;
+						}
+						?>
+					</div>
+				</td>
+				<td width="10%">
+					<div id="inner_content">
+						<div id="spam_result_<?php echo $discussion->group_discussion_id;?>">
+							<?php 
+							if( empty($discussion->spam_user_check) ) { echo "<a href=\"javascript:void(0)\" id=\"$discussion->group_discussion_id\" class=\"mark_spam\">Report Spam</a>";  } 
+							else {  echo "Marked Spam";  }
+							?>
+						</div>
+					</div>
+				</td>
+				<td width="30%">
+					<a href="javascript:void(0)" class="discussion-comments" id="<?php echo $discussion->group_discussion_id;?>">comments</a>
+					<div id="result_<?php echo $discussion->group_discussion_id;?>" style="display:none"></div>
+				</td>
+			</tr>
+			<?php 
+			 
+			endforeach; ?>
+			
+	</table>
+	<a href="javascript:void(0)" id="discussion_loadmore">Load More..</a>
+			<?php
+		}else{
+			echo "<div>No more discussions found in the system</div>";
+		}
+		?>
+</div>
+	

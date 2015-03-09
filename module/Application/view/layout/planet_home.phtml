@@ -1,0 +1,136 @@
+<?php 
+if (defined('RUNNING_FROM_ROOT')) {
+  //$this->plugin('basePath')->setBasePath($this->basePath().'/public');
+} ?>
+<?php echo $this->doctype(); ?> 
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8">
+		<?php echo $this->headTitle('1625 (Jeera) ::'. $this->translate('Explore Yourself'))->setSeparator(' - ')->setAutoEscape(false); ?>
+        <?php echo $this->headMeta()->appendName('viewport', 'width=device-width, initial-scale=1.0'); ?>
+        <!-- external styles -->
+        <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/favicon.icon', 'href' => $this->basePath() . '/img/favicon.ico'))
+                        ->prependStylesheet($this->basePath() . '/public/css/view-styles.css')
+						->prependStylesheet($this->basePath() . '/public/css/perfect-scrollbar.css');                        
+		?>
+        <!-- Scripts -->
+		<?php $this->HeadScript()->prependFile($this->basePath().'/public/js/jquery-1.10.2.min.js','text/javascript'); ?>
+		<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/common.js','text/javascript'); ?>		
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery.mousewheel.js','text/javascript'); ?>
+		<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/perfect-scrollbar.js','text/javascript'); ?>		
+		<?php echo $this->headScript(); ?>
+		<script>var baseurl = '<?php echo $this->basePath(); ?>'</script>
+	</head>
+	<body>
+		<div class="view-left">	
+			<div class="logo"><a href="<?php echo $this->basePath(); ?>"><img src="<?php echo $this->basePath(); ?>/public/images/jeera-logo.png" alt="" /></a></div>
+			<div class="clear"></div>
+		</div>
+		 <script>loadNewMessages()</script>
+		<div class="view-header-right">
+			<?php if(isset($this->layout()->identity) && $this->layout()->identity!=NULL) { ?>
+				<div class="header-inner2">
+					<div class="search-icon"></div>
+					<div class="search-header">
+						<input type="text" placeholder="Search" id="common_search" /><input name="" type="image" src="<?php echo $this->basePath() ?>/public/images/search-butn2.png" />
+					</div>
+					<div id="quick_search" class="quick_search">
+						 
+					</div>
+					<div class="header-icon">
+					<script>ajaxGetConnectionCount();</script>
+                	<ul>
+                    	<li class="connection-noti" id="connection-noti"><a href="#" class="connection_list"><span class="notifc-number">4</span></a></li>
+                        <li class="message-noti" id="message-noti"><a href="#" class="message_list">
+						<span class="notifc-number" id="top_msg_count"></span>
+						</a></li>
+                         <li class="topnav" id="topnav"><a href="javascript:void(0)" class="notification_list"></a>
+						<span class="all-notifc-number" id="top_msg_count"></span>
+						</li>
+                    </ul>
+                    <div id="signin_menu">
+						<div class="notification-list">
+							<div class="planet-notification">
+								<a href="#">Lorem ipsum dolor sit amet, conse ...</a>
+							</div>
+							<div class="planet-notification">
+								<a href="#">Lorem ipsum dolor sit amet, conse ...</a>
+							</div>
+							<div class="activity-notification">
+								<a href="#">Lorem ipsum dolor sit amet, conse ...</a>
+							</div>
+							<div class="planet-notification">
+								<a href="#">Lorem ipsum dolor sit amet, conse ...</a>
+							</div>
+						</div>
+						<div class="notification-see_all"><a href="<?php echo $this->url('notifications') ?>">See All</a></div>
+					</div>
+                    <div id="message_menu">
+                      	<div class="message-notification">
+                        	<a href="#"><img src="images/activity-img.png" alt="" class="profile-msg" /> New message from <span>Name Surame</span></a>
+                        </div>
+                        <div class="message-notification">
+                        	<a href="#"><img src="images/activity-img.png" alt="" class="profile-msg" /> New message from <span>Name Surame</span></a>
+                        </div>
+                        <div class="message-notification">
+                        	<a href="#"><img src="images/activity-img.png" alt="" class="profile-msg" /> New message from <span>Name Surame</span></a>
+                        </div>
+                        <div class="message-notification">
+                        	<a href="#"><img src="images/activity-img.png" alt="" class="profile-msg" /> New message from <span>Name Surame</span></a>
+                        </div>
+                  	</div>
+                    
+                    <div id="connection_menu">
+                      	<div class="connection-notification">
+                        	<div class="connect-profile"><a href="#"><img src="images/activity-img.png" alt="" /> </a></div>
+                            <div class="connection-name"><a href="#">Name Surame</a></div>
+                            <div class="friend-status"><a href="#" class="accept"></a></div>
+                            <div class="connection-action">
+                            	<span>Accepted</span>
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="connection-notification">
+                        	<div class="connect-profile"><a href="#"><img src="images/activity-img.png" alt="" /> </a></div>
+                            <div class="connection-name"><a href="#">Name Surame</a></div>
+                            <div class="friend-status"><a href="#" class="pending"></a></div>
+                            <div class="connection-action">
+                            	<a href="#" class="add_friend">Add friend</a>
+                                <a href="#" class="decline">Decline</a>
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="connection-notification">
+                        	<div class="connect-profile"><a href="#"><img src="images/activity-img.png" alt="" /> </a></div>
+                            <div class="connection-name"><a href="#">Name Surame</a></div>
+                            <div class="friend-status"><a href="#" class="pending"></a></div>
+                            <div class="connection-action">
+                            	<a href="#" class="add_friend">Add friend</a>
+                                <a href="#" class="decline">Decline</a>
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="connection-notification">
+                        	<div class="connect-profile"><a href="#"><img src="images/activity-img.png" alt="" /> </a></div>
+                            <div class="connection-name"><a href="#">Name Surame</a></div>
+                            <div class="friend-status"><a href="#" class="pending"></a></div>
+                            <div class="connection-action">
+                            	<a href="#" class="add_friend">Add friend</a>
+                                <a href="#" class="decline">Decline</a>
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+						</div>
+                    
+					</div>
+					 <div class="clear"></div>
+				</div>
+			<?php } ?>
+		</div>
+		<div class="clear"></div>
+		<div class="view-outer-container">
+			<?php echo $this->content; ?>
+		</div>
+	</body>
+</html>
+<script>ajaxGetNotificationCount();</script>

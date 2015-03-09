@@ -1,0 +1,27 @@
+<?php $i=0; foreach($usergroupsettings as $settings){ $i++; ?>
+					<div class="accordion-head"><a href="javascript:void(0);"class="group_settings" id="<?php echo $settings->user_group_group_id;  ?>"><?php echo $settings->group_title ?></a></div>
+					<div class="accordion-options" style="display:none" id="group-settings-container-<?php echo $settings->user_group_group_id;  ?>">
+						<div id="activity_alert" >
+							<span class="other_title"><input type="checkbox" name="activity_alert_<?php echo  $settings->user_group_id; ?>" value="yes" <?php if($settings){echo ($settings->activity == 'no') ? '' : 'checked'; }?>>&nbsp;Activity</span>							 
+						</div>
+						<div id="discussion_alert" >
+							<span class="other_title"><input type="checkbox" name="discussion_alert_<?php echo  $settings->user_group_id; ?>" value="yes" <?php if($settings){echo ($settings->discussion == 'no') ? '' : 'checked'; }?>>&nbsp;Discussion</span><br>							 
+						</div>
+						<div id="media_alert" >
+							<span class="other_title"><input type="checkbox" name="media_alert_<?php echo  $settings->user_group_id; ?>" value="yes" <?php if($settings){echo ($settings->media == 'no') ? '' : 'checked'; }?>>&nbsp;Media</span> 					 
+						</div>
+						<div id="member_alert" >
+							<span class="other_title"><input type="checkbox" name="member_alert_<?php echo  $settings->user_group_id; ?>"  value="yes" <?php if($settings){echo ($settings->member == 'no') ? '' : 'checked'; }?>>&nbsp;Member</span>						 
+						</div>
+						<div id="announcement_alert" >
+							<span class="other_title"><input type="checkbox" name="announcement_alert_<?php echo  $settings->user_group_id; ?>"  value="yes" <?php if($settings){echo ($settings->group_announcement == 'no') ? '' : 'checked'; }?>>&nbsp;Organizer announcement</span><br>							 
+						</div>
+						<input type="hidden" class="setting-grpid" id="setting-grpid-<?php echo  $settings->user_group_id; ?>" name="setting-grpid" value="<?php echo  $settings->user_group_group_id; ?>">
+						<input type="button" id="grp-save-<?php echo  $settings->user_group_id; ?>" class="grp-save" value="Save">
+					</div>
+				<?php } ?>
+				<?php if($i==0){ 
+					echo "<div class='msg_nomore'>No more planets</div>";
+				 }else{ ?>
+				<div class="btn-loadmore"><a href="javascript:void(0)" id="group_settings_loadmore">Loadmore</a></div>
+				<?php } ?>

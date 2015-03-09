@@ -1,0 +1,30 @@
+ <html>
+ <script type="text/javascript">
+	iBox.setPath('../');
+	iBox.fade_in_speed = 2000;
+	iBox.padding = 50;
+	iBox.inherit_frames = false;
+</script>
+	 <div id="container">
+		<?php
+		$form = $this->form;
+		$form->setAttribute('action', $this->url('like/commentlike', array('action' => 'add','group_id'=>$groupData->group_seo_title, 'sub_group_id'=>$SubGroupData->group_seo_title,'group_refer_id'=>$Group_Refer_Id,'system_type_id'=>$System_Type_Id)));
+		$form->prepare();
+		echo $this->form()->openTag($form);
+		echo $this->formRow($form->get('like_system_type_id'));
+		echo $this->formRow($form->get('like_refer_id'));
+		if (isset($likes) && !empty($likes)) {
+			
+			if ( $likes_exist_check_for_user->like_by_user_id && $likes > 1 ) {
+				echo "<a href=\"#\" class=\"comments-unlikes\" id=\"$Group_Refer_Id\"><img src=\"".$this->basePath()."/images/unlike.png\" title=\"UnLike\" /></a>&nbsp;&nbsp;You&nbsp;+&nbsp;";
+				echo "<a href=\"javascript:iBox.showURL('/group/".$groupData->group_seo_title."/".$SubGroupData->group_seo_title."/".$System_Type_Id."/comment/likes/userslist/$Group_Refer_Id')\">".($likes-1)."</a>";
+			} else if ( $likes_exist_check_for_user->like_by_user_id && $likes == 1 ) {
+				echo "<a href=\"#\" class=\"comments-unlikes\" id=\"$Group_Refer_Id\"><img src=\"".$this->basePath()."/images/unlike.png\" title=\"UnLike\" /></a>&nbsp;&nbsp;You&nbsp;";
+			} else{
+				echo "<a href=\"javascript:iBox.showURL('/group/".$groupData->group_seo_title."/".$SubGroupData->group_seo_title."/".$System_Type_Id."/comment/likes/userslist/$Group_Refer_Id')\">".$likes."</a>";
+			}
+		}
+		echo $this->form()->closeTag();
+		?>
+	</div>
+</html>

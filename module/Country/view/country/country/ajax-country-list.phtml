@@ -1,0 +1,6 @@
+<select id="country_list">
+	<option value="">Select Country</option>
+	<?php foreach($countries as $row){ ?>	
+		<option value="<?php echo $row->country_code_googlemap; ?>"><?php echo $row->country_title; ?></option>
+	<?php } ?>
+</select>

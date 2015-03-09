@@ -1,0 +1,51 @@
+ 
+<style type="text/css">
+#wrap {
+    width:100%;
+}
+#wrap:after {
+     
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+#wrap .lcontainer {
+    float: left;
+    width:33%;
+}
+</style>
+<h3>All Galaxies</h3>
+<?php if(isset($flashMessages) && count($flashMessages)) : ?>
+<ul>
+    <?php foreach ($flashMessages as $msg) : ?>
+    <li><?php echo $msg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?> 
+<?php if(isset($allGroups) && count($allGroups)) : 
+	$incVar = 1;
+	echo '<div id="wrap">';
+	foreach ($allGroups as $group) : ?>
+		
+	 
+			<div class="lcontainer">
+				<a href="<?php echo $this->url("groups")."/".$group->group_seo_title; ?>" id="<?php echo $group->group_id?>" class="all-sub-group"><img src="<?php echo $this->basePath()?>/public/datagd/<?php echo $groupThumb."/Galaxy/".$group->photo_name?>" style="height:50px; width:50px;" alt="<?php echo $group->group_title?>" />	</a><br />
+				<a href="javascript:void(0)" id="<?php echo $group->group_id?>" class="all-sub-group"><?php echo $group->group_title?></a>
+			</div>       
+   			 
+      <?php if($incVar%3==0){
+		echo '</div><div id="wrap">';
+	  } ?>
+
+	<?php
+        $incVar++;
+        endforeach; 
+    ?>
+</div>
+<?php	
+    endif; 
+?>
+<br />
+<br />

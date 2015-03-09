@@ -1,0 +1,533 @@
+<div class="home-header-container">
+    	<div class="home-header-logo">
+        	<div class="home-logo"><a href="javascript:void(0);"><img src="<?php echo $this->basePath(); ?>/public/images/jeera-logo.png" alt="" /></a></div>
+            <div class="login-menu">
+            	<ul>
+                    <li><a href="javascript:void(0);" class="sign_up_popup_hide login_trigger" data-toggle="modal"  data-target="#signup_popup" id="login_trigger">Log In</a></li>
+                    <li><a class="login_close signup_trigger" href="javascript:void(0);" data-toggle="modal"  data-target="#signup_popup" id="signup_trigger"><span>Sign Up</span></a></li>
+                </ul>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="banner-text">
+        	One Space For All Your <br />Interests
+            <div class="banner-buttons">
+            	<a href="javascript:void(0);" class="button_large_yellow login_close signup_trigger"  data-toggle="modal" data-target="#signup_popup">Sign Up!</a>
+                <a href="javascript:void(0);" class="button_large_def">Watch Video</a>
+            </div>
+        </div>
+    </div>
+    <div class="home-container box">
+    	<div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 intro-text">
+            	<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore <br />et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</p>
+            </div>
+           <div class="manii " id="ourGroups">          
+		   </div>   
+           <div id="loadmoreajaxloader" style="display:none;"><center><img src="<?php echo $this->basePath();?>/public/images/ajax_loader.gif" /></center></div>      
+        <div class="clear"></div>
+    </div>
+</div>        
+<!-- Modal Sign Up -->
+<div class="pop_bg modal fade" id="signup_popup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"></div>
+<!-- Modal Sign Up End-->
+<script type="text/javascript"> 
+var image_paths = <?php echo json_encode($image_folders); ?>;
+var loader_content = '';
+var name = '';
+var email = '';
+var password = '';
+var country='';
+var city = '';
+$(window).load(function () {
+	var group_data = <?php echo json_encode($groups); ?>;
+	$('div#loadmoreajaxloader').show();
+	groupLoadProcess(group_data);
+});
+function groupLoadProcess(response_return){
+	block_html = '';
+	$.each(response_return, function( key, value ) {
+        var  a_group_id = value.group_id;
+        var  a_group_value = value.group_values;
+        var  a_tagCategory = value.tagCategory;
+        var  a_tags = value.tags;
+        var tags_string = '';
+        var tag_cat_link = '';           
+        $.each(a_tagCategory, function( tag_cat_key, tag_cat_value ) {  
+			if(tag_cat_value.tag_category_icon){
+			tag_cat_link = '<img src="'+baseurl+'/public/'+image_paths.tag_category+tag_cat_value.tag_category_icon+'" alt="'+tag_cat_value.tag_category_title+'">';
+			}else{ 
+			tag_cat_link = '<img src="'+baseurl+'/public/images/category-icon.png" alt="'+tag_cat_value.tag_category_title+'">';
+			}			
+        });       
+        $.each(a_tags, function( tag_key, tag_value ) {     
+			tags_string += tag_value.tag_title + ' . ' ;              
+        }); 
+		var a_group_location = a_group_value.country_code + ',' + a_group_value.city ; 
+		var meb_count =  '';
+		var frd_count =  '';
+		if(a_group_value.member_count){meb_count = a_group_value.member_count ;} 
+		if(a_group_value.friend_count){frd_count = a_group_value.friend_count ;}
+		block_html += '<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">';
+		block_html +=  '<div class="group-list-outer">';
+		block_html +=       '<div class="group-img_head">';
+		if(a_group_value.group_photo_photo){
+			block_html +=        '<img src="'+baseurl+'/public/'+image_paths.group+a_group_id+'/medium/'+ a_group_value.group_photo_photo+'" alt="'+a_group_value.group_title+'">';
+		}else{
+			block_html +=        '<img src="'+baseurl+'/public/images/group-img_def.jpg" alt="'+a_group_value.group_title+'">';
+		}
+		block_html +=             '<div class="group-shadow"></div>';
+		block_html +=             ' <div class="join-group-butn"><a href="javascript:void(0);" class="button_corner_blue">Join This Group</a></div>';
+		block_html +=              '<div class="group-titles">';
+		block_html +=                a_group_value.group_title;
+		block_html +=                '<span>';
+		block_html +=                               '<i class="group-open"></i>';
+		block_html +=                              'Open Group';
+		block_html +=                           '</span>';
+		block_html +=                       '</div>';
+		block_html +=                  '</div>';
+		block_html +=                    '<div class="group-body">';
+		block_html +=                  	'<div class="group-interest_location">';
+		block_html +=                     	'<div class="group_interest">Group Interests</div>';
+		block_html +=                         '<div class="group_location"><i class="group-location"></i>'+a_group_location+'</div>';
+		block_html +=                        '<div class="clear"></div>';
+		block_html +=                    '</div>';
+		block_html +=                        '<div class="group-category_icons">'
+		block_html +=                tag_cat_link;
+		block_html +=                      '</div>';
+		block_html +=                      '<div class="group-interest_list">'; 
+		block_html +=                       	'Group interast:' +' '+tags_string; 
+		block_html +=                       '</div>';
+		block_html +=                       '<div class="group_members-friends">';
+		block_html +=                       	'<div class="group_members">members: <span>'+meb_count+'</span></div>';
+		block_html +=                          ' <div class="group_friends">friends: <span>'+frd_count+'</span></div>';
+		block_html +=                          '<div class="clear"></div>';
+		block_html +=                       '</div>';
+		block_html +=                   '</div>';
+		block_html +=                 '</div>'; 
+		block_html +=               '</div>';
+    });
+    $('div#loadmoreajaxloader').hide();  
+    $("#ourGroups").append(block_html);        
+}
+$(document).ready(function(){
+	$('select.styled').customSelect();
+	$(document).on("click",".login_trigger",function(){ createLoginForm();});
+	$(document).on("click",".signup_trigger",function(){ var message = ''; createSignupForm(message);});
+	$(document).on("click",".log_btn",function(){ validateLogin(); }); 
+	$(document).on("click","#resend_varification",function(){ ProcessResendVarification(); });
+	$(document).on("click","#signup_go_step-2",function(){ SignupVarification(); });
+	$(document).on("click","#signup_go_step-3",function(){ SignupProcess(); });
+	$(document).on("click","#forgot_password",function(){ CreateForgotPasswordFrom(); });
+	$(document).on("click","#forgot_process",function(){ ProcessForgotPassword(); });
+}); 
+function createLoginForm(){
+	var login_html = '';
+	login_html += '<div class="modal-dialog login_popup">';
+	login_html += '<div class="modal-content">';
+	login_html += '<div class="modal-header">';
+	login_html += '<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+	login_html += '<div class="clear"></div>';
+	login_html += '</div>';
+	login_html += '<div class="modal-body signup_body">';
+	login_html += '<div id="login_step1">';
+	login_html += '<div class="step1_outer">';
+	login_html += '<div  style="color: red;" class="already_member login_error"></div>';
+    login_html += '<h3>Log In</h3>';
+    login_html += '<div class="already_member signup_po-link ">Not a Jeera member yet? <a class="signup_trigger"  href="javascript:void(0);">Sign Up now!</a></div>';
+    login_html += '<div class="login-field">';
+    login_html += '<input name="user_email" id="login_user_email" type="text" placeholder="Email" />';
+    login_html += '<span id="login_user_email_error"style="color: red;"></span>';
+    login_html += '</div>';
+    login_html += '<div class="login-field">';
+    login_html += '<input name="user_password" id="login_user_password" type="password" placeholder="Password" />';
+    login_html += '<span id="login_user_password_error"style="color: red;"></span>';
+    login_html += '</div>';
+    login_html += '<div class="forgot-password">';
+    login_html += '<input id="login_remembered" type="checkbox" name="rememberme" value="1" checked><label for="login_remembered"> Keep me logged in</label>';
+    login_html += '<a href="" class="hide_forgot" data-toggle="modal" data-target="#forgot_popup" id="forgot_password" >Forgot Password?</a>';
+    login_html += '<div class="clear"></div>';
+    login_html += '</div>';
+    login_html += '<div class="login_button">';
+    login_html += '<img id="loadmoreajaxloaderloginpop_up" style="display: none" src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif" >';
+    login_html += '<a href="javascript:void(0);" class="default_butn_blue log_btn" tabindex="1">Log In</a>';
+    login_html += '</div>';
+	login_html += '</div>';
+	login_html += '</div>';
+	login_html += '<div class="step1_footer">';
+    login_html += 'Or connect account';
+    login_html += '<span><a href="<?php echo $this->basePath(); ?>/user/fblogin"><img src="<?php echo $this->basePath(); ?>/public/images/fb-icon.png" alt="" /></a></span>';
+    login_html += '<div class="clear"></div>';
+    login_html += '</div>';
+    login_html += '</div>';          
+    login_html += '</div>';
+    login_html += '</div>';
+	$("#signup_popup").html(login_html);
+}
+function createSignupForm(messages){
+	var signup_html = '';
+	signup_html +='<div class="modal-dialog login_popup">';          
+    signup_html +='<div class="modal-content">';
+    signup_html +='<div class="modal-header">';
+    signup_html +='<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+    signup_html +='<div class="clear"></div>';
+    signup_html +='</div>';
+    signup_html +='<div class="modal-body signup_body">';
+    signup_html +='<div id="signup_step1">';
+    signup_html +='<div class="step1_outer">';
+    signup_html +='<div  style="color: red; " class="already_member sign_up_error">'+messages+'</div>';
+    signup_html +='<h3>Sign Up for Jeera</h3>';
+    signup_html +='<div class="already_member">Already have an account? <a  class="sign_up_popup_hide login_trigger" href="javascript:void(0);"  >Login!</a></div>';
+    signup_html +='<div class="login-field">';
+    signup_html +='<input name="user_given_name" type="text" id="user_given_name" placeholder="Your Name" value="'+name+'" />';
+    signup_html +='<span id="user_given_name_error"style="color: red;"></span>';
+    signup_html +='</div>';
+    signup_html +='<div class="login-field">';
+    signup_html +='<input name="user_email" type="text" id="user_email" placeholder="Your Email Address" value="'+email+'" />';
+    signup_html +='<span id="user_email_error"style="color: red;"></span>';
+    signup_html +='</div>';
+    signup_html +='<div class="login-field">';
+    signup_html +='<input name="user_password" type="password" id="user_password" placeholder="Password" />';
+    signup_html +='<span id="user_password_error"style="color: red;"></span>';
+    signup_html +='</div>';
+    signup_html +='<div class="signup_button">';
+    signup_html +='<div class="link_back_login">By signing up, you confirm that you accept our <a href="javascript:void(0);">Terms of Service</a></div>';
+    signup_html +='<div class="signup-link"><a href="javascript:void(0);" class="default_butn_blue"  id="signup_go_step-2">Sign Up</a></div>';
+    signup_html +='<div class="clear"></div>';
+    signup_html +='</div>';
+    signup_html +='</div>';
+    signup_html +='<div class="step1_footer">';
+    signup_html +='Or connect account';
+    signup_html +='<span><a href="javascript:void(0);"><img src="<?php echo $this->basePath(); ?>/public/images/fb-icon.png" alt="" /></a></span>';
+    signup_html +='<div class="clear"></div>';
+    signup_html +='</div>';
+    signup_html +='</div> ';          
+    signup_html +='</div> ';         
+    signup_html +='</div>';
+    signup_html +='</div>';
+	$("#signup_popup").html(signup_html); 
+}
+
+function createSignupSecondForm(){   
+	var signup_html = '';
+	signup_html +='<div class="modal-dialog login_popup">';          
+    signup_html +='<div class="modal-content">';
+    signup_html +='<div class="modal-header">';
+    signup_html +='<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+    signup_html +='<div class="clear"></div>';
+    signup_html +='</div>';
+    signup_html +='<div class="modal-body signup_body">';
+    signup_html +='<div id="signup_step2">';
+    signup_html +='<h3>Your Location</h3>';
+    signup_html +='<div class="login-field">';
+    signup_html +='<div class="country_drop_wrapper"></div>';                   
+    signup_html +='</div>';
+    signup_html +='<div class="login-field">';
+    signup_html +='<div class="city_drop_wrapper"></div>'; 
+    signup_html +='</div>';
+    signup_html +='<div class="signup_button">';
+    signup_html +='<div class="signup-link reg_continue_button"><a  href="javascript:void(0);" class="default_butn_blue reg_btn" id="signup_go_step-3">Continue</a></div>';
+    signup_html +='<div class="clear"></div>';
+    signup_html +='</div>';                
+    signup_html +='</div>';                     
+    signup_html +='</div> ';         
+    signup_html +='</div>';
+    signup_html +='</div>';
+	$("#signup_popup").html(signup_html);
+	loadCountryDropdown();
+}
+function createSignupThirdForm(domain){  
+	var signup_html = '';
+	signup_html +='<div class="modal-dialog login_popup">';          
+    signup_html +='<div class="modal-content">';
+    signup_html +='<div class="modal-header">';
+    signup_html +='<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+    signup_html +='<div class="clear"></div>';
+    signup_html +='</div>';
+    signup_html +='<div class="modal-body signup_body">';
+    signup_html +='<div id="signup_step3" >';
+    signup_html +='<h3>Almost Done...</h3>';
+    signup_html +='<p>We\'ve sent an email to <span class="user_email">'+email+'</span>. Open it up and click on the activation link activate your account.</p>';
+    signup_html +='<div class="signup_button">';
+	if(domain!=''){
+    signup_html +='<div class="signup-link"><a href="http://www."'+domain+' target="_blank"  class="default_butn_blue">Take Me To '+domain+'</a></div>';
+	}
+    signup_html +='<div class="clear"></div>';
+    signup_html +='</div>';
+    signup_html +='</div> ';                   
+    signup_html +='</div> ';         
+    signup_html +='</div>';
+    signup_html +='</div>';
+	$("#signup_popup").html(signup_html);
+}
+function  CreateForgotPasswordFrom(){
+	var forgot_html = '';
+	forgot_html +='<div class="modal-dialog login_popup">';
+    forgot_html +='<div class="modal-content">';
+    forgot_html +='<div class="modal-header">';
+    forgot_html +='<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+    forgot_html +='<div class="clear"></div>';
+    forgot_html +='</div>';
+    forgot_html +='<div class="modal-body signup_body">';
+    forgot_html +='<div class="step1_outer">';
+    forgot_html +='<div class="already_member signup_po-link">Enter your email</div>';
+    forgot_html +='<h3>Forgot Password</h3>';  
+	forgot_html +='<p>Hey it happens to everyone. Just tell us what email address yu’re using and we will send you the instructions.</p>';	
+    forgot_html +='<div class="login-field">';
+    forgot_html +='<input name="forgot_email" id="forgot_email" type="text" placeholder="Email" /><a class="back_login login_trigger" href="javascript:void(0);">nope, I remembered</a>';
+    forgot_html +='<span id="forgot_email_error"style="color: red;"></span>';
+    forgot_html +='</div>';          
+    forgot_html +='<div class="login_button" id="forgot_password_btn">';
+    forgot_html +='<a href="javascript:void(0);" class="default_butn_blue forgot_confirm_btn" id="forgot_process">Confirm</a>';
+    forgot_html +='</div>';
+    forgot_html +='</div>';            
+    forgot_html +='</div>';          
+    forgot_html +='</div>';
+    forgot_html +='</div>';
+	$("#signup_popup").html(forgot_html);
+}
+function CreateForgotPasswordSecondFrom(msg){  
+	var signup_html = '';
+	signup_html +='<div class="modal-dialog login_popup">';          
+    signup_html +='<div class="modal-content">';
+    signup_html +='<div class="modal-header">';
+    signup_html +='<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+    signup_html +='<div class="clear"></div>';
+    signup_html +='</div>';
+    signup_html +='<div class="modal-body signup_body">';
+    signup_html +='<div id="signup_step3" >';
+    signup_html +='<h3>Almost Done...</h3>';
+    signup_html +='<p> '+msg+'</p>';    
+    signup_html +='<div class="clear"></div>';
+    signup_html +='</div>';
+    signup_html +='</div> ';                   
+    signup_html +='</div> ';         
+    signup_html +='</div>';
+    signup_html +='</div>';
+	$("#signup_popup").html(signup_html);
+}
+function validateLogin(){
+	var email = $("#login_user_email").val();
+	var password = $("#login_user_password").val();
+	var error_flag = 0;
+	if(email==''){ $("#login_user_email_error").html("Enter Your Email Address");error_flag = 1;}else{
+		if(!validateEmail(email)){ $("#login_user_email_error").html("Enter a valid Email Address");error_flag = 1;}else{$("#login_user_email_error").html("");}
+	}	
+	if(password==''){ $("#login_user_password_error").html("Enter your password");error_flag = 1;}else{$("#login_user_password_error").html("");}
+	if(error_flag){return false;}else{processLogin();}
+}
+function validateEmail($email) {
+  var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+  if( !emailReg.test( $email ) ){ return false; } else { return true; }
+}            
+function   processLogin(){
+	var l_remember = '' ;
+	var email = $("#login_user_email").val();
+	var password = $("#login_user_password").val();
+	var url     = baseurl+'/user/ajaxLogin';
+	if($("#login_remembered").prop('checked') == true){ var l_remember = $('#login_remembered').val();}
+	var data = {user_email: email, user_password: password,rememberme: l_remember };
+	$.ajax({
+		type:'POST',
+        url: url,
+        data:data,
+		beforeSend:function(){ AjaxLoader('.login_button');},
+		success: function(response) {
+			if(response.return_array.process_status == 'success'){window.location.reload();}else{
+				if(response.return_array.process_user_status == 'notactivated'){ accountVarification(response.return_array.process_info,email) }else{
+					$(".login_error").html(response.return_array.process_info);
+					ReplaceLoaderWithHystory('.login_button');
+				}
+			}
+		},
+		error: function(resp) { alert(resp.responseText); }
+	});
+}
+function accountVarification(msg,email){ 
+	var login_html = '';
+	login_html += '<div class="modal-dialog login_popup">';
+	login_html += '<div class="modal-content">';
+	login_html += '<div class="modal-header">';
+	login_html += '<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>';
+	login_html += '<div class="clear"></div>';
+	login_html += '</div>';
+	login_html += '<div class="modal-body signup_body">';
+	login_html += '<div id="login_step2" >';
+    login_html += '<div class="step1_outer">';
+    login_html += '<div  style="color: red;" class="already_member login_error">'+msg+'</div>';  
+    login_html += '<h3>Resend varification</h3>';
+    login_html += '<div class="login-field">';
+    login_html += '<a href="javascript:void(0);" id="resend_varification" >Resend varification</a>';
+    login_html += '</div>';
+    login_html += '</div>';
+    login_html += '</div><input type="hidden" id="hid_email" value="'+email+'" />'; 
+	login_html += '<div class="step1_footer">';
+    login_html += 'Or connect account';
+    login_html += '<span><a href="javascript:void(0);"><img src="<?php echo $this->basePath(); ?>/public/images/fb-icon.png" alt="" /></a></span>';
+    login_html += '<div class="clear"></div>';
+    login_html += '</div>';
+    login_html += '</div>';          
+    login_html += '</div>';
+    login_html += '</div>';
+	$("#signup_popup").html(login_html);
+}
+function ProcessResendVarification(){
+	var email = $("#hid_email").val();
+	var url     = baseurl+'/user/resendverification';
+	var data = {user_email: email};
+	$.ajax({
+		type:'POST',
+        url: url,
+        data:data,
+		beforeSend:function(){ AjaxLoaderAppend('.login-field');},
+		success: function(response) {
+			AjaxLoaderRemove('.login-field');
+			$(".login_error").html(response.return_array.process_info);			 
+		},
+		error: function(resp) { alert(resp.responseText); }
+	});
+}
+
+function SignupVarification(){
+	name = $("#user_given_name").val();
+	email = $("#user_email").val();
+	password = $("#user_password").val();
+	var error_flag = 0;
+	if(name==''){ $("#user_given_name_error").html("Enter your name");error_flag = 1;}else{$("#user_given_name_error").html("");}
+	if(email==''){ $("#user_email_error").html("Enter Your Email Address");error_flag = 1;}else{
+		if(!validateEmail(email)){ $("#user_email_error").html("Enter a valid Email Address");error_flag = 1;}else{$("#user_email_error").html("");}
+	}	
+	if(password==''){ $("#user_password_error").html("Enter your password");error_flag = 1;}else{
+		if(password.length<5){ $("#user_password_error").html("Password must contain more than 5 charectors");}else{$("#user_password_error").html("");} }
+	if(error_flag){return false;}else{createSignupSecondForm();}
+}
+function loadCountryDropdown(){
+	url  = baseurl+'/country/ajaxCountryList';
+	var country_html = '';
+	$.ajax({
+            type:'POST',
+            url: url,
+			beforeSend:function(){ AjaxLoader('.country_drop_wrapper');},
+            success: function(response) {
+				countries = response ;
+				country_html += '<select name="user_country_id" id="user_country_id" class="styled hasCustomSelect">';
+				$.each(countries.countries, function( key, value ){
+				var selected_html= "";
+				if(value.country_id == country){selected_html= "selected";}
+				country_html += '<option value="'+value.country_id+'" '+selected_html+'>'+value.country_title+'</option>'; });
+				country_html += '</select>';
+				$('.country_drop_wrapper').html(country_html);
+				LoadCityDropdown();
+			},
+			error: function(resp) { AjaxLoaderRemove('.country_drop_wrapper');alert(resp.responseText); }
+	});
+}
+function LoadCityDropdown(){
+	url  = baseurl+'/city/ajaxCitiesList';
+	var country_id = $("#user_country_id").val();
+	var city_html = '';
+	var data = { country_id: country_id,};
+	$.ajax({
+            type:'POST',
+            url: url,
+			data:data,
+			beforeSend:function(){ AjaxLoader('.city_drop_wrapper');},
+            success: function(response) {
+				citys = response ;
+				city_html += '<select name="user_city_id" id="user_city_id" class="styled hasCustomSelect">';
+				$.each(citys.cities, function( key, value ){
+				var selected_html= "";
+				if(value.city_id == city){selected_html= "selected";}
+				city_html  += '<option value="'+value.city_id+'" '+selected_html+'>'+value.name+'</option>'; });
+				city_html += '</select>';
+				$('.city_drop_wrapper').html(city_html);				 
+			},
+			error: function(resp) { AjaxLoaderRemove('.city_drop_wrapper');alert(resp.responseText); }
+	});
+}
+function SignupProcess(){
+	var url     = baseurl+'/user/register';
+	country = $("#user_country_id").val();
+	city =  $("#user_city_id").val();
+	var data = {user_given_name: name,
+            user_email: email,
+            user_password: password,
+            user_country_id: country,
+            user_city_id: city};
+	$.ajax({
+            type:'POST',
+            url: url,
+			data:data,
+			beforeSend:function(){ AjaxLoader('.reg_continue_button');},
+            success: function(response) {
+				if(response.return_array.process_status == 'success'){name='';email='';password='';city='';country='';createSignupThirdForm(response.return_array.mail_domain);}else{
+					createSignupForm(response.return_array.process_info);
+				}				
+			},
+			error: function(resp) { ReplaceLoaderWithHystory('.reg_continue_button');alert(resp.responseText); }
+	});
+}
+function ProcessForgotPassword(){
+	var forgot_email = $("#forgot_email").val();
+	if(forgot_email==''){ $("#forgot_email_error").html("Enter Your Email Address");return false;}else{	
+		if(!validateEmail(forgot_email)){ $("#forgot_email_error").html("Enter a valid Email Address");return false;}else{$("#forgot_email_error").html("")};
+	}
+	var url     = baseurl+'/user/forgotPassword';
+	var data = { user_email: forgot_email};
+	$.ajax({
+            type:'POST',
+            url: url,
+			data:data,
+			beforeSend:function(){ AjaxLoader('#forgot_password_btn');},
+            success: function(response) {
+				if(response.return_array.process_status == 'success'){CreateForgotPasswordSecondFrom(response.return_array.process_info);}else{
+					$("#forgot_email_error").html(response.return_array.process_info);
+					ReplaceLoaderWithHystory('#forgot_password_btn');
+				}				
+			},
+			error: function(resp) { ReplaceLoaderWithHystory('#forgot_password_btn');alert(resp.responseText); }
+	});
+}
+function AjaxLoader(field){
+	loader_content = $(field).html();
+	$(field).html('<img id="loadmoreajaxloaderpop_up" src="'+baseurl+'/public/images/ajax_loader.gif" >');
+} 
+function ReplaceLoaderWithHystory(field){$(field).html(loader_content);}
+function AjaxLoaderAppend(field){$(field).append('<img id="loadmoreajaxloaderpop_up" src="'+baseurl+'/public/images/ajax_loader.gif" >');}
+function AjaxLoaderRemove(field){$("#loadmoreajaxloaderpop_up").remove();}
+ 
+	var counter = 1;
+	var isAjaxRunning = 0;
+	var isEndofRecord = 0 ;
+	$(window).scroll(function(){
+		var window_document_height = ($(document).height()-200);
+		if($(window).scrollTop() >= window_document_height - $(window).height()){
+			var urls = "<?php echo $this->basePath(); ?>/ajaxGroupGeneralList";
+			var data = {page: counter};
+			if(isAjaxRunning == 0 && isEndofRecord == 0){
+				$.ajax({
+					type:'POST',
+					url: urls, 
+					data: data, 
+					beforeSend:function(){   
+						$('div#loadmoreajaxloader').show();
+						isAjaxRunning = 1;             
+					},
+					success: function(response) {   
+						if(response.groups !=''){
+							var response_return = response.groups;       
+							groupLoadProcess(response_return);               
+							counter++ ;               
+						}else{
+							isEndofRecord = 1 ;                  
+							$('div#loadmoreajaxloader').html('<center><h1>No more posts to show.</h1></center>');                 
+						}         
+						isAjaxRunning = 0;
+					},
+					error: function(resp) { alert(resp.responseText); }
+				});
+			}     
+		}
+	}); 
+</script>
+ 

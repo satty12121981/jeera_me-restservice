@@ -1,0 +1,44 @@
+<?php
+	if(!empty($error)){	
+		echo "<ul>";
+		foreach($error as $msg){
+			echo "<li>".$msg."</li>";
+		}
+		echo "</ul>";
+	}else{
+		if(!empty($question)){
+?>
+	<div class="create-fields">
+								<div class="create-label">Question1:</div>
+								<div class="planet-field"><textarea id="question<?php echo $question->questionnaire_id; ?>" name="question<?php echo $question->questionnaire_id; ?>"><?php echo $question->question; ?></textarea></div>
+								<div class="clear"></div> 
+								<div class="create-label">Answer Type</div>
+								<div class="planet-field">
+									<input type="radio"  id="q<?php echo $question->questionnaire_id; ?>_answer_type1" class="answer_type" name="q<?php echo $question->questionnaire_id; ?>_answer_type" value="Textarea" <?php if($question->answer_type == "Textarea"){ ?> checked ="checked" <?php } ?> /> Textarea
+									<input type="radio"  id="q<?php echo $question->questionnaire_id; ?>_answer_type2" class="answer_type" name="q<?php echo $question->questionnaire_id; ?>_answer_type" value="radio" <?php if($question->answer_type == "radio"){ ?> checked ="checked" <?php } ?> /> Radio buttons
+									<input type="radio"  id="q<?php echo $question->questionnaire_id; ?>_answer_type3" class="answer_type" name="q<?php echo $question->questionnaire_id; ?>_answer_type" value="checkbox" <?php if($question->answer_type == "checkbox"){ ?> checked ="checked" <?php } ?> /> Checkboxes
+								</div>
+								<div class="clear"></div>
+								<div id="q<?php echo $question->questionnaire_id; ?>_option" <?php if($question->answer_type=='Textarea'){ echo "style='display:none'";}?>><div class="planet-field">Options</div><div class="planet-field"> 
+								<?php $i=0; 
+								if($question->answer_type=='radio'||$question->answer_type=='checkbox'){
+								foreach($options as $list){ $i++; ?>
+									<?php echo $i; ?> <input type="text" id="q<?php echo $question->questionnaire_id; ?>_option_<?php echo $i; ?>" name="q<?php echo $question->questionnaire_id; ?>_option_<?php echo $i; ?>" value="<?php echo $list->option; ?>" />
+									<br/>
+								<?php } }else{ ?>
+									 
+									1<input type="text"  id="q<?php echo $question->questionnaire_id; ?>_option_1"   name="q<?php echo $question->questionnaire_id; ?>_option1" value=""  /><br />
+									2<input type="text"  id="q<?php echo $question->questionnaire_id; ?>_option_2"  name="q<?php echo $question->questionnaire_id; ?>_option2" value="" /><br />
+									3<input type="text"  id="q<?php echo $question->questionnaire_id; ?>_option_3"   name="q<?php echo $question->questionnaire_id; ?>_option3" value="" /><br />
+								 
+								<?php } ?>
+								</div></div>
+								<div class="clear"></div>
+								<div><input type="button" id="saveQuestion_<?php echo $question->questionnaire_id; ?>" value="Save" class="blue-butn" /><input type="button" id="cancelQuestion_<?php echo $question->questionnaire_id; ?>" value="Cancel" class="grey-butn" /></div>
+							</div>
+<?php
+	}else{
+		echo "given question not existing in this system";
+	}
+	}
+ ?>

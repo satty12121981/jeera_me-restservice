@@ -1,0 +1,1156 @@
+<script src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<?php //print_r($profile_data); ?>
+     <!-- Left Fixed part -->
+   <?php echo $this->profileWidget; ?>  
+    <!-- Left Fixed part Close -->
+    
+    <div class="right_container" id="activity_right_container" ng-app="activity_app" ng-controller="activityController">
+    	<div class="right-profile_links">
+        	<div class="right-profile_links_inner">
+            	<ul class="color-trans">
+                	<li><a href="<?php echo $this->basePath()."/".$current_Profile ?>" >Posts</a></li>
+                    <li><a href="<?php echo $this->basePath()."/".$current_Profile ?>/groups">Groups ({{group_count}})</a></li>
+                    <li><a href="<?php echo $this->basePath()."/".$current_Profile ?>/friends">Friends ({{ frineds_count }})</a></li>
+                    <li><a href="<?php echo $this->basePath()."/".$current_Profile ?>/activities" class="active">My Activity</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="right-content_outer">
+        	<div class="friends_sort color-trans">
+                Show:
+                <a href="javascript:void(0);" ng-class="{active : selectedTab === 'All'}" ng-click="SelectAll()">All</a>
+                <a href="javascript:void(0);" ng-class="{active : selectedTab === 'Comments'}" ng-click="SelectComments()">My Comments ({{CommentsCount}}) </a>
+                <a href="javascript:void(0);" ng-class="{active : selectedTab === 'Likes'}" ng-click="SelectLikes()">My Likes ({{LikesCount}})</a>
+                <div class="clear"></div>
+            </div>
+            
+            <div id="timeline" data-columns ng-init="getActivity(false)" scroller>
+                
+                 
+                
+            
+            </div>
+            
+            <div class="clear"></div>
+        </div>
+        			<div class="pop_bg modal fade" id="post-img_popup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog postimg_popup">
+    <div class="modal-content postimg_content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <div class="clear"></div>
+      </div>
+      <div class="modal-body postimg_body">
+		<span ng-if="mediaLoader ==1"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"></span>
+		<span ng-if="mediaLoader ==0">
+			<div class="post-img_preview-outer" ng-if="medialist==1">
+				<div id="media_list" style="height:350px;overflow:hidden" ng-init="enableScrollbarMedia()">
+				<h3>All Media of {{media.group_title}}</h3>
+				<ul>
+					<li ng-repeat="items in groupAllMediaContent"><a href="javascript:void(0)" ng-click="loadMedia(items.group_media_id)" >
+					<img  ng-if="items.media_type=='image'" src="<?php echo $this->basePath(); ?>/public/datagd/group/{{items.media_added_group_id}}/media/{{items.media_content}}">
+					<img ng-if="items.media_type=='video'" src="http://img.youtube.com/vi/{{items.video_id}}/0.jpg" />
+					</a></li>
+					<a href="javascript:void(0)" ng-click="LoadmoreMedia(media.group_id);" ng-if="showLoadmore==1">Loadmore</a>
+				</ul>
+				</div>
+			</div>
+			<div class="post-img_preview-outer" ng-if="medialist==0">
+				<div class="post-img_preview">
+					<div class="post-img_preview_nav">
+						<div class="image_preview-previous" ng-if="media.prev_id!=''">
+							<a href="javascript:void(0);" ng-click="loadMedia(media.prev_id)"><i></i></a>
+						</div>
+						<div class="image_show-all">
+							<a href="javascript:void(0);" ng-click="loadAllMedia(media.group_id)"><i></i></a>
+						</div>
+						<div class="image_preview-next" ng-if="media.next_id!=''">
+							<a href="javascript:void(0);" ng-click="loadMedia(media.next_id)"><i></i></a>
+						</div>
+						<div class="clear"></div>
+					</div>
+					
+					<div class="pop_image-preview">
+					<img ng-if="media.media_type=='image'" src="<?php echo $this->basePath(); ?>/public/datagd/group/{{media.group_id}}/media/{{media.media_content}}" alt="{{media.media_content}}" />
+					
+					 <div ng-if="media.media_type=='video'" id="video_items" ng-init="loadVideoContent(media.media_content)"  >
+					 
+					 </div>
+					</div>
+					
+					<div class="pop_img-footer">in group: <a href="javascript:void(0);">{{media.group_title}}</a></div>
+					
+				</div>
+			</div>
+			
+			<!-- Popup Right Side -->
+			<div class="image_postdetails" ng-if="medialist==0">
+				<div class="post_header">
+					<span class="vertical_align"></span>
+					<div class="header-profile_image">
+						<img alt="" ng-if="media.profile_photo!=null&&media.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{media.user_id}}/{{ media.profile_photo }}">
+						<img alt="" ng-if="media.profile_photo==null||media.profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">
+					</div>
+					<div class="post_profile-name">
+						<a href="javascript:void(0);">{{media.user_given_name}}</a>
+						<span>posted in <a href="javascript:void(0);">{{media.group_title}}</a></span>
+					</div>
+					<div class="post_time noti_time"><i></i>{{media.added_time}}</div>
+					<div class="clear"></div>
+				</div>
+				<div class="post_status-text">
+					{{media.media_caption}}
+				</div>
+				<div class="post_status-footer">
+					<span id="Media_modelwindow">
+						<a class="post_likes liked" ng-if="media.is_liked"   href="javascript:void(0);" ng-click="funUnLikeAction('Media',media.group_media_id)"  ><i></i></a>
+						<a href="javascript:void(0)" ng-if="media.is_liked" title="{{media.likedUsers}}" ng-click="LoadLikedUsers('Media',media.group_media_id,media.likes_counts,media.is_liked)">{{media.likes_counts}}</a>
+						
+						<a class="post_likes" ng-if="media.is_liked ==0" href="javascript:void(0);" ng-click="funLikeAction('Media',media.group_media_id)" ><i></i></a>
+						<a href="javascript:void(0)" ng-if="media.is_liked ==0" ng-click="LoadLikedUsers('Media',media.group_media_id,media.likes_counts,media.is_liked)" title="{{media.likedUsers}}">{{media.likes_counts}}</a>			
+					</span>
+					<a class="post_comments" ng-class="{'comented': media.is_commented==1}" href="javascript:void(0);"><i></i>{{media.comment_count}}</a>
+					<a class="post_reply" href="javascript:void(0);" ng-click="showReply=1"><i></i>reply</a>
+					<div class="clear"></div>
+					<div class="post_comment-outer" id="post_reply-media" ng-show="showReply==1">
+						<div class="header-profile_image comment_profile-img">
+							 <img alt="" ng-if="profile.profile_photo!=null&&profile.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{profile.user_id}}/{{ profile.profile_photo }}">
+							<img alt="" ng-if="profile.profile_photo==null||profile.profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">
+						</div>
+						<div class="post_comment_text post_comment_reply">
+							<textarea name="" placeholder="Type reply" id="txtMediaComment"></textarea>
+						</div>
+						<div class="clear"></div>
+						<div class="post_comment_reply-butns">
+							<a href="javascript:void(0);" class="default_butn_grey" id="cancel_reply" ng-click="showReply=0;removeCommentBox()">Cancel</a><a href="javascript:void(0);" class="default_butn_violet" ng-click="postComment(media.group_media_id)">Post</a>
+						</div>
+					</div>
+				</div>
+				 
+				<div id="comment_container_outer" ng-init="enableScrollbar()">
+					<div class="post_comment-outer" ng-repeat="comments in media_comments">
+						<div class="header-profile_image comment_profile-img">
+							<img alt="" ng-if="comments.profile_photo!=null&&comments.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{comments.user_id}}/{{ comments.profile_photo }}">
+							<img alt="" ng-if="comments.profile_photo==null||comments.profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">
+						</div>
+						<div class="post_comment_text">
+							<span class="profile_name-comment">{{comments.user_given_name }}</span>{{comments.comment_content}}
+							<div class="comment_likes">
+								<span class="Comment_{{comments.comment_id}}">
+								<a href="javascript:void(0);" class="post_likes liked" ng-if="comments.islike" ng-click="funUnLikeAction('Comment',comments.comment_id)"><i></i></a>
+								<a href="javascript:void(0)" ng-if="comments.islike" title="{{comments.str_liked_users}}" ng-click="LoadLikedUsers('Comment',comments.comment_id,comments.likes_count,comments.islike)">{{comments.likes_count}}</a>
+								<a href="javascript:void(0);" class="post_likes" ng-if="comments.islike==0" ng-click="funLikeAction('Comment',comments.comment_id)"><i></i></a>
+								<a href="javascript:void(0)" ng-if="comments.islike==0"  ng-click="LoadLikedUsers('Comment',comments.comment_id,comments.likes_count,comments.islike)" title="{{comments.str_liked_users}}">{{comments.likes_count}}</a>
+								</span>
+								<div class="post_time noti_time comment_time "><i></i>{{comments.comment_time}}</div>
+								<div class="clear"></div>
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+					<div ng-if= "media.comment_count>10&&hideloadmore==0" ng-click="loadmoreCommentFromPopup(media.group_media_id)"> <a href="javascript:void(0)">Load more</a></div>  	  
+				</div>
+			</div>
+			<div class="clear"></div>
+		</span>
+      </div>
+      
+    </div>
+  </div>
+</div>
+<div class="pop_bg modal fade" id="likes_popup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog login_popup">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <div class="clear"></div>
+          </div>
+          <div class="modal-body signup_body">
+				<div ng-if="loadpeople==1"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"></div>
+          		<div class="likes_pop-outer" ng-if="loadpeople==0">
+                	<div class="like_profile-outer" ng-repeat="items in likedpeoples">
+                    	<div class="like_profile-img comn_profile_img">
+							<img alt="" ng-if="items.profile_photo!=null&&items.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{items.user_id}}/{{ items.profile_photo }}">
+							<img alt="" ng-if="items.profile_photo==null||items.profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">
+						</div>
+                        <div class="like_profile-name"><a href="javascript:void(0);">{{items.user_given_name}}</a></div>
+                        <a href="javascript:void(0);" class="button_small_blue like_add-friend" ng-if="items.is_friend">Friends</a>
+						<a href="javascript:void(0);" class="button_small_blue friend_accept" ng-if="items.get_request" ng-click="acceptFriendRequest(items.user_profile_name);remove()" title="Accept request"></a>
+						<a href="javascript:void(0);" remove-on-click ng-if="items.get_request" class="friend_ignore" ng-click="rejectFriendRequest(items.user_profile_name);remove()" title="Ignore Request"></a>
+						<a ng-if="items.is_requested" href="javascript:void(0);" class="default_butn_grey">Pending</a>
+						<a href="javascript:void(0);" remove-on-click ng-if="items.is_requested!= 1 && items.get_request!= 1 && items.is_friend!= 1" class="default_butn_blue" ng-click="sentFriendRequest(items.user_profile_name);remove()">Add Friend</a>		 
+                    </div>                  
+                </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    </div>
+    
+    <div class="clear"></div>
+	<script type="text/javascript" src="<?php echo $this->basePath(); ?>/public/js/salvattore.min.js"></script>
+	<script src="<?php echo $this->basePath(); ?>/public/js/jquery.plugin.js"></script>
+ 
+<link href="<?php echo $this->basePath(); ?>/public/css/prettify.css" type="text/css" rel="stylesheet" />
+<script type="text/javascript" src="<?php echo $this->basePath(); ?>/public/js/prettify.js"></script>
+<script type="text/javascript" src="<?php echo $this->basePath(); ?>/public/js/jquery.slimscroll.js"></script>
+	 <script>
+		var feed_page =1;
+		var activity_app = angular.module('activity_app',[]);
+		activity_app.config(function ($httpProvider) {
+			$httpProvider.defaults.transformRequest = function(data){
+				if (data === undefined) {
+					return data;
+				}
+				return $.param(data);
+			}
+		});
+		activity_app.directive('scroller', function ($window) {
+		return {
+			restrict: 'A',
+			link: function(scope, element, attrs) {
+			  var windowEl = angular.element($window); 		  
+			  var handler = function() { scope.handler();  }
+			  windowEl.on('scroll', scope.$apply.bind(scope, handler));
+			 
+			}
+			};
+		});
+		 activity_app.directive('helloMaps', function () {
+
+      return function (scope, elem, attrs) {
+        var mapOptions,
+          latitude = attrs.latitude,
+          longitude = attrs.longitude,
+		  location = attrs.location,
+          map;
+        latitude = latitude && parseFloat(latitude, 10) || 43.074688;
+        longitude = longitude && parseFloat(longitude, 10) || -89.384294;
+        mapOptions = {
+          zoom: 8,
+          center: new google.maps.LatLng(latitude, longitude)
+        };
+		
+        map = new google.maps.Map(elem[0], mapOptions);
+		var marker = new google.maps.Marker({
+			position: new google.maps.LatLng(latitude, longitude),
+			icon: baseurl+"/public/images/map_pin.png",
+			title:location
+		});
+ 
+		// To add the marker to the map, call setMap();
+		marker.setMap(map);
+      };
+    }); 
+		activity_app.controller('activityController',function($scope, $http,$compile){
+			$scope.frineds_count = <?php echo $friends_count; ?>;
+			$scope.group_count = <?php echo $group_count; ?>;
+			$scope.CommentsCount = <?php echo $CommentsCount ?>;
+			$scope.LikesCount = <?php echo $LikesCount ?>;
+			$scope.selectedTab = 'All';
+			$scope.image_paths = <?php echo json_encode($image_folders); ?>;
+			$scope.profile = {};
+			$scope.profile.profile_name = '<?php echo $userinfo->user_profile_name; ?>';
+			$scope.profile.user_given_name = '<?php echo $userinfo->user_given_name; ?>';
+			$scope.profile.profile_photo = '<?php echo $userinfo->profile_photo; ?>';
+			$scope.profile.user_id = '<?php echo $userinfo->user_id; ?>';
+			$scope.SelectAll = function(){
+				$scope.selectedTab = 'All';
+				$scope.getActivity(false);
+			}
+			$scope.SelectComments = function(){
+				$scope.selectedTab = 'Comments';
+				$scope.getActivity(false);
+			}
+			$scope.SelectLikes = function(){
+				$scope.selectedTab = 'Likes';
+				$scope.getActivity(false);
+			}
+			$scope.feedAjax = 0;
+			$scope.getActivity = function(scrolling){ 			
+			if($scope.feedAjax ==0){
+				$scope.feedAjax =1;
+				if(scrolling){feed_page = feed_page+1;}else{
+					feed_page = 1; 
+					$("#timeline").find(('.item')).not("#statusbar").remove();  
+					 
+				}
+				url  = baseurl+'/user/getMyActivities';
+				$http.post(url,
+				{					 
+					page:feed_page,
+					type:$scope.selectedTab,					 
+				},
+				{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) {	
+					if(data.return_array.process_status == 'success'){		
+						if(data.return_array.feeds.length>0){
+							$scope.feedsAppend(data.return_array.feeds);
+						}
+					}else{
+						alert(data.return_array.process_info);						 
+					}	
+					$scope.feedAjax =0;					
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+					 $scope.feedAjax =0;
+				});
+			}
+		}
+		$scope.feedsAppend = function(feeds){
+			
+			angular.forEach(feeds, function(dataset){ 
+				var content = '';
+				 switch(dataset.type){
+					case "New Status":
+						content += '<div class="item">';
+						content += '<div class="post-outer border_radius">';
+						content += '<div class="post_header">';
+						content += '<span class="vertical_align"></span>'
+						content += '<div class="header-profile_image">'
+						if(dataset.content.profile_photo!=null&&dataset.content.profile_photo!=''){
+							content += '<img alt="'+dataset.content.user_given_name+'"  src="<?php echo $this->basePath(); ?>/public/datagd/profile/'+dataset.content.user_id+'/'+ dataset.content.profile_photo+'">';
+						}else{
+							content += '<img alt="'+dataset.content.user_given_name+'"   src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">';
+						}
+						content += '</div>';
+						content += '<div class="post_profile-name">';
+						content += '<a href="javascript:void(0);">'+dataset.content.user_given_name+'</a>';
+						content += '<span>posted in <a href="javascript:void(0);">'+dataset.content.group_title+'</a></span>';
+						content += '</div>';
+						content += '<div class="post_time noti_time"><i></i>'+dataset.time+'</div>';
+						content += '<div class="clear"></div>';
+						content += '</div>';
+						content += '<div class="post_status-text" >'+dataset.content.group_discussion_content+'</div>';
+						content += '<div class="post_status-footer">';
+						content += '<span class="Discussion_'+dataset.content.group_discussion_id+'">';
+						if(dataset.content.is_liked==1){
+							content += '<a href="javascript:void(0);" class="post_likes liked" ng-click="funUnLikeAction(\'Discussion\','+dataset.content.group_discussion_id+')"><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom"  ng-click="LoadLikedUsers(\'Discussion\','+dataset.content.group_discussion_id+','+dataset.content.like_count+','+dataset.content.is_liked+')" title="'+dataset.content.liked_users+'">'+dataset.content.like_count+'</a>';
+						}else{
+							content += '<a href="javascript:void(0);" class="post_likes" ng-click="funLikeAction(\'Discussion\','+dataset.content.group_discussion_id+')"><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom"  ng-click="LoadLikedUsers(\'Discussion\','+dataset.content.group_discussion_id+','+dataset.content.like_count+','+dataset.content.is_liked+')"  title="'+dataset.content.liked_users+'">'+dataset.content.like_count+'</a>';
+						}
+						content += '</span>';
+						content += '<span id="CntComment_Discussion_'+dataset.content.group_discussion_id+'">';
+						if(dataset.content.is_commented==1){
+							content += '<a href="javascript:void(0);" class="post_comments comented" ng-click="LoadCommentList(\'Discussion\','+dataset.content.group_discussion_id+','+dataset.content.comment_counts+',1)"><i></i>'+dataset.content.comment_counts+'</a>';
+						}else{
+							content += '<a href="javascript:void(0);" class="post_comments" ng-click="LoadCommentList(\'Discussion\','+dataset.content.group_discussion_id+','+dataset.content.comment_counts+',1)"><i></i>'+dataset.content.comment_counts+'</a>';
+						}
+						content += '</span>';
+						content += '<a href="javascript:void(0);" class="post_reply" ng-click="LoadCommentWindow(\'Discussion\','+dataset.content.group_discussion_id+')"><i></i>reply</a>';
+						content += '<div class="clear"></div>';
+						content += '<div id="comment_Discussion_'+dataset.content.group_discussion_id+'"></div>';
+						content += '<div class="clear"></div>';
+						content += '<div id="comment_Discussion_list_'+dataset.content.group_discussion_id+'"></div>';
+						content += '</div>';
+						content += '</div>';
+						content += '</div>';
+					 
+						var grid = document.querySelector('#timeline');
+						var item = document.createElement('div');
+						salvattore['append_elements'](grid, [item]);
+						//item.outerHTML = content;
+						$(item).append( $compile(content)($scope) );
+					break;
+					case "New Media":
+						content += '<div class="item">';
+						content += '<div class="post-outer border_radius">';
+						content += '<div class="post_header">';
+						content += '<span class="vertical_align"></span>'
+						content += '<div class="header-profile_image">'
+						if(dataset.content.profile_photo!=null&&dataset.content.profile_photo!=''){
+							content += '<img alt="'+dataset.content.user_given_name+'"  src="<?php echo $this->basePath(); ?>/public/datagd/profile/'+dataset.content.user_id+'/'+ dataset.content.profile_photo+'">';
+						}else{
+							content += '<img alt="'+dataset.content.user_given_name+'"   src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">';
+						}
+						content += '</div>';
+						content += '<div class="post_profile-name">';
+						content += '<a href="javascript:void(0);">'+dataset.content.user_given_name+'</a>';
+						content += '<span>posted in <a href="javascript:void(0);">'+dataset.content.group_title+'</a></span>';
+						content += '</div>';
+						content += '<div class="post_time noti_time"><i></i>'+dataset.time+'</div>';
+						content += '<div class="clear"></div>';
+						content += '</div>';
+						content += '<div class="post_post-image"><a href="javascrip:void(0);" class="media_list"  data-toggle="modal" data-target="#post-img_popup" ng-click="loadMedia('+dataset.content.group_media_id+')">';
+						if(dataset.content.media_type=='image'){
+							content += '<img src="<?php echo $this->basePath(); ?>/public/'+$scope.image_paths.group+dataset.content.group_id+'/media/'+dataset.content.media_content+'" alt=""   />';
+						}
+						if(dataset.content.media_type=='video'){
+							content += '<img  src="http://img.youtube.com/vi/'+dataset.content.video_id+'/0.jpg" alt="" />';
+						}
+						content += '</a></div>';
+						content += '<div class="post_status-text" >'+dataset.content.media_caption+'</div>';
+						content += '<div class="post_status-footer">';
+						content += '<span class="Media_'+dataset.content.group_media_id+'">';
+						if(dataset.content.is_liked==1){
+						content += '<a href="javascript:void(0);" class="post_likes liked" ng-click="funUnLikeAction(\'Media\','+dataset.content.group_media_id+')"><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom" ng-click="LoadLikedUsers(\'Media\','+dataset.content.group_media_id+','+dataset.content.like_count+','+dataset.content.is_liked+')"  title="'+dataset.content.liked_users+'">'+dataset.content.like_count+'</a>';
+						}else{
+						content += '<a href="javascript:void(0);" class="post_likes" ng-click="funLikeAction(\'Media\','+dataset.content.group_media_id+')"><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom" ng-click="LoadLikedUsers(\'Media\','+dataset.content.group_media_id+','+dataset.content.like_count+','+dataset.content.is_liked+')" title="'+dataset.content.liked_users+'">'+dataset.content.like_count+'</a>';	
+						}
+						content += '</span>';
+						content += '<span id="CntComment_Media_'+dataset.content.group_media_id+'">';
+						if(dataset.content.is_commented==1){
+							content += '<a href="javascript:void(0);" class="post_comments comented" ng-click="LoadCommentList(\'Media\','+dataset.content.group_media_id+','+dataset.content.comment_counts+',1)"><i></i>'+dataset.content.comment_counts+'</a>';
+						}else{
+							content += '<a href="javascript:void(0);" class="post_comments" ng-click="LoadCommentList(\'Media\','+dataset.content.group_media_id+','+dataset.content.comment_counts+',1)"><i></i>'+dataset.content.comment_counts+'</a>';
+						}
+						content += '</span>';
+						content += '<a href="javascript:void(0);" class="post_reply" ng-click="LoadCommentWindow(\'Media\','+dataset.content.group_media_id+')"><i></i>reply</a>';
+						content += '<div class="clear"></div>';
+						content += '<div id="comment_Media_'+dataset.content.group_media_id+'"></div>';
+						content += '<div class="clear"></div>';
+						content += '<div id="comment_Media_list_'+dataset.content.group_media_id+'"></div>';
+						content += '</div>';
+						content += '</div>';
+						content += '</div>';
+					 
+						var grid = document.querySelector('#timeline');
+						var item = document.createElement('div');
+						salvattore['append_elements'](grid, [item]);
+						//item.outerHTML = content;
+						$(item).append( $compile(content)($scope) );
+					break;
+					case "New Activity":
+						content += '<div class="item">';
+						content += '<div class="post-outer border_radius">';
+						content += '<div class="post_header">';
+						content += '<span class="vertical_align"></span>'
+						content += '<div class="header-profile_image">'
+						if(dataset.content.profile_photo!=null&&dataset.content.profile_photo!=''){
+							content += '<img alt="'+dataset.content.user_given_name+'"  src="<?php echo $this->basePath(); ?>/public/datagd/profile/'+dataset.content.user_id+'/'+ dataset.content.profile_photo+'">';
+						}else{
+							content += '<img alt="'+dataset.content.user_given_name+'"   src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">';
+						}
+						content += '</div>';
+						content += '<div class="post_profile-name">';
+						content += '<a href="javascript:void(0);">'+dataset.content.user_given_name+'</a>';
+						content += '<span>posted in <a href="javascript:void(0);">'+dataset.content.group_title+'</a></span>';
+						content += '</div>';
+						content += '<div class="post_time noti_time"><i></i>'+dataset.time+'</div>';
+						content += '<div class="clear"></div>';
+						content += '</div>';
+						content += '<div class="post_event-map" >';
+						content += '<div class="google-map" hello-maps="" latitude="'+dataset.content.group_activity_location_lat+'" longitude="'+dataset.content.group_activity_location_lng+'"  location="'+dataset.content.group_activity_location+'"></div>';
+						content += '</div>';
+						content += '<div class="post_event-header" >';
+						content += '<i class="event-calender"></i><span>'+dataset.content.group_activity_start_timestamp+'</span>';
+						if(dataset.content.is_going==1){
+							content += '<span class="event_butn" id="activityrsvp_'+dataset.content.group_activity_id+'"><a href="javascript:void(0);" class="default_butn_red" ng-click="QuitRSVP('+dataset.content.group_activity_id+')">I\'m Not Going</a></span>';
+						}else{
+							content += '<span class="event_butn" id="activityrsvp_'+dataset.content.group_activity_id+'"><a href="javascript:void(0);" class="default_butn_blue" ng-click="JoinRSVP('+dataset.content.group_activity_id+')" >I\'m Going</a></span>';
+						}
+						content += '<div class="clear"></div>';
+						content += '</div>';
+						content += '<div class="post_status-text" >';
+						content += '<h5>'+dataset.content.group_activity_title+'</h5>';
+						content += '<div class="event_joined-member">';
+						content += '<div class="event_joined-left">';
+						content += '<span class="event_going_members" id="activityrsvpcount_'+dataset.content.group_activity_id+'">'+dataset.content.rsvp_count+'</span> GOING    /    <span class="event_going_members">'+dataset.content.rsvp_friend_count+'</span> friends </div>';
+						content += '<div class="event_member-img">';
+						content += '<a href="javascript:void(0);"><span class="event_profile-img_joined comn_profile_img"><img src="images/profile-img-1.jpg" alt="" /></span></a>';
+						content += '<a href="javascript:void(0);"><span class="event_profile-img_joined comn_profile_img"><img src="images/profile-img-2.jpg" alt="" /></span></a>';
+						content += '<a href="javascript:void(0);"><span class="event_profile-img_joined comn_profile_img"><img src="images/profile-img-3.jpg" alt="" /></span></a>';
+						content += '</div>';
+						content += '<div class="clear"></div>';
+						content += '</div>';
+						content +=  dataset.content.group_activity_content ;
+						content += '</div>';
+						content += '<div class="post_status-footer">';
+						content += '<class id="Activity_'+dataset.content.group_activity_id+'">';
+						if(dataset.content.is_liked==1){
+						content += '<a href="javascript:void(0);" class="post_likes liked" ng-click="funUnLikeAction(\'Activity\','+dataset.content.group_activity_id+')" ><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom" ng-click="LoadLikedUsers(\'Activity\','+dataset.content.group_activity_id+','+dataset.content.like_count+','+dataset.content.is_liked+')" title="'+dataset.content.liked_users+'">'+dataset.content.like_count+'</a>';
+						}else{
+						content += '<a href="javascript:void(0);" class="post_likes" ng-click="funLikeAction(\'Activity\','+dataset.content.group_activity_id+')" ><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom" ng-click="LoadLikedUsers(\'Activity\','+dataset.content.group_activity_id+','+dataset.content.like_count+','+dataset.content.is_liked+')" title="'+dataset.content.liked_users+'">'+dataset.content.like_count+'</a>';
+						}
+						content += '</span>';
+						content += '<span id="CntComment_Activity_'+dataset.content.group_activity_id+'">';
+						if(dataset.content.is_commented==1){
+							content += '<a href="javascript:void(0);" class="post_comments comented" ng-click="LoadCommentList(\'Activity\','+dataset.content.group_activity_id+','+dataset.content.comment_counts+',1)"><i></i>'+dataset.content.comment_counts+'</a>';
+						}else{
+							content += '<a href="javascript:void(0);" class="post_comments" ng-click="LoadCommentList(\'Activity\','+dataset.content.group_activity_id+','+dataset.content.comment_counts+',1)"><i></i>'+dataset.content.comment_counts+'</a>';
+						}
+						content += '</span>';
+						content += '<a href="javascript:void(0);" class="post_reply" ng-click="LoadCommentWindow(\'Activity\','+dataset.content.group_activity_id+')"><i></i>reply</a>';
+						content += '<div class="clear"></div>';
+						content += '<div id="comment_Activity_'+dataset.content.group_activity_id+'"></div>';
+						content += '<div class="clear"></div>';
+						content += '<div id="comment_Activity_list_'+dataset.content.group_activity_id+'"></div>';
+						content += '</div>';
+						content += '</div>';
+						content += '</div>';
+						$compile(content)($scope);
+						var grid = document.querySelector('#timeline');
+						var item = document.createElement('div');
+						salvattore['append_elements'](grid, [item]);
+						//item.outerHTML = content;
+						$(item).append( $compile(content)($scope) );
+					break;
+					
+				 }
+				 
+			});
+			$('[data-toggle="tooltip"]').tooltip();
+		}
+		$scope.funLikeAction = function(system_type,content_id){
+			var holder_content = $("#"+system_type+"_"+content_id).html();
+			$("#"+system_type+"_"+content_id).html('<img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> ');
+			if(system_type == 'Media'){
+						$("#"+system_type+"_modelwindow").html('<img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> ');
+			}
+			url  = baseurl+'/like/likes';				 
+			$http.post(url,
+			{	
+				system_type:system_type,content_id:content_id,		 
+			},
+			{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+			).success(function(data, status, headers, config) {
+				if(data.return_array.process_status == 'success'){
+					$("."+system_type+"_"+content_id).html($compile('<a href="javascript:void(0);" class="post_likes liked" ng-click="funUnLikeAction(\''+system_type+'\','+content_id+')" ><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom" ng-click="LoadLikedUsers(\''+system_type+'\','+content_id+','+data.return_array.like_count+',1)" title="'+data.return_array.liked_users+'">'+data.return_array.like_count+'</a>')($scope)) ;
+					if(system_type == 'Media'){
+						$("#"+system_type+"_modelwindow").html($compile('<a href="javascript:void(0);" class="post_likes liked" ng-click="funUnLikeAction(\''+system_type+'\','+content_id+')" ><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom" ng-click="LoadLikedUsers(\''+system_type+'\','+content_id+','+data.return_array.like_count+',1)" title="'+data.return_array.liked_users+'">'+data.return_array.like_count+'</a>')($scope)) ;
+					}
+					
+				}else{
+					alert(data.return_array.process_info);	
+				$("#"+system_type+"_"+content_id).html($compile(holder_content)($scope));					
+				}				     
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+			$('[data-toggle="tooltip"]').tooltip();
+		}
+		$scope.funUnLikeAction = function(system_type,content_id){
+			var holder_content = $("#"+system_type+"_"+content_id).html();
+			$("#"+system_type+"_"+content_id).html('<img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> ');
+			if(system_type == 'Media'){
+						$("#"+system_type+"_modelwindow").html('<img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> ');
+			}
+			url  = baseurl+'/like/unlikes';				 
+			$http.post(url,
+			{	
+				system_type:system_type,content_id:content_id,		 
+			},
+			{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+			).success(function(data, status, headers, config) {
+				if(data.return_array.process_status == 'success'){
+					$("."+system_type+"_"+content_id).html($compile('<a href="javascript:void(0);" class="post_likes" ng-click="funLikeAction(\''+system_type+'\','+content_id+')" ><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom" ng-click="LoadLikedUsers(\''+system_type+'\','+content_id+','+data.return_array.like_count+',1)" title="'+data.return_array.liked_users+'">'+data.return_array.like_count+'</a>')($scope)) ;
+					if(system_type == 'Media'){
+						$("#"+system_type+"_modelwindow").html($compile('<a href="javascript:void(0);" class="post_likes" ng-click="funLikeAction(\''+system_type+'\','+content_id+')" ><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom" ng-click="LoadLikedUsers(\''+system_type+'\','+content_id+','+data.return_array.like_count+',1)" title="'+data.return_array.liked_users+'">'+data.return_array.like_count+'</a>')($scope)) ;
+					}
+				}else{
+					alert(data.return_array.process_info);	
+				$("#"+system_type+"_"+content_id).html($compile(holder_content)($scope));					
+				}				     
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+			$('[data-toggle="tooltip"]').tooltip();
+		}
+		$scope.loadpeople = 0;
+		$scope.likedpeoples = [];
+		$scope.LoadLikedUsers = function(system_type,content_id,like_count,is_liked){
+			 $scope.likedpeoples = [];
+			 if(like_count ==1&&is_liked==1){
+				return true;
+			 }
+			 if(like_count > 0){
+				$scope.loadpeople = 1;
+				$('#likes_popup').modal();
+				 
+				url  = baseurl+'/like/userslist';				 
+				$http.post(url,
+				{	
+					system_type:system_type,content_id:content_id,		 
+				},
+				{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) {
+					if(data.return_array.process_status == 'success'){
+						$scope.loadpeople = 0;
+						$scope.likedpeoples = data.return_array.liked_users;
+					}else{
+						alert(data.return_array.process_info);	
+					$("#"+system_type+"_"+content_id).html($compile(holder_content)($scope));					
+					}				     
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			 }
+		}
+		 	
+		$scope.sentFriendRequest  = function(user){
+				 
+			url  = baseurl+'/user/sentFriendRequest/'+user;
+			$http({
+			  method: 'POST',
+			  url: url
+			}).success(function(data, status, headers, config) {
+			 
+				if(data.return_array.process_info==''){
+				 ;
+				}else{
+					alert(data.return_array.process_info);
+				}
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+		$scope.rejectFriendRequest  = function(user){
+			 
+			url  = baseurl+'/user/rejectFriendRequest/'+user;
+			$http({
+			  method: 'POST',
+			  url: url
+			}).success(function(data, status, headers, config) {
+				 
+				if(data.return_array.process_info==''){
+					;
+				}else{
+					alert(data.return_array.process_info);
+				}
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+		$scope.acceptFriendRequest  = function(user){
+			 
+			url  = baseurl+'/user/acceptFriendRequest/'+user;
+			$http({
+			  method: 'POST',
+			  url: url
+			}).success(function(data, status, headers, config) {
+				 
+				if(data.return_array.process_info==''){
+					 ;
+				}else{
+					alert(data.return_array.process_info);
+				}
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+		$scope.commentText='';
+		$scope.LoadCommentWindow = function(system_type,content_id){
+			var commentForm = '';
+			commentForm += '<div class="post_comment-outer" id="post_reply">';
+            commentForm += '<div class="header-profile_image comment_profile-img">';
+			if($scope.profile.profile_photo!=''&&$scope.profile.profile_photo!=null){
+               commentForm += '<img  src="<?php echo $this->basePath(); ?>/public/datagd/profile/'+$scope.profile.user_id+'/'+$scope.profile.profile_photo+'">';
+			}else{ commentForm += '<img  src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">';}
+            commentForm += '</div>';
+            commentForm += '<div class="post_comment_text post_comment_reply">';
+            commentForm += '<textarea id="commentText_'+system_type+'_'+content_id+'" name="" placeholder="Type reply"></textarea>';
+            commentForm += '</div>';
+            commentForm += '<div class="clear"></div>';
+            commentForm += '<div class="post_comment_reply-butns">';
+            commentForm += '<a href="javascript:void(0);" class="default_butn_grey" id="cancel_reply" ng-click="RemoveCommentWindow(\''+system_type+'\','+content_id+')">Cancel</a><a href="javascript:void(0);" class="default_butn_violet" ng-click="SendComment(\''+system_type+'\','+content_id+')">Post</a>';
+            commentForm += '</div>';
+            commentForm += '</div>';
+			$("#comment_"+system_type+'_'+content_id).html($compile(commentForm)($scope));
+		}
+		$scope.RemoveCommentWindow = function(system_type,content_id){
+			$("#comment_"+system_type+'_'+content_id).html('');
+		}
+		$scope.SendComment = function(system_type,content_id){
+			var buttn_content =  $("#comment_"+system_type+'_'+content_id+" .post_comment_reply-butns").html();
+			$("#comment_"+system_type+'_'+content_id+" .post_comment_reply-butns").html('<img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif">');
+			$scope.commentText=$("#commentText_"+system_type+'_'+content_id).val();
+			if($scope.commentText!=''){
+				url  = baseurl+'/comment/comments';
+				$http.post(url,
+				{	
+					system_type:system_type,content_id:content_id,txt_comment:$scope.commentText,		 
+				},
+				{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) {
+					if(data.return_array.process_status == 'success'){
+						 
+						 var comment_count = $("#CntComment_"+system_type+'_'+content_id+" .post_comments").text();
+						 $("#CntComment_"+system_type+'_'+content_id+" .post_comments").text(comment_count*1+1);
+						 $("#commentText_"+system_type+'_'+content_id).val('');
+						 $("#comment_"+system_type+'_'+content_id).html('');
+						 if($("#comment_"+system_type+"_list_"+content_id).hasClass("open")){
+							 var content = '';
+							 content +='<div class="post_comment-outer">';
+							 content +='<div class="header-profile_image comment_profile-img">';
+							 if($scope.profile.profile_photo!=''&&$scope.profile.profile_photo!=null){
+							   content += '<img  src="<?php echo $this->basePath(); ?>/public/datagd/profile/'+$scope.profile.user_id+'/'+$scope.profile.profile_photo+'">';
+								}else{ content += '<img  src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">';}
+							 content +='</div>';
+							 content +='<div class="post_comment_text">';
+							 content +='<span class="profile_name-comment">'+$scope.profile.user_given_name+'</span>'+$scope.commentText;
+							 content +='<div class="comment_likes">';
+							 content += '<span class="Comment_'+data.return_array.comment_id+'">';
+							 content += '<a href="javascript:void(0);" class="post_likes" ng-click="funLikeAction(\'Comment\','+data.return_array.comment_id+')" ><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom" ng-click="LoadLikedUsers(\'Comment\','+data.return_array.comment_id+','+0+','+0+')" title="">'+0+'</a>';								 
+							 content += '</spsn>'	;
+							 content +='<div class="post_time noti_time comment_time"><i></i></div>';
+							 content +='<div class="clear"></div>';
+							 content +='</div>';
+							 content +='</div>';
+							 content +='<div class="clear"></div>';
+							 content +='</div>';
+							 $("#comment_"+system_type+"_list_"+content_id).prepend($compile(content)($scope));	
+							 $scope.commentText = '';							 
+						 }
+					}else{
+						alert(data.return_array.process_info);		
+						$("#comment_"+system_type+'_'+content_id+" .post_comment_reply-butns").html($compile(buttn_content)($scope));
+					}				     
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			}else{
+				alert("Type your comments before submit");
+			}
+		}
+		$scope.LoadCommentList = function(system_type,content_id,comment_count,page){ 
+			
+			if((!$("#comment_"+system_type+"_list_"+content_id).hasClass("open")&&comment_count>0)||page>1){
+				$("#loadmore_"+system_type+'_'+content_id).remove();
+				if(page == 1)
+				 $("#comment_"+system_type+"_list_"+content_id).html('<img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> ');
+				 url  = baseurl+'/comment/getComments';
+				 $http.post(url,
+				 {	
+					system_type:system_type,content_id:content_id,page:page,		 
+				 },
+				 {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				 ).success(function(data, status, headers, config) {
+					if(data.return_array.process_status == 'success'){
+						$("#comment_"+system_type+"_list_"+content_id).addClass("open");
+						$scope.comment_content = '';
+						angular.forEach(data.return_array.comments, function(dataset){					 
+							$scope.comment_content +='<div class="post_comment-outer">';
+							$scope.comment_content +='<div class="header-profile_image comment_profile-img">';
+							if(dataset.profile_photo!=''&&dataset.profile_photo!=null){
+							   $scope.comment_content += '<img  src="<?php echo $this->basePath(); ?>/public/datagd/profile/'+dataset.user_id+'/'+dataset.profile_photo+'">';
+							}else{ $scope.comment_content += '<img  src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">';} 
+							$scope.comment_content +='</div>';
+							$scope.comment_content +='<div class="post_comment_text">';
+							$scope.comment_content +='<span class="profile_name-comment">'+dataset.user_given_name+'</span>'+dataset.comment_content;
+							$scope.comment_content +='<div class="comment_likes">';
+							$scope.comment_content += '<span class="Comment_'+dataset.comment_id+'">';
+							if(dataset.islike==1){
+								$scope.comment_content += '<a href="javascript:void(0);" class="post_likes liked" ng-click="funUnLikeAction(\'Comment\','+dataset.comment_id+')" ><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom" ng-click="LoadLikedUsers(\'Comment\','+dataset.comment_id+','+dataset.likes_count+','+dataset.islike+')" title="'+dataset.str_liked_users+'">'+dataset.likes_count+'</a>';
+								}else{
+								$scope.comment_content += '<a href="javascript:void(0);" class="post_likes" ng-click="funLikeAction(\'Comment\','+dataset.comment_id+')" ><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom" ng-click="LoadLikedUsers(\'Comment\','+dataset.comment_id+','+dataset.likes_count+','+dataset.islike+')" title="'+dataset.str_liked_users+'">'+dataset.likes_count+'</a>';
+								}
+							$scope.comment_content += '</spsn>'	;
+							$scope.comment_content +='<div class="post_time noti_time comment_time"><i></i>'+dataset.comment_time+'</div>';
+							$scope.comment_content +='<div class="clear"></div>';
+							$scope.comment_content +='</div>';
+							$scope.comment_content +='</div>';
+							$scope.comment_content +='<div class="clear"></div>';
+							
+							$scope.comment_content +='</div>'; 
+						});
+						if(page == 1){
+							page = page*1+1;
+							if($scope.comment_content !=''){
+							$scope.comment_content +='<div id="loadmore_'+system_type+'_'+content_id+'" ><a href="javascript:void(0)" ng-click="LoadCommentList(\''+system_type+'\','+content_id+','+comment_count+','+page+')">More comments</a></div>'; 
+							}
+							$("#comment_"+system_type+"_list_"+content_id).html($compile($scope.comment_content)($scope));
+							 
+						}else{
+							page = page*1+1;
+							if($scope.comment_content !=''){
+							$scope.comment_content +='<div id="loadmore_'+system_type+'_'+content_id+'" ><a href="javascript:void(0)" ng-click="LoadCommentList(\''+system_type+'\','+content_id+','+comment_count+','+page+')">More comments</a></div>'; 
+							}
+							$("#comment_"+system_type+"_list_"+content_id).append($compile($scope.comment_content)($scope));
+						}
+						$('[data-toggle="tooltip"]').tooltip();
+					}else{
+						alert(data.return_array.process_info);					 				
+					}				     
+				 }).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				 });
+			}else{
+				if(page == 1){
+				$("#comment_"+system_type+"_list_"+content_id).removeClass("open");
+				$("#comment_"+system_type+"_list_"+content_id).html('');
+				}
+			}
+		}
+		$scope.mediaLoader = 1;
+		$scope.media = '';
+		$scope.media_comments = [];
+		$scope.loadMedia = function(media_id){ 
+			$scope.medialist = 0;
+			url  = baseurl+'/groups/getMedia';
+			 $http.post(url,
+			 {	
+				media_id:media_id,		 
+			 },
+			 {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+			 ).success(function(data, status, headers, config) {
+				if(data.return_array.process_status == 'success'){
+					$scope.mediaLoader = 0;
+					$scope.media_comments = data.return_array.comments;
+					$scope.media =  data.return_array.group_media;					 
+				}else{
+					alert(data.return_array.process_info);					 				
+				}				     
+			 }).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			 });
+			 
+		}
+		$scope.loadVideoContent = function(videoContent){
+			var video_id = $scope.getYouTubeIdFromURL(videoContent);
+			if(video_id!=''){
+				$("#video_items").html('<iframe width="660" height="415" src="http://www.youtube.com/embed/'+video_id+'" frameborder="0" allowfullscreen></iframe>');
+			}
+		}
+		$scope.enableScrollbar = function(){
+			 $('#comment_container_outer').slimScroll({
+				  color: '#00f'
+			  });
+		}
+		$scope.commentPage =2;
+		$scope.hideloadmore =0;
+		$scope.showReply = 0;
+		$scope.txtMediaComment = '';
+		$scope.loadmoreCommentFromPopup = function(media_id){
+			url  = baseurl+'/comment/getComments';
+			$http.post(url,
+			 {	
+					system_type:'Media',content_id:media_id,page:$scope.commentPage,		 
+				 },
+				 {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				 ).success(function(data, status, headers, config) {
+					if(data.return_array.process_status == 'success'){
+						$scope.media_comments = $scope.media_comments.concat(data.return_array.comments);
+						$scope.commentPage = $scope.commentPage+1;
+						if(data.return_array.comments.length<=0){
+							$scope.hideloadmore =1;
+						}
+					}else{
+						alert(data.return_array.process_info);					 				
+					}				     
+				 }).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				 });
+		}
+		$scope.removeCommentBox = function(){  
+			$scope.showReply = 0;
+			
+			//$("#post_reply-media").hide();
+		}
+		$scope.postComment = function(media_id){
+			$scope.txtMediaComment = $("#txtMediaComment").val();
+			if($scope.txtMediaComment!=''){
+			url  = baseurl+'/comment/comments';
+				$http.post(url,
+				{	
+					system_type:"Media",content_id:media_id,txt_comment:$scope.txtMediaComment,		 
+				},
+				{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) {
+					if(data.return_array.process_status == 'success'){						 
+						 var content = '';
+						 content +='<div class="post_comment-outer">';
+						 content +='<div class="header-profile_image comment_profile-img">';
+						 if($scope.profile.profile_photo!=''&&$scope.profile.profile_photo!=null){
+						   content += '<img  src="<?php echo $this->basePath(); ?>/public/datagd/profile/'+$scope.profile.user_id+'/'+$scope.profile.profile_photo+'">';
+							}else{ content += '<img  src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">';}
+						 content +='</div>';
+						 content +='<div class="post_comment_text">';
+						 content +='<span class="profile_name-comment">'+$scope.profile.user_given_name+'</span>'+$scope.txtMediaComment;
+						 content +='<div class="comment_likes">';
+						 content += '<span class="Comment_'+data.return_array.comment_id+'">';
+						 content += '<a href="javascript:void(0);" class="post_likes" ng-click="funLikeAction(\'Comment\','+data.return_array.comment_id+')" ><i></i></a><a href="javascript:void(0);" class="post_likes" data-toggle="tooltip" data-placement="bottom" ng-click="LoadLikedUsers(\'Comment\','+data.return_array.comment_id+','+0+','+0+')" title="">'+0+'</a>';								 
+						 content += '</spsn>'	;
+						 content +='<div class="post_time noti_time comment_time"><i></i></div>';
+						 content +='<div class="clear"></div>';
+						 content +='</div>';
+						 content +='</div>';
+						 content +='<div class="clear"></div>';
+						 content +='</div>';
+						 $("#comment_container_outer").prepend($compile(content)($scope));	
+						 $scope.txtMediaComment = '';	
+						 $scope.showReply = 0;						 
+					}else{
+						alert(data.return_array.process_info);		
+						 
+					}				     
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			}else{alert("Type your comments before submit");}
+		}
+		$scope.groupAllMediaContent = [];
+		$scope.medialist = 0;
+		$scope.showLoadmore = 1;
+		$scope.loadAllMedia = function(group_id){
+			url  = baseurl+'/groups/getAllMedia';
+			$http.post(url,
+				{	
+					page:media_page,
+					group_id:group_id 
+				},
+				{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) {
+					if(data.return_array.process_status == 'success'){		
+						if(data.return_array.group_media.length>0){
+							if(data.return_array.group_media.length<10)$scope.showLoadmore = 0;
+							if(media_page>1){
+								$scope.groupAllMediaContent= $scope.groupAllMediaContent.concat(data.return_array.group_media);
+							}else{							
+								$scope.groupAllMediaContent=data.return_array.group_media;
+							}
+							$scope.medialist = 1;
+							  
+						}							
+					}else{
+						alert(data.return_array.process_info);		
+						 
+					}				     
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+		}
+		$scope.enableScrollbarMedia = function(){
+			 $('#media_list').slimScroll({
+								  color: '#00f'
+			});
+		}
+		$scope.LoadmoreMedia = function(group_id){
+			media_page = media_page+1;
+			$scope.loadAllMedia(group_id);
+		}
+		$scope.QuitRSVP = function(activity_id){
+			url  = baseurl+'/activity/quitactivity';
+			$http.post(url,
+				{	
+					activity_id:activity_id,					 
+				},
+				{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) {
+					if(data.return_array.process_status == 'success'){		
+						$("#activityrsvp_"+activity_id).html($compile('<a href="javascript:void(0);" class="default_butn_blue" ng-click="JoinRSVP('+activity_id+')"  >I\'m Going</a>')($scope));
+						var count_rsvp = $("#activityrsvpcount_"+activity_id).text();
+						count_rsvp = (count_rsvp*1)-1;
+						$("#activityrsvpcount_"+activity_id).text(count_rsvp);
+					}else{
+						alert(data.return_array.process_info);						 
+					}				     
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+		}
+		$scope.JoinRSVP = function(activity_id){
+			url  = baseurl+'/activity/joinactivity';
+			$http.post(url,
+				{	
+					activity_id:activity_id,					 
+				},
+				{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) {
+					if(data.return_array.process_status == 'success'){		
+						$("#activityrsvp_"+activity_id).html($compile('<a href="javascript:void(0);" class="default_butn_red" ng-click="QuitRSVP('+activity_id+')"  >I\'m not Going</a>')($scope));		
+						var count_rsvp = $("#activityrsvpcount_"+activity_id).text();
+						count_rsvp = (count_rsvp*1)+1;
+						$("#activityrsvpcount_"+activity_id).text(count_rsvp);						
+					}else{
+						alert(data.return_array.process_info);						 
+					}				     
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+		}
+		$scope.handler = function() {		 
+			$scope.getActivity(true);
+		}
+		});
+			angular.element(document).ready(function() {
+    angular.bootstrap(document.getElementById("profile_div"), ["myapp"]);
+    angular.bootstrap(document.getElementById("activity_right_container"), ["activity_app"]);
+	
+});
+	 </script>
+	 
+					 <style>
+	#map-canvas, #activity_map{
+  height: 344px;
+ width:340px;
+  border: 1px solid #999;
+  -moz-box-shadow:    0px 0px 5px #ccc;
+  -webkit-box-shadow: 0px 0px 5px #ccc;
+  box-shadow:         0px 0px 5px #ccc;
+}
+ .google-map{width:100%; height:100%;}
+ </style>
+ <script>
+ 
+		var current_lat = 25.271139000000000000;
+		var current_lng =55.307485000000040000;
+	 
+var geocoder;
+var map;
+var marker;
+var mapselected = 'map1';
+// initialise the google maps objects, and add listeners
+function gmaps_init(){
+
+  // center of the universe
+  var latlng = new google.maps.LatLng(current_lat,current_lng);
+
+  var options = {
+    zoom: 5,
+    center: latlng,
+    mapTypeId: google.maps.MapTypeId.ROADMAP,
+
+  };
+  // create our map object   
+  map = new google.maps.Map(document.getElementById("map-canvas"), options);  
+
+  // the geocoder object allows us to do latlng lookup based on address
+  geocoder = new google.maps.Geocoder();	 
+
+  // the marker shows us the position of the latest address
+  marker = new google.maps.Marker({
+    map: map,
+	icon: baseurl+"/public/images/map_pin.png",
+    draggable: true
+  });
+marker.setPosition(latlng);
+  // event triggered when marker is dragged and dropped
+  google.maps.event.addListener(marker, 'dragend', function() {
+    geocode_lookup( 'latLng', marker.getPosition() );
+  });
+
+  // event triggered when map is clicked
+  google.maps.event.addListener(map, 'click', function(event) {
+    marker.setPosition(event.latLng)
+    geocode_lookup( 'latLng', event.latLng  );
+  });
+
+  $('#gmaps-error').hide();
+}
+
+// move the marker to a new position, and center the map on it
+function update_map( geometry ) {
+  map.fitBounds( geometry.viewport )
+  marker.setPosition( geometry.location )
+}
+
+// fill in the UI elements with new position data
+function update_ui( address, latLng ) { 
+  $('#location').autocomplete("close");
+  $('#location').val(address);   
+  geo_latitude = latLng.lat(); 
+  geo_longitude = latLng.lng(); 
+  //$('#gmaps-output-latitude').html(latLng.lat());
+  //$('#gmaps-output-longitude').html(latLng.lng());
+}
+
+// Query the Google geocode object
+//
+// type: 'address' for search by address
+//       'latLng'  for search by latLng (reverse lookup)
+//
+// value: search query
+//
+// update: should we update the map (center map and position marker)?
+function geocode_lookup( type, value, update ) {
+  // default value: update = false
+  update = typeof update !== 'undefined' ? update : false;
+
+  request = {};
+  request[type] = value;
+
+  geocoder.geocode(request, function(results, status) {
+    $('#gmaps-error').html('');
+    $('#gmaps-error').hide();
+    if (status == google.maps.GeocoderStatus.OK) {
+      // Google geocoding has succeeded!
+      if (results[0]) {
+        // Always update the UI elements with new location data
+        update_ui( results[0].formatted_address,
+                   results[0].geometry.location )
+
+        // Only update the map (position marker and center map) if requested
+        if( update ) { update_map( results[0].geometry ) }
+      } else {
+        // Geocoder status ok but no results!?
+        $('#gmaps-error').html("Sorry, something went wrong. Try again!");
+        $('#gmaps-error').show();
+      }
+    } else {
+      // Google Geocoding has failed. Two common reasons:
+      //   * Address not recognised (e.g. search for 'zxxzcxczxcx')
+      //   * Location doesn't map to address (e.g. click in middle of Atlantic)
+
+      if( type == 'address' ) {
+        // User has typed in an address which we can't geocode to a location
+        $('#gmaps-error').html("Sorry! We couldn't find " + value + ". Try a different search term, or click the map." );
+        $('#gmaps-error').show();
+      } else {
+        // User has clicked or dragged marker to somewhere that Google can't do a reverse lookup for
+        // In this case we display a warning, clear the address box, but fill in LatLng
+        $('#gmaps-error').html("Woah... that's pretty remote! You're going to have to manually enter a place name." );
+        $('#gmaps-error').show();
+        update_ui('', value)
+      }
+    };
+  });
+};
+
+// initialise the jqueryUI autocomplete element
+function autocomplete_init() {
+	 
+  $("#location").autocomplete({
+
+    // source is the list of input options shown in the autocomplete dropdown.
+    // see documentation: http://jqueryui.com/demos/autocomplete/
+    source: function(request,response) {
+
+      // the geocode method takes an address or LatLng to search for
+      // and a callback function which should process the results into
+      // a format accepted by jqueryUI autocomplete
+      geocoder.geocode( {'address': request.term }, function(results, status) {
+        response($.map(results, function(item) {
+          return {
+            label: item.formatted_address, // appears in dropdown box
+            value: item.formatted_address, // inserted into input element when selected
+            geocode: item                  // all geocode data: used in select callback event
+          }
+        }));
+      })
+    },
+
+    // event triggered when drop-down option selected
+    select: function(event,ui){
+      update_ui(  ui.item.value, ui.item.geocode.geometry.location )
+      update_map( ui.item.geocode.geometry )
+    }
+  });
+  
+ 
+  // triggered when user presses a key in the address box
+  $("#location").bind('keydown', function(event) {
+    if(event.keyCode == 13) {
+      geocode_lookup( 'address', $('#location').val(), true );
+
+      // ensures dropdown disappears when enter is pressed
+      $('#location').autocomplete("disable")
+    } else {
+      // re-enable if previously disabled above
+      $('#location').autocomplete("enable")
+    }
+  });
+  
+};  	
+</script>
+ 						
+<script>
+
+  
+mapselected = 'map1';
+					gmaps_init();
+					
+					autocomplete_init();
+					</script>
+</script>
+    

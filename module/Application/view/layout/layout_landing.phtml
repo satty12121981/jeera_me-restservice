@@ -1,0 +1,26 @@
+<?php 
+if (defined('RUNNING_FROM_ROOT')) {
+  //$this->plugin('basePath')->setBasePath($this->basePath().'/public');
+}
+?>
+<?php echo $this->doctype(); ?> 
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+	<meta charset="utf-8">
+        <?php echo $this->headTitle('Jeera');//. $this->translate('Explore Yourself'))->setSeparator(' - ')->setAutoEscape(false);  
+         echo $this->headMeta()->appendName('viewport', 'width=device-width, initial-scale=1.0');  
+		 echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/favicon.icon', 'href' => $this->basePath() . '/public/images/favicon.ico'))
+		 ->prependStylesheet($this->basePath() . '/public/css/styles.css')
+		 ->prependStylesheet($this->basePath() . '/public/css/bootstrap.css')
+		 ->prependStylesheet($this->basePath() . '/public/css/responsive.css'); 
+		 $this->HeadScript()->prependFile($this->basePath().'/public/js/jquery-1.11.1.min.js','text/javascript');
+		 $this->HeadScript()->prependFile($this->basePath().'/public/js/bootstrap.js','text/javascript');
+		 $this->HeadScript()->prependFile($this->basePath().'/public/js/modernizr.js','text/javascript'); 
+		 echo $this->headScript();
+		 ?>
+	</head>
+    <body>
+		<?php echo $this->content; ?>
+    </body>
+</html>
+

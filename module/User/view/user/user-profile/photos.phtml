@@ -1,0 +1,138 @@
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/profile-album.js','text/javascript'); ?>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places" type="text/javascript" charset="utf-8"></script>
+<script>
+var profile_name = '<?php echo $profilename; ?>'
+</script>  
+<?php $this->HeadLink()->appendStylesheet($this->basePath().'/public/css/album.css');?>
+<?php
+	if(!empty($error)){
+		?>
+		<div class="error">
+			<ul>
+			<?php foreach($error as $msg ){  
+				echo "<li>".$msg."</li>";
+				} ?>
+			</ul>
+		</div>
+		<?php 
+	}else{
+ ?>
+<?php echo $this->profileTopWidget; ?>  
+	<div class="profile-tabs2">
+		<div id="tabs">
+			<div class="tabs-outer tabs-fullwidth">
+				  <ul>
+						<li><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$profilename));?>" class="connection_tab">Connections</a></li>
+						<li><a href="<?php echo $this->url('memberprofile/planets',array('member_profile'=>$profilename));?>" class="planet_tab">Planets</a></li>
+						<li><a href="<?php echo $this->url('memberprofile/photos',array('member_profile'=>$profilename));?>" class="photo_tab">Photos</a></li>
+				  </ul>
+				  <div class="clear"></div>
+			  </div>
+			  <div id="tabs-3">
+				<div class="album-bredcrumb">
+                    	<ul>
+                        	<li><a href="<?php echo $this->url('memberprofile/photos',array('member_profile'=>$profilename));?>" class="active">Albums</a></li>
+                            
+                        </ul>
+                        <div class="clear"></div>
+					<?php if($myprofile){ ?>	 <div class="add-activity-butn"> <a href="javascript:void(0);" class="blue-butn" id="add_albums">Add new album</a> </div><?php } ?>
+					<div class="clear"></div>
+				<div id="add_albums_container" style="display:none" class="new-album-container">
+				<?php $form = $this->form;
+				$form->setAttribute('action', $this->url('album/album-create', array('action' => 'add')));
+				$form->prepare();
+				echo $this->form()->openTag($form);	
+
+				echo '<div class="album-field">';			
+				echo $this->formRow($form->get('album_title'));
+				echo '</div><div class="album-error"></div>';
+				echo '<div class="album-field">';
+				echo $this->formRow($form->get('album_location'));
+				echo '</div>';
+				?>
+				<br>
+				<div id="dragandrophandler">Drag & Drop Files Here</div>
+				<br>
+				<div id="status1"></div>
+
+				<a  id="add_planet_video" href="javascript:void(0)" class="blue-butn">Add Video Url (youtube)</a>
+				<br>
+				<div id="video_urlbox">
+				<div id='TextBoxesGroup'>
+				<div id="images_uploaded"></div>
+	
+				<div id="TextBoxDiv1"><div class="album-field">
+				<label><span>URL&nbsp;#1 :</span> </label><input type='text' name='planet_video[]' id='textbox1' class="video_textbox" >
+				<div class="clear"></div>
+				 </div> 
+			</div>
+		</div>
+		<br>
+		<a href="javascript:void(0)" id="addButton" class="blue-butn">Add More</a>
+		<a href="javascript:void(0)" id="removeButton" class="grey-butn" >Remove</a>
+		 
+</div>
+<br>
+<?php
+echo $this->formSubmit($form->get('submit'));
+echo $this->form()->closeTag(); ?>
+				</div>
+				<div class="clear"></div>
+                 </div>
+				 <div class="planet-list-outer">
+                        <div class="planet-tab-img"> 
+						<?php if(!empty($tagged_album)&&$tagged_album->data_content!=''){ ?>
+						<?php if($tagged_album->album_group_id){ ?>
+						<a href="<?php echo $this->url('memberprofile/photos_view', array('action' => 'userAlbumView', 'member_profile'=>$profilename,'album_id'=>'user_photos')) ?>"><img src="<?php echo $this->basePath()?>/public/album/<?php echo $tagged_album->album_group_id.'/'.$tagged_album->album_id.'/'.$tagged_album->data_content;?>" alt="" height="100" width="276" /></a>
+						<?php }else{ ?>
+						<a href="<?php echo $this->url('memberprofile/photos_view', array('action' => 'userAlbumView', 'member_profile'=>$profilename,'album_id'=>'user_photos')) ?>"><img src="<?php echo $this->basePath()?>/public/album/profile/<?php echo $tagged_album->album_user_id.'/'.$tagged_album->album_id.'/'.$tagged_album->data_content;?>" alt="" height="100" width="276" /></a>
+						<?php } ?>
+						<?php }else{ ?>
+						<a href="<?php echo $this->url('memberprofile/photos_view', array('action' => 'userAlbumView', 'member_profile'=>$profilename,'album_id'=>'user_photos')) ?>"><img src="<?php echo $this->basePath(); ?>/public/images/user-album-defalt.jpg" /></a>
+						<?php } ?>
+						</div>
+                        <div class="planet-details">
+                            <div class="photo-icon"></div>
+                            <div class="planet-head">
+                                <h3><a href="<?php echo $this->url('memberprofile/photos_view', array('action' => 'userAlbumView', 'member_profile'=>$profilename,'album_id'=>'user_photos')) ?>">PHOTOS OF USER</a></h3>
+                                <div class="members-amnt"><?php echo date("d/m/Y") ?></div>
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                    </div>
+					<?php foreach($albums as $album){ ?>
+					<div class="planet-list-outer">
+				<div class="planet-tab-img"><a href="<?php echo $this->url('memberprofile/photos_view', array('action' => 'userAlbumView', 'member_profile'=>$profilename,'album_id'=>$album['album_seotitle'])) ?>">
+					<?php if($album['data_id'] == ""){ ?>
+						<img src="<?php echo $this->basePath()?>/public/album/no_preview.jpg" height="100" width="276" />
+					<?php }else{
+							if($album['album_cover_photo_id'] != 0){ ?>
+							<img src="<?php echo $this->basePath()?>/public/album/profile/<?php echo $album['album_user_id'].'/'.$album['album_id'].'/'.$album['cover_photo'];?>" height="100" width="276" />
+							<?php }else{if($album['data_type'] == "image"){ ?>
+							<img src="<?php echo $this->basePath()?>/public/album/profile/<?php echo $album['album_user_id'].'/'.$album['album_id'].'/'.$album['data_content'];?>" height="100" width="276" />
+							<?php }else{
+								$url = $album['data_content'];
+								$fetch=explode("v=", $url);
+								$videoid=$fetch[1]; 
+								?>
+								<img src="http://img.youtube.com/vi/<?php echo $videoid;?>/0.jpg?>" height="100" width="276" />
+								<div class="youtube-data"></div>
+								<?php						
+								}
+							}
+					}?>
+				</a></div>
+				<div class="planet-details">
+					<div class="photo-icon"></div>
+					<div class="planet-head">
+						<h3><a href="<?php echo $this->url('memberprofile/photos_view', array('action' => 'userAlbumView', 'member_profile'=>$profilename,'album_id'=>$album['album_seotitle'])) ?>"><?php echo $this->escapeHtml($album['album_title']);?></a></h3>
+						<div class="members-amnt"><?php echo date("d/m/Y",strtotime($this->escapeHtml($album['album_added_timestamp']))); ?></div>
+					</div>
+					<div class="clear"></div>
+				</div>
+			</div>
+					<?php } ?>
+			  </div>
+		</div>
+	</div>
+<?php } ?>

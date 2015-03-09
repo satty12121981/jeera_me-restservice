@@ -1,0 +1,28 @@
+<?php 
+if (defined('RUNNING_FROM_ROOT')) {
+  //$this->plugin('basePath')->setBasePath($this->basePath().'/public');
+}
+?>
+<?php echo $this->doctype(); ?> 
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8">
+		<?php echo $this->headTitle('Jeera')->setSeparator(' - ')->setAutoEscape(false); ?>
+        <?php echo $this->headMeta()->appendName('viewport', 'width=device-width, initial-scale=1.0'); ?>
+		<?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/favicon.icon', 'href' => $this->basePath() . '/public/images/favicon.ico'))
+                        ->prependStylesheet($this->basePath() . '/public/css/styles.css')	
+						->prependStylesheet($this->basePath() . '/public/css/bootstrap.css')	
+						->prependStylesheet($this->basePath() . '/public/css/responsive.css')	; ?>
+		<?php $this->HeadScript()->prependFile($this->basePath().'/public/js/jquery-1.11.1.min.js','text/javascript'); ?>
+		<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/bootstrap.js','text/javascript'); ?> 
+		<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/modernizr.js','text/javascript'); ?>
+		<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery-customSelect.js','text/javascript'); ?>		 
+		<?php echo $this->headScript(); ?>	
+		<script>var baseurl = '<?php echo $this->basePath(); ?>'</script>
+		 
+	</head>
+    <body>    
+    <?php echo $this->content; ?>
+    </body>
+</html>
+

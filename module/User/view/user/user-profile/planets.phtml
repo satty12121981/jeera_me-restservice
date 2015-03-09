@@ -1,0 +1,429 @@
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/memberplanet.js','text/javascript'); ?>
+<script>
+var profile_name = '<?php echo $profilename; ?>'
+</script>  
+<?php
+	if(!empty($error)){
+		?>
+		<div class="error">
+			<ul>
+			<?php foreach($error as $msg ){  
+				echo "<li>".$msg."</li>";
+				} ?>
+			</ul>
+		</div>
+		<?php 
+	}else{
+ ?>
+<?php echo $this->profileTopWidget; ?>  
+<div class="profile-tabs2">
+	<div id="tabs">
+		<div class="tabs-outer tabs-fullwidth">
+			  <ul>
+					<li><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$profilename));?>" class="connection_tab">Connections</a></li>
+					<li><a href="<?php echo $this->url('memberprofile/planets',array('member_profile'=>$profilename));?>" class="planet_tab">Planets</a></li>
+					<li><a href="<?php echo $this->url('memberprofile/photos',array('member_profile'=>$profilename));?>" class="photo_tab">Photos</a></li>
+			  </ul>
+			  <div class="clear"></div>
+		  </div>
+		  <div id="tabs-2">
+                    <div class="planet-bredcrumb">
+                    	<ul>
+                        	<li><a href="" class="active">My Planets</a></li>
+                        </ul>
+                      <?php if($myprofile){ ?> <div class="create-planet-butn"><a href="javascript:void(0)" class="blue-butn" id="creat_planet">Create new Planet</a></div>
+						<div id="create_planet_container" style="display:none">
+						<div class="planet-form-outer">
+                    	<div class="create-fields">
+                        	<div class="create-label">Planet Name:</div>
+                            <div class="planet-field"><input name="planet_name" id="planet_name" type="text" /><span id="availablity">Available</span></div>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="create-fields">
+                        	<div class="create-label">Planet Type:<span>(Choose a Galaxy)</span></div>
+                            <div class="planet-field"><select id="galaxy" name="galaxy">
+								<option value="">--Select Galaxy--</option>
+								<?php foreach($galexies as $list){ ?>
+									<option value="<?php echo $list->group_id ?>"><?php echo $list->group_title; ?></option>
+								<?php } ?>
+							</select></div>
+                            <div class="clear"></div>
+                        </div>
+						<div class="create-fields">
+                        	<div class="create-label">Place:</div>
+                            <div class="planet-field"><select id="country" name="country">
+							<option value="">--Select Country--</option>
+							<?php foreach($countries as $list){ ?>
+								<option value="<?php echo $list->country_id; ?>"><?php echo $list->country_title; ?></option>
+							<?php } ?>
+							</select>
+							<div id="panet_city_container"></div>
+							
+							<div id="panet_place_container" style="display:none"><input type="text" value="" id="location" name="location" /></div>
+							<div id="map-canvas" style="display:none"></div>
+							</div>
+							 
+                            <div class="clear"></div>
+                        </div>
+						<div class="create-fields">
+                        	<div class="create-label">Description:</div>
+                            <div class="planet-field"><textarea id="planet_description" name="planet_description"></textarea></div>
+                            <div class="clear"></div>
+                        </div>
+                        
+                        <div class="create-fields">
+                        	<div class="create-label">Web address:</div>
+                            <div class="planet-field"><input name="" type="text" id="web_address" name="webadress" /></div>
+                            <div class="clear"></div>
+                        </div>
+						<div class="create-fields">
+                        	<div class="create-label">Visitor's welcome message:</div>
+                            <div class="planet-field"><textarea id="welcome_message" name="welcome_message"></textarea></div>
+                            <div class="clear"></div>
+                        </div>
+                         
+                        <div class="create-fields">
+                        	<div class="create-label-2"><span>Whats your planet about?</span></div>
+                        </div>
+                        <div class="create-fields">
+                        	<div class="create-label-2">Tags <span>categorize</span> and <span>describe</span> what your Planet is about in a word or two. </div>
+                        </div>
+                        <div class="create-fields">
+                        	<div class="create-label-2"><span>Why are Tags important? </span></div>
+                        </div>
+                        <div class="create-fields">
+                        	<div class="create-label-2">Well-picked  topics help the right members find your Group. Your Group will be listed in our directory under each Tag you choose.</div>
+                        </div>
+                        <div class="interest-tags planet-tags">
+                            Your Planet Tags:
+							<div id="group_tags">
+							 
+                            </div>
+                            <a href="javascript:void(0)" id="clear_all_tags" class="grey-butn">Clear tags</a>
+                             
+                        </div>
+                        <div class="clear"></div>
+                         <div class="tag-search">
+                        	<input name="tag_search_planet" id="tag_search_planet" type="text" placeholder="Search tag" />
+                            <input name="" id="btn_search_tag_planet" type="image" src="<?php echo $this->basePath() ?>/public/images/search-butn.png" />
+                        </div>
+                        <div class="planet-tags" id="planet_tags">
+                            <?php foreach($popularTags as $tags){ ?>
+								<a id="<?php echo $tags->tag_id; ?>" class="add-option" href="javascript:void(0)"><?php echo $tags->tag_title; ?> </a> 
+							<?php } ?>
+                        </div>
+                        <div class="clear"></div>
+						<div class="create-fields">
+                        	<div class="create-label">Planet picture:</div>
+                            <div class="planet-field"><input  type="file" id="planetpic" name="planetpic" /></div>
+                            <div class="clear"></div>
+                        </div>
+						<div class="clear"></div>
+						<div class="create-fields">
+                        	<div class="create-label">Allow Questionnaire on Join:</div>
+                            <div class="planet-field"><input  type="checkbox" id="chckQuestionnaire" name="chckQuestionnaire" value="1" /></div>
+                            <div class="clear"></div>
+                        </div>
+						<div id="questionnaire-container" style="display:none">
+							<div class="clear"></div>
+							<div class="create-fields">
+								<div class="create-label">Question1:</div>
+								<div class="planet-field"><textarea id="question1" name="question1"></textarea></div>
+								<div class="clear"></div> 
+								<div class="create-label">Answer Type</div>
+								<div class="planet-field">
+									<input type="radio"  id="q1_answer_type1" class="answer_type" name="q1_answer_type" value="Textarea" checked ="checked" /> Textarea
+									<input type="radio"  id="q1_answer_type2" class="answer_type" name="q1_answer_type" value="radio" /> Radio buttons
+									<input type="radio"  id="q1_answer_type3" class="answer_type" name="q1_answer_type" value="checkbox" /> Checkboxes
+								</div>
+								<div class="clear"></div> 
+							</div>
+							<div class="clear"></div>
+							<div class="create-fields">
+								<div class="create-label">Question2:</div>
+								<div class="planet-field"><textarea id="question2" name="question2"></textarea></div>
+								<div class="clear"></div>
+								<div class="create-label">Answer Type</div>
+								<div class="planet-field">
+									<input type="radio"  id="q2_answer_type1" class="answer_type" name="q2_answer_type" value="Textarea" checked ="checked" /> Textarea
+									<input type="radio"  id="q2_answer_type2" class="answer_type" name="q2_answer_type" value="radio" /> Radio buttons
+									<input type="radio"  id="q2_answer_type3" class="answer_type" name="q2_answer_type" value="checkbox" /> Checkboxes
+								</div>
+							</div>
+							<div class="clear"></div>
+							<div class="create-fields">
+								<div class="create-label">Question3:</div>
+								<div class="planet-field"><textarea id="question3" name="question3"></textarea></div>
+								<div class="clear"></div>
+								<div class="create-label">Answer Type</div>
+								<div class="planet-field">
+									<input type="radio"  id="q3_answer_type1" class="answer_type" name="q3_answer_type" value="Textarea" checked ="checked" /> Textarea
+									<input type="radio"  id="q3_answer_type2" class="answer_type" name="q3_answer_type" value="radio" /> Radio buttons
+									<input type="radio"  id="q3_answer_type3" class="answer_type" name="q3_answer_type" value="checkbox" /> Checkboxes
+								</div>
+							</div> 
+						</div>
+                        <div class="load-more-butn" style="text-align:left; padding-top:0;">
+                    		<a href="javascript:void(0)" class="blue-butn" id="submit_create_planet">Submit</a>
+                    	</div>
+                    </div>
+						</div> <?php } ?>
+                        <div class="clear"></div> 
+                    </div>
+					<div id="user_planet_list">
+					<?php foreach($planets as $list){ ?>
+                    <div class="planet-list-outer">
+                        <div class="planet-tab-img"><a href="<?php echo $this->url('groups/planethome',array('group_id'=>$list->parent_seo_title,'planet_id'=>$list->group_seo_title));?>">
+							<?php   if($list->data_content){ ?>
+							<img src="<?php echo $this->basePath() ?>/public/album/<?php echo $list->group_id; ?>/cover/<?php echo $list->data_content; ?>" alt="" />
+							<?php }else{ ?>
+								<img src="<?php echo $this->basePath() ?>/public/images/planet-cover-default.jpg" alt="" />
+							<?php } ?>
+						</a></div>
+                        <div class="planet-details">
+                            <div class="planet-icon"></div>
+                            <div class="planet-head">
+                                <h3><a href="<?php echo $this->url('groups/planethome',array('group_id'=>$list->parent_seo_title,'planet_id'=>$list->group_seo_title));?>"><?php echo $list->group_title; ?></a></h3>
+                                <div class="members-amnt"><?php echo $list->member_count; ?> engaged</div>
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                    </div>
+					<?php } ?>
+                	 </div>
+                    
+                    <div class="clear"></div>
+                    <div class="load-more-butn">
+                    	<a href="javascript:void(0)" class="blue-butn" id="loadMore_planet">Load more</a>
+                    </div>
+                <div class="clear"></div>
+              </div>
+	</div>
+</div>
+<?php  } ?>
+ 
+ <style>
+	#map-canvas, #activity_map{
+  height: 400px;
+
+  border: 1px solid #999;
+  -moz-box-shadow:    0px 0px 5px #ccc;
+  -webkit-box-shadow: 0px 0px 5px #ccc;
+  box-shadow:         0px 0px 5px #ccc;
+}
+ </style>
+ <script>
+ 
+		var current_lat = 25.271139000000000000;
+		var current_lng =55.307485000000040000;
+	 
+var geocoder;
+var map;
+var marker;
+var mapselected = 'map1';
+// initialise the google maps objects, and add listeners
+function gmaps_init(){
+
+  // center of the universe
+  var latlng = new google.maps.LatLng(current_lat,current_lng);
+
+  var options = {
+    zoom: 7,
+    center: latlng,
+    mapTypeId: google.maps.MapTypeId.ROADMAP,
+
+  };
+
+  // create our map object
+  if(mapselected=='map1')
+  map = new google.maps.Map(document.getElementById("map-canvas"), options);
+  else
+   map = new google.maps.Map(document.getElementById("activity_map"), options);
+
+  // the geocoder object allows us to do latlng lookup based on address
+  geocoder = new google.maps.Geocoder();
+	 
+
+  // the marker shows us the position of the latest address
+  marker = new google.maps.Marker({
+    map: map,
+	icon: "<?php echo $this->basepath(); ?>/public/images/rocket2-icon.png",
+    draggable: true
+  });
+marker.setPosition(latlng);
+  // event triggered when marker is dragged and dropped
+  google.maps.event.addListener(marker, 'dragend', function() {
+    geocode_lookup( 'latLng', marker.getPosition() );
+  });
+
+  // event triggered when map is clicked
+  google.maps.event.addListener(map, 'click', function(event) {
+    marker.setPosition(event.latLng)
+    geocode_lookup( 'latLng', event.latLng  );
+  });
+
+  $('#gmaps-error').hide();
+}
+
+// move the marker to a new position, and center the map on it
+function update_map( geometry ) {
+  map.fitBounds( geometry.viewport )
+  marker.setPosition( geometry.location )
+}
+
+// fill in the UI elements with new position data
+function update_ui( address, latLng ) {
+if(mapselected=='map1'){
+  $('#location').autocomplete("close");
+  $('#location').val(address);
+  }else{
+   $('#address').autocomplete("close");
+  $('#address').val(address);
+  }
+  geo_latitude = latLng.lat(); 
+  geo_longitude = latLng.lng(); 
+  //$('#gmaps-output-latitude').html(latLng.lat());
+  //$('#gmaps-output-longitude').html(latLng.lng());
+}
+
+// Query the Google geocode object
+//
+// type: 'address' for search by address
+//       'latLng'  for search by latLng (reverse lookup)
+//
+// value: search query
+//
+// update: should we update the map (center map and position marker)?
+function geocode_lookup( type, value, update ) {
+  // default value: update = false
+  update = typeof update !== 'undefined' ? update : false;
+
+  request = {};
+  request[type] = value;
+
+  geocoder.geocode(request, function(results, status) {
+    $('#gmaps-error').html('');
+    $('#gmaps-error').hide();
+    if (status == google.maps.GeocoderStatus.OK) {
+      // Google geocoding has succeeded!
+      if (results[0]) {
+        // Always update the UI elements with new location data
+        update_ui( results[0].formatted_address,
+                   results[0].geometry.location )
+
+        // Only update the map (position marker and center map) if requested
+        if( update ) { update_map( results[0].geometry ) }
+      } else {
+        // Geocoder status ok but no results!?
+        $('#gmaps-error').html("Sorry, something went wrong. Try again!");
+        $('#gmaps-error').show();
+      }
+    } else {
+      // Google Geocoding has failed. Two common reasons:
+      //   * Address not recognised (e.g. search for 'zxxzcxczxcx')
+      //   * Location doesn't map to address (e.g. click in middle of Atlantic)
+
+      if( type == 'address' ) {
+        // User has typed in an address which we can't geocode to a location
+        $('#gmaps-error').html("Sorry! We couldn't find " + value + ". Try a different search term, or click the map." );
+        $('#gmaps-error').show();
+      } else {
+        // User has clicked or dragged marker to somewhere that Google can't do a reverse lookup for
+        // In this case we display a warning, clear the address box, but fill in LatLng
+        $('#gmaps-error').html("Woah... that's pretty remote! You're going to have to manually enter a place name." );
+        $('#gmaps-error').show();
+        update_ui('', value)
+      }
+    };
+  });
+};
+
+// initialise the jqueryUI autocomplete element
+function autocomplete_init() {
+	if(mapselected=='map1'){
+  $("#location").autocomplete({
+
+    // source is the list of input options shown in the autocomplete dropdown.
+    // see documentation: http://jqueryui.com/demos/autocomplete/
+    source: function(request,response) {
+
+      // the geocode method takes an address or LatLng to search for
+      // and a callback function which should process the results into
+      // a format accepted by jqueryUI autocomplete
+      geocoder.geocode( {'address': request.term }, function(results, status) {
+        response($.map(results, function(item) {
+          return {
+            label: item.formatted_address, // appears in dropdown box
+            value: item.formatted_address, // inserted into input element when selected
+            geocode: item                  // all geocode data: used in select callback event
+          }
+        }));
+      })
+    },
+
+    // event triggered when drop-down option selected
+    select: function(event,ui){
+      update_ui(  ui.item.value, ui.item.geocode.geometry.location )
+      update_map( ui.item.geocode.geometry )
+    }
+  });
+  }else{
+	  $("#address").autocomplete({
+
+    // source is the list of input options shown in the autocomplete dropdown.
+    // see documentation: http://jqueryui.com/demos/autocomplete/
+    source: function(request,response) {
+
+      // the geocode method takes an address or LatLng to search for
+      // and a callback function which should process the results into
+      // a format accepted by jqueryUI autocomplete
+      geocoder.geocode( {'address': request.term }, function(results, status) {
+        response($.map(results, function(item) {
+          return {
+            label: item.formatted_address, // appears in dropdown box
+            value: item.formatted_address, // inserted into input element when selected
+            geocode: item                  // all geocode data: used in select callback event
+          }
+        }));
+      })
+    },
+
+    // event triggered when drop-down option selected
+    select: function(event,ui){
+      update_ui(  ui.item.value, ui.item.geocode.geometry.location )
+      update_map( ui.item.geocode.geometry )
+    }
+  });
+  }
+if(mapselected=='map1'){
+  // triggered when user presses a key in the address box
+  $("#location").bind('keydown', function(event) {
+    if(event.keyCode == 13) {
+      geocode_lookup( 'address', $('#location').val(), true );
+
+      // ensures dropdown disappears when enter is pressed
+      $('#location').autocomplete("disable")
+    } else {
+      // re-enable if previously disabled above
+      $('#location').autocomplete("enable")
+    }
+  });
+  }
+  else{
+	$("#address").bind('keydown', function(event) {
+    if(event.keyCode == 13) {
+      geocode_lookup( 'address', $('#address').val(), true );
+
+      // ensures dropdown disappears when enter is pressed
+      $('#address').autocomplete("disable")
+    } else {
+      // re-enable if previously disabled above
+      $('#address').autocomplete("enable")
+    }
+  });
+  }
+}; // autocomplete_init
+ 
+		
+</script>
+ 

@@ -1,0 +1,42 @@
+ <?php $this->HeadScript()->appendFile($this->basePath().'/public/js/1625.js','text/javascript'); ?>
+<table width="80%" border="0" align="center">
+  <tr>
+    <td> 
+		<?php if(isset($subGroupPhotoData->photo_name) && !empty($subGroupPhotoData->photo_name)) : ?>
+						<img  src="<?php echo $this->basePath()?>/public/datagd/<?php echo $groupThumb?>Planet/<?php echo $subGroupPhotoData->photo_name?>" style="height:100px; width:100%" />     
+		<?php else : ?>
+					No Timeline Image .
+		<?php endif; ?>
+		<br />
+		<?php if(isset($userSubGroupData->user_group_id) && !empty($userSubGroupData->user_group_id)) : ?>
+		<?php else : ?>
+			<div><a href="javascript:void(0)" id="<?php echo $subGroupData->group_id?>" class="add-sub-group"> <b>Join <?php echo $subGroupData->group_title?></b></a></div>
+		<?php endif; ?>
+		<?php if($groupTag->count()) :  ?>
+			<b>Planet Tags:</b>
+			<?php foreach($groupTag as $tag) {   ?>		
+					<?php echo $tag->tag_title?>,               
+			<?php } ?>
+		<?php endif;?>
+		<table width="100%" border="1">
+			<tr>
+				<td width="20%" align="center"><a href="<?php echo $this->url('groups/planethome', array('action' => 'subgroupdetail', 'group_id'=>$groupData->group_seo_title, 'planet_id'=>$subGroupData->group_seo_title)) ?>">Activities</a></td>
+			<td width="20%" align="center"><a href="<?php echo $this->url('groups/group-discussion', array('action' => 'subgroupdetailwithdiscussion', 'group_id'=>$groupData->group_seo_title, 'sub_group_id'=>$subGroupData->group_seo_title)) ?>">Discussion</a></td>
+				<td width="20%" align="center"><a href="<?php //echo $this->url('groups/group-album', array('action' => 'index', 'group_id'=>$groupData->group_seo_title, 'sub_group_id'=>$subGroupData->group_seo_title)) ?>">Media</a></td>
+				<td width="20%" align="center"><a href="<?php echo $this->url('groups/group-members', array('action' => 'index', 'group_id'=>$groupData->group_seo_title, 'sub_group_id'=>$subGroupData->group_seo_title)) ?>">Members</a></td>
+			</tr>
+		</table>
+	</td>
+		
+  </tr>
+  <tr>
+    <td>
+		<?php if(isset($groupActivityWidget) && !empty($groupActivityWidget)) :	?>
+			<?php echo $groupActivityWidget?>	
+		<?php endif; ?>	
+	</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>

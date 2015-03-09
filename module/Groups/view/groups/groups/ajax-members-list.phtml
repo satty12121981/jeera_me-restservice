@@ -1,0 +1,61 @@
+<?php 
+if(!empty($error)){
+?>
+<ul>
+<?php foreach($error as $list){ ?>
+<li><?php echo $list; ?></li>
+<?php } ?>
+</ul>
+<?php 
+}
+ ?>
+ <div id="selected_members">
+	<?php foreach($existing_roles as $roles){ ?>
+		<div id="selected_member_<?php echo $roles->user_id; ?>">
+			<a href="javascript:void(0)" id="<?php echo $roles->user_id; ?>" class="selected_members_list">
+			<div class="members_area">		
+				<div class="selected_members-img">			
+					<?php if($roles->profile_photo!=''){ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $roles->user_id; ?>/66x66/<?php echo $roles->profile_photo; ?>" alt="" />
+									<?php }else if($roles->user_register_type == 'facebook' && $roles->user_fbid!=''){ ?>
+										<img src="https://graph.facebook.com/<?php echo  $roles->user_fbid; ?>/picture?width=45&&height=45" />
+									<?php }else{ ?>	
+										<img src="<?php echo $this->basePath(); ?>/public/images/profile-noimage.jpg"  />
+									<?php  } ?>			
+				</div>			
+				<div class="selected_members-name"><?php echo $roles->user_given_name ; ?></div>
+				<a href="javascript:void(0)" id="<?php echo $roles->user_id; ?>" class="remove_selected_member">REMOVE</a>
+				<div class="clear"></div>
+			</div>
+			</a>
+		</div>
+		
+	<?php } ?>
+ </div>
+ <a href="javascript:void(0)" id="add_members_to_roles">Assign roles</a>
+ <div id="whole_members" style="display:none">
+	<?php foreach($members as $rows){ ?>	 
+		<a href="javascript:void(0)" id="<?php echo $rows->user_id; ?>" class="addToRoles">
+		<div class="members_area">
+			<div class="selected_members-img">
+			
+				<?php if($rows->profile_photo!=''){ ?>
+						<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $rows->user_id; ?>/66x66/<?php echo $rows->profile_photo; ?>" alt="" />
+				<?php }else if($rows->user_register_type == 'facebook' && $rows->user_fbid!=''){ ?>
+					<img src="https://graph.facebook.com/<?php echo  $rows->user_fbid; ?>/picture?width=45&&height=45" />
+				<?php }else{ ?>	
+					<img src="<?php echo $this->basePath(); ?>/public/images/profile-noimage.jpg"  />
+				<?php  } ?>	
+			
+			</div>			
+			<div class="selected_members-name"><?php echo $rows->user_given_name ; ?></div>
+			<div class="clear"></div>
+		</div>
+		</a>	
+	 	
+	<?php } ?>
+</div>
+<div class="button_membership">
+<a id="membership_settings_save" class="blue-butn" href="javascript:void(0)">Save Membership Roles</a>
+<a style="color:#333" id="membership_settings_cancel" class="grey-butn" href="javascript:void(0)">Cancel</a>
+</div>	 

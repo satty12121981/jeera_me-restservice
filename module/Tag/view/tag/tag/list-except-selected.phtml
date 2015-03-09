@@ -1,0 +1,17 @@
+<?php
+	if(!empty($error)){
+		?>
+		<div class="error">
+			<ul>
+			<?php foreach($error as $msg ){  
+				echo "<li>".$msg."</li>";
+				} ?>
+			</ul>
+		</div>
+		<?php 
+	}else{
+ ?>
+<?php foreach($tags  as $tag){ ?>
+<span id="tag_cnt_<?php echo $tag->tag_id; ?>"><?php echo $tag->tag_title; ?><a href="javascript:void(0)" id="tag_<?php echo $tag->tag_id; ?>" class="add-tag"><img src="<?php echo $this->basePath(); ?>/public/images/add-icon.png" alt="" /></a></span>
+<?php } ?> 
+<?php } ?>

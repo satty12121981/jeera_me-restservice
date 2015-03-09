@@ -1,0 +1,25 @@
+{
+    "name": "chathura86/zf2-facebook-module",
+    "description": "Zend Framework 2 module providing integration with Facebook php-sdk",
+    "license": "MIT",
+    "keywords": [
+        "facebook",
+        "zf2"
+    ],
+    "homepage": "https://github.com/chathura86/zf2-facebook-module",
+    "require": {
+        "php": ">=5.3.3",
+        "zendframework/zendframework": "2.*"
+    },
+    "require-dev": {
+        "zendframework/zendframework": "dev-master"
+    },
+    "autoload": {
+        "psr-0": {
+            "FacebookBundle": "src"
+        },
+        "classmap": [
+            "./Module.php"
+        ]
+    }
+}

@@ -1,0 +1,96 @@
+<?php 
+if(!empty($error)){
+	foreach($error as $msg){
+		echo $msg."<br />";
+	}
+}
+ ?>
+ <?php
+ $arr_comments = array();
+ $i=0;
+foreach($comment_data as $comments){
+	//array_push($arr_comments,$comments);
+	$arr_comments[] = $comments; 
+}
+$newcommnt =  array_reverse($arr_comments);
+?>
+<?php if($system=='Media'){ 
+	foreach($newcommnt as $comments){  
+				?>
+				<div class="comment-container comments-outer-<?php echo $comments->comment_id ?>" id="comments-outer-<?php echo $comments->comment_id ?>">
+					<div class="comment-profil-img">
+						<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+						<?php if($comments->profile_photo!=''){ ?>
+						<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+						<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+							<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+						<?php }else{ ?>
+						<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+						<?php } ?>
+						</a>
+					</div>
+					<div class="comment-text">
+						<span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+						<div class="comment_text_<?php echo $comments->comment_id; ?>" id="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>
+						<?php if($comments->user_id == $user_id ){ ?>
+										<div><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a>&nbsp;<a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a></div>
+										<?php } ?>
+					</div>
+					<div class="comment-like">
+						 <div class="activity-comment-like comments_likes<?php echo $comments->comment_id; ?>" id="comments_likes<?php echo $comments->comment_id; ?>">
+							<?php if($comments->islike){ ?>
+								 
+								<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+								 
+							<?php }else{ ?>
+								 
+									<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+								 
+							<?php }?>
+							<?php echo $comments->likes_count; ?>
+							</div>
+					</div>
+					<div class="clear"></div>
+				</div>
+				<?php } ?>
+<?php }else{ ?>
+ <?php foreach($newcommnt as $data){ ?>
+<div class="comments-outer comments-outer-<?php echo $data->comment_id; ?>" id="comments-outer-<?php echo $data->comment_id; ?>" >
+	<div class="comment-profil-img">
+		<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$data->user_profile_name)) ?>" class="profile-img-link">
+		<?php if($data->profile_photo!=''){ ?>
+		<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $data->user_id ?>/66x66/<?php echo $data->profile_photo; ?>" alt="" />
+		<?php }else if($data->user_register_type == 'facebook' && $data->user_fbid!=''){ ?>
+			<img src="https://graph.facebook.com/<?php echo $data->user_fbid; ?>/picture?width=66&&height=66" />
+		<?php }else{ ?>
+		<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+		<?php } ?>
+		</a>
+	</div>
+	<div class="comment-text comment-text2">
+		<span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$data->user_profile_name)) ?>"><?php echo $data->user_given_name; ?></a></span>
+		 <div id="comment_text_<?php echo $data->comment_id; ?>" class="comment_text_<?php echo $data->comment_id; ?>"> <?php echo $data->comment_content; ?></div>
+		
+				<div><?php if($data->user_id == $user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $data->comment_id; ?>" class="edit_comment">Edit</a>&nbsp;<?php } ?><?php if($data->user_id == $user_id || $is_admin){ ?><a href="javascript:void(0)" id="delete_comment_<?php echo $data->comment_id; ?>" class="delete_comment">Delete</a><?php } ?></div>
+										
+		<div class="activity-comment-like comments_likes<?php echo $data->comment_id; ?>" id="comments_likes<?php echo $data->comment_id; ?>">
+			<?php if($data->islike){ ?>
+			<?php if($planet_member){ ?>
+				<a href="javascript:void(0)" id="<?php echo $data->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+			<?php }else{ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />
+			<?php } ?>
+			<?php }else{ ?>
+			<?php if($planet_member){ ?>
+			<a href="javascript:void(0)" id="<?php echo $data->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+			<?php }else{ ?>
+			<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+			<?php } ?>
+			<?php }?>
+			<?php echo $data->likes_count; ?>
+			</div>
+	</div>
+	<div class="clear"></div>
+</div>
+<?php } } ?>
+ 

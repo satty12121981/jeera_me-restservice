@@ -1,0 +1,130 @@
+<?php if(isset($error) && count($error)) : ?>
+<ul class="error">
+    <?php foreach ($error as $errormsg) : ?>
+    <li><?php echo $errormsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<?php
+if(!empty($discussions)){
+ foreach($discussions as $row){ ?>
+						<div id="discussion-outer-<?php echo $row['group_discussion_id']; ?>">
+                        	 <div class="activity-outer">
+                            	<div class="activity-profileimg profile-image-comn">
+								 <a href="<?php echo $this->url('memberprofile',array('member_profile'=>$row['user_profile_name'])) ?>" class="profile-img-link">
+								<?php  if($row['profile_photo']!=''){ ?>								 
+								<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $row['user_id']; ?>/66x66/<?php echo $row['profile_photo']; ?>" alt="" />
+								<?php }else if($row['user_register_type'] == 'facebook' && $row['user_fbid']!=''){ ?>
+									<img src="https://graph.facebook.com/<?php echo $row['user_fbid']; ?>/picture?width=66&&height=66" />
+								<?php }else{ ?>
+								<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+								<?php } ?>
+								</a>
+								</div>
+                                <div class="discussion-main-outer">
+                                	<div class="activity-author"><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$row['user_profile_name'])) ?>"><?php echo $row['user_given_name']; ?></a></div>
+                                    <div class="activity-text" id="discussion_container_<?php echo $row['group_discussion_id']; ?>"><?php echo $row['group_discussion_content']; ?> </div>
+									<div ><?php if($discussion_edit_permission||($row['user_id']== $user_id)){ ?><a href="javascript:void(0)" class="edit_discussion" id="editdiscussion_<?php echo $row['group_discussion_id']; ?>">Edit</a>&nbsp;<a href="javascript:void(0)" class="delete_discussion" id="deletediscussion_<?php echo $row['group_discussion_id']; ?>">Delete</a><?php } ?></div>
+                                    <div class="activity-details_planet">
+                                        <div class="like-comment-outer">
+                                            <div class="likes" id="likes_<?php echo $row['group_discussion_id']; ?>">
+											<?php if($row['descussion_like']->is_liked){  ?>
+												<?php if($planet_member){ ?>
+													<a href="javascript:void(0)"  class="discussion-unlikes" id="<?php echo $row['group_discussion_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>
+												<?php }else{  ?>
+													<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /> 
+												<?php }
+											}else{ ?> 
+												<?php if($planet_member){ ?>	
+													<a href="javascript:void(0)" id="<?php echo $row['group_discussion_id']; ?>" class="discussion-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>
+												<?php }else{ ?>
+													<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+												<?php } ?>
+											<?php } ?>
+											<?php if($row['descussion_like']->likes_counts){echo $row['descussion_like']->likes_counts;} ?>
+											</div>
+                                            <div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($row['comment_count']){echo $row['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+                                            <div class="clear"></div>
+                                        </div>
+                                         
+                                         
+                                        <div class="clear"></div>
+                                    </div>
+                                </div>
+                                 
+                                
+                                <div class="clear"></div>
+                            </div>
+							 <div class="activity-comments">
+								<div id="loadmore_<?php echo $row['group_discussion_id']; ?>"><?php if($row['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $row['group_discussion_id']; ?>" class="loadmore_comments">View <span id="comment_count_<?php echo $row['group_discussion_id']; ?>"><?php echo $row['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+								<div id="comment_area<?php echo $row['group_discussion_id']; ?>">
+								<?php  
+								$arr_comments = array();
+								foreach($row['comments'] as $comments){
+									$arr_comments[] = $comments;
+								}
+								$newcommnt =  array_reverse($arr_comments);
+								foreach($newcommnt as $comments){  
+								?>
+                            	<div class="comments-outer" id="comments-outer-<?php echo $comments->comment_id ?>">
+                                    <div class="comment-profil-img">
+										<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+											<?php if($comments->profile_photo!=''){ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+											<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+												<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+											<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php } ?>
+											</a>
+										</div>
+                                    <div class="comment-text comment-text2" >
+                                        <span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+                                        <div id="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>
+										
+										<div><?php if($comments->user_id == $user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a><?php } ?>
+										<?php if($comments->user_id == $user_id || $is_admin || $row['user_id']== $user_id ){ ?>
+										<a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a><?php } ?>
+										</div>
+										
+										
+                                        <div class="activity-comment-like" id="comments_likes<?php echo $comments->comment_id; ?>">
+										<?php if($comments->islike){ ?>
+											<?php if($planet_member){ ?>
+												<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+											<?php }else{ ?>
+												<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />
+											<?php } ?>
+										<?php }else{ ?>
+											<?php if($planet_member){ ?>
+												<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+											<?php }else{ ?>
+												<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+											<?php } ?>
+										<?php }?>
+										<?php echo $comments->likes_count; ?>
+										</div>
+                                    </div>
+                                    <div class="clear"></div>
+                                </div>
+								<?php } ?>
+								</div>
+                                 <?php if($planet_member){ ?>
+                                <div class="activity-add-comment">
+                                	<textarea name="comment" id="comment_<?php echo $row['group_discussion_id']; ?>" class="discussion_comments" placeholder="Comment"></textarea>
+                                </div>
+								<?php } ?>
+                            </div>
+						 </div>
+							<?php }
+}else{							?>
+	<div class="msg_nomore">No more activities..</div>
+	<?php if(isset($type)&&$type=='past'){ ?>
+	<script>
+		$("#past_activity_loadmore_container").remove();
+	</script>
+<?php }else{ ?>
+	<script>
+		$("#activity_loadmore_container").remove();
+	</script>
+<?php } }?>

@@ -1,0 +1,129 @@
+<?php
+// module/User/view/user/user/add.phtml: 
+$this->headTitle($this->translate('Registeration'));
+
+ //$this->HeadScript()->appendFile($this->basePath().'/public/js/jquery.customSelect.js','text/javascript');
+ 
+?>
+<script src="<?php echo $this->basePath(); ?>/public/js/jquery.customSelect.js"></script>
+<script type="text/javascript">
+$(function(){
+	$('select.styled').customSelect();
+});
+</script>
+
+<h1><?php //echo $this->escapeHtml($this->translate('Registeration')); ?></h1>
+<!--flash Messages.Stored in session-->
+<?php if(isset($flashMessages) && count($flashMessages)) : ?>
+<ul class="session">
+    <?php foreach ($flashMessages as $msg) : ?>
+    <li><?php echo $msg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+
+<!--error Message-->
+<?php if(isset($error) && count($error)) : ?>
+<ul class="error">
+    <?php foreach ($error as $errormsg) : ?>
+    <li><?php echo $errormsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+
+<!--success message-->
+<?php if(isset($success) && count($success)) : ?>
+<ul class="success">
+    <?php foreach ($success as $successmsg) : ?>
+    <li><?php echo $successmsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<?php
+$form = $this->form;
+$form->setAttribute('action', $this->url('user/register'));
+//$form->prepare();
+?>
+<?php if($step == 1){ ?>
+<div class="form_registration">
+<?php echo $this->form()->openTag($form);?>
+<?php echo $this->formCollection($form); ?>
+<?php echo $this->form()->closeTag();?>
+</div>
+<?php }elseif($step ==2){ ?>
+	<div class="signup-form-outer">
+		<?php echo $this->form()->openTag($form);?>
+		<?php echo $this->formRow($form->get('csrf'));?>
+		<div class="step-head">Where are you from?</div>
+		<div class="signup-field">
+			<div class="signup-location-left">
+				 <?php echo $this->formRow($form->get('user_profile_country_id'));?>
+			</div>
+			<div class="signup-location-right">
+				<?php echo $this->formRow($form->get('user_profile_city'));?>
+			</div>	
+			<div class="clear"></div>			
+		</div>
+		<div class="signup-field" style="padding-bottom:30px;">
+			<div class="signup-label">Birthdate:</div>
+			<div class="bd-select">
+				<?php echo $this->formRow($form->get('user_profile_dob_dd'));?>
+			</div>
+			<div class="bd-select">
+				<?php echo $this->formRow($form->get('user_profile_dob_mm'));?> 
+			</div>
+			<div class="bd-select2">
+				<?php echo $this->formRow($form->get('user_profile_dob_yy'));?> 
+			</div>
+			 
+			<div class="clear"></div>
+		</div>
+		<div class="signup-field">
+			<div class="signup-label">Gender:</div>
+			 <div class="gender-item">
+				<input type="radio" id="r1"  name="user_gender" value="M" />
+				<label for="r1"><span></span>M</label>
+			</div>
+			<div class="gender-item">
+				<input type="radio" id="r2" name="user_gender"  value="F" />
+				<label for="r2"><span></span>F</label>
+			</div>		
+			<div class="clear"></div>
+		</div>
+		<div class="signup-field">
+			<?php echo $this->formRow($form->get('user_profile_profession'));?>
+		</div>
+		<div class="signup-field">
+			<?php echo $this->formRow($form->get('user_profile_profession_at'));?>
+		</div>
+		<div class="signup-field">
+			<?php echo $this->formRow($form->get('submit'));?>
+			<?php echo $this->formRow($form->get('reset'));?>
+		</div>
+		<?php echo $this->form()->closeTag();?>
+	</div>
+<?php }elseif($step ==3){ ?>
+	<div class="signup-form-outer">
+		<div class="step-head">Select your interests from the below list of interests or <br />search for your interest and add to your profile</div>
+		<div class="search-field">
+			<input name="tag_search" id="tag_search" type="text" placeholder="Search" />
+			<div class="search-butn"><a href="javascript:void(0)" id="btn_search_tag"><img src="<?php echo $this->basePath(); ?>/public/images/search-butn.png" alt="" /></a></div>
+			<div class="clear"></div>
+		</div>
+		<div class="step-head">Add:</div>
+		<div class="add-options-outer">
+			<div id="tag_list">
+			<?php foreach($tags as $tag) { ?>
+			<a href="javascript:void(0)" class="add-option"  id="<?php echo $tag->tag_id; ?>" ><?php echo $tag->tag_title; ?></a>
+			<?php } ?> 
+			</div>
+			<div class="clear"></div>
+		</div>
+		<div class="step-head">Added:</div>
+		<div class="add-options-outer" id="added_items">                	 
+			<div class="clear"></div>
+		</div>
+		 <div class="next-butn"><a href="javascript:void(0)" id="tag_submit"><img src="<?php echo $this->basepath() ?>/public/images/finish-butn.png" alt="" /></a></div>
+	</div>
+<?php } ?>
+ 

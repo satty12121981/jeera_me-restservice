@@ -1,0 +1,35 @@
+<div id="note_menu" style="border:0px;">
+	<ul class="note_menu_cls">
+		<li class="menu_egg_cls">
+			<a href="#" id="note_type" style="padding:10px 0;">
+				<img src="<?php echo $this->basePath(); ?>/images/notif_blue.ico" style="width: 21px;" />
+				<span id="mes"><?php echo($UserNotificationsCount);?></span>
+			</a>
+			<ul class="sub-menu">
+				<li class="egg">
+					<div class="toppointer"><img src="<?php echo $this->basePath(); ?>/images/top.png" /></div>
+					<div id="view_notifications" class="note_header">Notifications</div>
+					<div id="two_notifications">
+					<?php 
+					    $inc = 1;
+						if(isset($UserNotifications) && count($UserNotifications) > 0 ) : 
+							foreach($UserNotifications as $UserNotification): 
+							    if( $inc <= 7 ) {
+									echo "<div class=\"comment_ui\"><div class=\"comment_text\"><div  class=\"comment_actual_text\"><a href=\"#$UserNotification->user_notification_id\">".$this->escapeHtml($UserNotification->user_notification_content)."</div></div></div>";
+								} else continue;
+								$inc++;
+							unset($form_fieldset_element); 
+						endforeach;
+					endif;
+					?>
+					<div class="bbbbbbb" id="view1">
+						<div style="background-color: #F7F7F7; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; position: relative; z-index: 100; padding:8px; cursor:pointer;">
+						<a href="#" class="view_notifications" id="2">View all <?php echo count($UserNotifications);?>Notifications</a>
+						</div>
+					</div>
+				</li>
+			</ul>
+		</li>
+	</ul>
+</div>
+

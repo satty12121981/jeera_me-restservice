@@ -1,0 +1,137 @@
+<?php echo $this->profileWidget; ?>
+<div class="right_container" id="notification_right_container" ng-app="notificationapp" ng-controller="notificationController">
+    	<div class="right-profile_links">
+        	<div class="right-profile_links_inner">
+            	<ul>
+                	<li>Notifications</li>
+                </ul>
+            </div>
+        </div>
+        <div class="right-content_outer">
+        	<div class="notification_sort color-trans">
+            	Show:
+                <a href="javascript:void(0);" ng-class="{'active':selectedTab == 'All'}" ng-click="selectAll()">All</a>
+                <a href="javascript:void(0);" ng-class="{'active':selectedTab == 'Groups'}" ng-click="selectGroups()">Groups({{group_unread_count}})</a>
+                 <a href="javascript:void(0);" ng-class="{'active':selectedTab == 'Friends'}" ng-click="selectFriends()">Friends({{friends_unread_count}})</a>
+                <a href="javascript:void(0);"  ng-class="{'active':selectedTab == 'Events'}" ng-click="selectEvents()">Events ({{events_unread_count}})</a>
+                <a href="javascript:void(0);" ng-class="{'active':selectedTab == 'Interactions'}" ng-click="selectInteractions()">Interactions({{Interactions_unread_count}})</a>             
+            </div>
+            
+            <div class="notification_list-outer" scroller ng-init="getResults(false)">
+				<div ng-if="ajaxFlag==1&&page==1"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"></div>
+            	<span ng-if="ajaxFlag==0||page!=1">
+                <div class="notification_nor" ng-class="{'notification_unread':items.user_notification_status == 'unread'}" ng-repeat="items in Notification_list">
+					<div class="noti_user-img">
+						<img alt="" ng-if="items.sender_profile_photo!=null&&items.sender_profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{items.user_notification_sender_id}}/{{ items.sender_profile_photo }}">
+						<img alt="" ng-if="items.sender_profile_photo==null||items.sender_profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">
+					</div>
+					<div class="noti_text">
+						{{items.user_notification_content}}
+						<div class="noti_time"><i></i>{{items.user_notification_added_timestamp}}</div>
+					</div>
+					<div class="clear"></div>
+				</div>             
+                 
+                </span>
+            </div>           
+            <div class="clear"></div>
+        </div>      
+    </div>    
+    <div class="clear"></div>
+	<script>
+		var page =1;
+		var notificationapp = angular.module('notificationapp',[]);
+     notificationapp.config(function ($httpProvider) {
+			$httpProvider.defaults.transformRequest = function(data){
+				if (data === undefined) {
+					return data;
+				}
+				return $.param(data);
+			}
+		});
+		notificationapp.directive('scroller', function ($window) {
+		return {
+			restrict: 'A',
+			link: function(scope, element, attrs) {
+			  var windowEl = angular.element($window); 		  
+			  var handler = function() { scope.handler();  }
+			  windowEl.on('scroll', scope.$apply.bind(scope, handler));
+			 
+				}
+			};
+		});
+		 notificationapp.controller('notificationController',function($scope, $http){
+			$scope.selectedTab = "All";
+			$scope.group_unread_count = <?php echo $group_unread_count; ?>; 
+			$scope.friends_unread_count = <?php echo $friends_unread_count; ?>; 
+			$scope.events_unread_count = <?php echo $events_unread_count; ?>; 
+			$scope.Interactions_unread_count = <?php echo $Interactions_unread_count; ?>; 
+			$scope.Notification_list = [];
+			$scope.ajaxFlag = 0;
+			$scope.page =1;
+			$scope.selectAll = function(){
+				$scope.selectedTab = "All";
+				$scope.ajaxFlag =0;
+				$scope.getResults(false);
+			}
+			$scope.selectGroups = function(){
+				$scope.selectedTab = "Groups";
+				$scope.ajaxFlag =0;
+				$scope.getResults(false);
+			}
+			$scope.selectFriends = function(){
+				$scope.selectedTab = "Friends";
+				$scope.ajaxFlag =0;
+				$scope.getResults(false);
+			}
+			$scope.selectEvents = function(){
+				$scope.selectedTab = "Events";
+				$scope.ajaxFlag =0;
+				$scope.getResults(false);
+			}
+			$scope.selectInteractions = function(){
+				$scope.selectedTab = "Interactions";
+				$scope.ajaxFlag =0;
+				$scope.getResults(false);
+			}
+			$scope.handler = function() {		 
+				$scope.getResults(true);
+			}
+			$scope.getResults = function (page_scroller){
+				if($scope.ajaxFlag ==0 ){
+					if(page_scroller){page++;}else{page=1;}
+					$scope.ajaxFlag = 1;
+					$scope.page = page;
+					url = baseurl + '/notifications/getnotifications';
+					$http.post(url,{							 
+							type:$scope.selectedTab,
+							page:page,		
+					},{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+					).success(function(data, status, headers, config) {
+						 if(data.return_array.process_status == 'success'){		
+							if($scope.page>1){
+								if(data.return_array.notification_list.length>0){
+									$scope.Notification_list =$scope.Notification_list.concat(data.return_array.notification_list);
+								}								 								
+							}else{
+								$scope.Notification_list = data.return_array.notification_list;								 
+							}
+							 $scope.ajaxFlag = 0;
+						 }else{
+							 alert(data.return_array.process_info);	
+							$scope.ajaxFlag = 0;							 
+						 }
+					}).error(function(data, status, headers, config) {
+						 alert("Error occured. Please try again");
+						 $scope.ajaxFlag = 0;
+					});
+				}						
+			}
+		 });
+		 angular.element(document).ready(function() {
+    angular.bootstrap(document.getElementById("profile_div"), ["myapp"]);
+    angular.bootstrap(document.getElementById("notification_right_container"), ["notificationapp"]);
+
+
+});
+	</script>

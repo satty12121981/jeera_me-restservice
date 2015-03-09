@@ -1,0 +1,165 @@
+<?php if(isset($error) && count($error)) : ?>
+<ul class="error">
+    <?php foreach ($error as $errormsg) : ?>
+    <li><?php echo $errormsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<?php
+if(!empty($upcoming_activities)){
+ foreach($upcoming_activities as $activities){ ?>
+                        	<div class="activity-outer">
+                            	<div class="activity-profileimg profile-image-comn">
+								 <a href="<?php echo $this->url('memberprofile',array('member_profile'=>$activities['user_profile_name'])) ?>" class="profile-img-link">
+								<?php  if($activities['profile_photo']!=''){ ?>								 
+								<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $activities['user_id']; ?>/66x66/<?php echo $activities['profile_photo']; ?>" alt="" />
+								<?php }else if($activities['user_register_type'] == 'facebook' && $activities['user_fbid']!=''){ ?>
+									<img src="https://graph.facebook.com/<?php echo $activities['user_fbid']; ?>/picture?width=66&&height=66" />
+								<?php }else{ ?>
+								<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+								<?php } ?>
+								</a>
+								</div>
+                                <div class="activity-main-outer">
+                                	<div class="activity-author"><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$activities['user_profile_name'])) ?>"><?php echo $activities['user_given_name']; ?></a></div>
+                                    <div class="activity-text"><a href="<?php echo $this->url('activity/activity-view', array('action' => 'view', 'group_id'=>$galexy_seo_title, 'planet_id'=>$planetdetails->group_seo_title,'id'=>$activities['group_activity_id'])) ?>"><?php echo $activities['group_activity_title']; ?><span> on <?php echo date("F d,g A",strtotime($activities['group_activity_start_timestamp'])) ?> .</span></a></div>
+                                    <div class="activity-details_planet">
+									<?php if($planet_member){ ?>
+									<div class="activity-text"><?php echo $activities['group_activity_content']; ?></div>
+									<?php } ?>
+                                        <div class="like-comment-outer">
+                                            <div class="likes" id="likes_<?php echo $activities['group_activity_id']; ?>">
+											<?php if($activities['activity_like']->is_liked){  ?>
+												<?php if($planet_member){ ?>
+													<a href="javascript:void(0)"  class="activity-unlikes" id="<?php echo $activities['group_activity_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>
+												<?php }else{ ?>
+													<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />
+												<?php } ?>
+											<?php }else{ ?> 
+												<?php if($planet_member){ ?>
+													<a href="javascript:void(0)" id="<?php echo $activities['group_activity_id']; ?>" class="activity-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>
+												<?php }else{ ?>
+													<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+												<?php } ?>
+											<?php } ?>
+											<?php if($activities['activity_like']->likes_counts){echo $activities['activity_like']->likes_counts;} ?>
+											</div>
+                                            <div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($activities['comment_count']){echo $activities['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+                                            <div class="clear"></div>
+                                        </div>
+										<?php if($planet_member){ ?>
+                                        <div class="activity-location"><?php echo $activities['group_activity_location']; ?></div><?php } ?>
+                                         
+                                        <div class="clear"></div>
+                                    </div>
+                                </div>
+                                <div class="join-activity-outer">
+								<?php if($planet_member){ ?>
+                                	<div class="activity-rocket<?php if($activities['is_member']){ echo "-member"; } ?>" id="joinactivity_rocket_<?php echo $activities['group_activity_id']; ?>"></div>
+                    				<div class="join-ride-butn" id="joinactivity_outer_<?php echo $activities['group_activity_id']; ?>">
+									<?php if($activities['is_member']){  ?>
+										<?php if(isset($type)&&$type!='past'){ ?>
+										<a href="javascript:void(0)" class="blue-butn quitactivity" id="quitactivity_<?php echo $activities['group_activity_id']; ?>">Quit the ride</a>
+										<?php } ?>
+									<?php }else{ ?>
+										<?php if(isset($type)&&$type!='past'){ ?>
+									<a href="javascript:void(0)" class="blue-butn joinactivity" id="joinactivity_<?php echo $activities['group_activity_id']; ?>">Join the ride</a>
+									<?php } ?>
+									<?php } ?>
+									</div>
+									<?php } ?>
+                                </div>
+                                <div class="activity-members-outer">
+									<?php if($planet_member){ ?>
+                                	<div class="members-head">Members on board  <a href="javascript:void(0)" class="membersonboard" id="<?php echo $activities['group_activity_id']; ?>"><?php echo $activities['member_count']; ?></a></div>
+									
+                                    <div class="members-list">
+									<?php foreach($activities['members'] as $members){ ?>
+                                    	<div class="activity-member profile-image-comn">
+											<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$members->user_profile_name)) ?>" class="profile-img-link">
+											<?php if($members->profile_photo!=''){ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $members->user_id ?>/66x66/<?php echo $members->profile_photo; ?>" alt="" />
+											<?php }else if($members->user_register_type == 'facebook' && $members->user_fbid!=''){ ?>
+												<img src="https://graph.facebook.com/<?php echo $members->user_fbid; ?>/picture?width=66&&height=66" />
+											<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php } ?>
+											</a>
+                                            <a href="<?php echo $this->url('memberprofile',array('member_profile'=>$members->user_profile_name)) ?>"><?php echo $members->user_given_name; ?></a>
+                                        </div>
+										<?php } ?>
+                                        
+                                        <div class="clear"></div>
+                                    </div>
+									<?php } ?>
+                                </div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="activity-comments">
+								<div id="loadmore_<?php echo $activities['group_activity_id']; ?>"><?php if($activities['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $activities['group_activity_id']; ?>" class="loadmore_comments">View <span id="comment_count_<?php echo $activities['group_activity_id']; ?>"><?php echo $activities['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+								<div id="comment_area<?php echo $activities['group_activity_id']; ?>">
+								<?php  
+								$arr_comments = array();
+								foreach($activities['comments'] as $comments){
+									$arr_comments[] = $comments;
+								}
+								$newcommnt =  array_reverse($arr_comments);
+								foreach($newcommnt as $comments){  
+								?>
+                            	<div class="comments-outer" id="comments-outer-<?php echo $comments->comment_id ?>">
+                                    <div class="comment-profil-img">
+										<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+											<?php if($comments->profile_photo!=''){ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+											<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+												<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+											<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php } ?>
+											</a>
+										</div>
+                                    <div class="comment-text comment-text2" >
+                                        <span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+                                         <div id="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>
+										
+										<div><?php if($comments->user_id == $user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a><?php } ?>&nbsp;<?php if($comments->user_id == $user_id || $is_admin ||$activities['group_activity_owner_user_id'] == $user_id){ ?><a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a><?php } ?></div>
+										
+                                        <div class="activity-comment-like" id="comments_likes<?php echo $comments->comment_id; ?>">
+										<?php if($comments->islike){ ?>
+											<?php if($planet_member){ ?>
+											<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+											<?php }else{  ?>
+												<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />
+											<?php } ?>
+										<?php }else{ ?>
+											<?php if($planet_member){ ?>
+												<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+											<?php }else{ ?>
+												<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+											<?php } ?>
+										<?php }?>
+										<?php echo $comments->likes_count; ?>
+										</div>
+                                    </div>
+                                    <div class="clear"></div>
+                                </div>
+								<?php } ?>
+								</div>
+                                 <?php if($planet_member){ ?>
+                                <div class="activity-add-comment">
+                                	<textarea name="comment" id="comment_<?php echo $activities['group_activity_id']; ?>" class="activity_comments" placeholder="Comment"></textarea>
+                                </div>
+								<?php } ?>
+                            </div>
+							<?php }
+}else{							?>
+	<div class="msg_nomore">No more activities..</div>
+	<?php if(isset($type)&&$type=='past'){ ?>
+	<script>
+		$("#past_activity_loadmore_container").remove();
+	</script>
+<?php }else{ ?>
+	<script>
+		$("#activity_loadmore_container").remove();
+	</script>
+<?php } }?>

@@ -1,0 +1,29 @@
+<?php foreach($friends as $list){ ?>
+				<div class="connection-list-outer">
+					<div class="connection-img profile-image-comn">
+					<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$list->user_profile_name)) ?>">
+					<?php if($list->data_content!=''){ ?><img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $list->user_id; ?>/<?php echo $list->data_content; ?>" alt="<?php echo $list->user_given_name; ?>" />
+					<?php }else if($list->user_register_type == 'facebook' && $list->user_fbid!=''){ ?>
+						<img src="https://graph.facebook.com/<?php echo $list->user_fbid; ?>/picture?width=45&&height=45" />
+					<?php }else{ ?>	
+					<img src="<?php echo $this->basePath(); ?>/public/images/profile-noimage.jpg" alt="<?php echo $list->user_given_name; ?>" />
+					<?php  } ?>
+					</a>
+					</div>
+					<div class="connection-name"><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$list->user_profile_name)) ?>"><?php echo $list->user_given_name; ?></a></div>
+					<div class="connection-status">
+						<?php if($list->is_friend){ ?>
+							<span>Friends</span>
+						<?php }else if($list->is_requested){ ?>
+							<span>Friend request sent</span>
+						<?php }else if($list->get_request){ ?>
+							<span id="connection-status_<?php echo $list->user_id; ?>"><a href="javascript:void(0)" id="accept_friend_<?php echo $list->user_id; ?>" class="accept_friend">Accept request</a></span>
+						<?php }else{ ?>
+							<?php if($list->user_id != $logged_id){ ?>							
+							 
+								<span id="connection-status_<?php echo $list->user_id; ?>"><a href="javascript:void(0)" id="add_friend_<?php echo $list->user_id; ?>" class="send_friend_request">Add Friend</a></span>
+							<?php } ?>
+						<?php } ?>
+					</div>
+				</div>
+			<?php } ?>

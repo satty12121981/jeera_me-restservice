@@ -1,0 +1,7 @@
+<?php
+if (isset($likes) && !empty($likes)) {
+	if ( empty($likes_exist_check_for_user->like_by_user_id) ) echo "<a href=\"#\" class=\"likes\" id=\"$Group_Refer_Id\"><img src=\"".$this->basePath()."/images/like.png\" title=\"Like\" /></a>&nbsp;&nbsp;";
+	echo "<a href=\"javascript:iBox.showURL('/group/".$groupData->group_seo_title."/".$SubGroupData->group_seo_title."/".$System_Type_Id."/likes/userslist/$Group_Refer_Id')\">".$likes."</a>";
+} else { echo "<a href=\"#\" class='likes' id=".$Group_Refer_Id."><img src=\"".$this->basePath()."/images/like.png\" title=\"Like\" /></a>"; }
+?>
+

@@ -1,0 +1,58 @@
+<script type="text/javascript">
+	$(function() {
+		$( "#user_profile_dob" ).datepicker({ dateFormat: 'yy-mm-dd' });	
+	});
+</script>
+<style>
+.ui-datepicker{padding:5px; background-color:#f0f0f0; border:1px solid #666;}
+</style>
+<?php
+// module/User/view/user/user/add.phtml:
+$this->headTitle($this->translate('Step 2'));
+?>
+<h1><?php echo $this->escapeHtml($this->translate('Register Yourself:Step 2')); ?></h1>
+<!--flash Messages.Stored in session-->
+<?php if(isset($flashMessages) && count($flashMessages)) : ?>
+<ul class="session">
+    <?php foreach ($flashMessages as $msg) : ?>
+    <li><?php echo $msg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+
+<!--error Message-->
+<?php if(isset($error) && count($error)) : ?>
+<ul class="error">
+    <?php foreach ($error as $errormsg) : ?>
+    <li><?php echo $errormsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+
+<!--success message-->
+<?php if(isset($success) && count($success)) : ?>
+<ul class="success">
+    <?php foreach ($success as $successmsg) : ?>
+    <li><?php echo $successmsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<?php
+$form = $this->form;
+$form->setAttribute('action', $this->url('user/register'));
+$form->prepare();
+?>
+<?php echo $this->form()->openTag($form);?>
+<?php echo $this->formRow($form->get('csrf'));?> 
+<div>Where are you from</div>
+<?php echo $this->formRow($form->get('user_profile_country_id'));?>
+<?php echo $this->formRow($form->get('user_profile_city'));?>
+<?php echo $this->formRow($form->get('user_profile_dob'));?>
+<?php echo $this->formRow($form->get('user_gender'));?>
+<?php echo $this->formRow($form->get('user_profile_profession'));?>
+<?php echo $this->formRow($form->get('user_profile_profession_at'));?>
+<br class="clear"/>
+<?php echo $this->formSubmit($form->get('reset')); ?>
+<?php echo $this->formSubmit($form->get('submit')); ?>
+
+<?php echo $this->form()->closeTag(); ?>

@@ -1,0 +1,255 @@
+<?php 
+if (defined('RUNNING_FROM_ROOT')) {
+  //$this->plugin('basePath')->setBasePath($this->basePath().'/public');
+}
+?>
+<?php echo $this->doctype(); ?> 
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8">
+		<?php echo $this->headTitle('Jeera')->setSeparator(' - ')->setAutoEscape(false); ?>
+        <?php echo $this->headMeta()->appendName('viewport', 'width=device-width, initial-scale=1.0'); ?>
+		<?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/favicon.icon', 'href' => $this->basePath() . '/public/images/favicon.ico'))
+   						->appendStylesheet($this->basePath() . '/public/css/bootstrap.css')
+						->appendStylesheet($this->basePath() . '/public/css/styles.css')						
+						->appendStylesheet($this->basePath() . '/public/css/responsive.css')
+						->appendStylesheet($this->basePath() . '/public/css/jquery-ui.css')
+						->appendStylesheet($this->basePath() . '/public/css/salvattore.css'); ?>
+		<?php $this->HeadScript()->prependFile($this->basePath().'/public/js/jquery-ui.js','text/javascript'); ?>
+		<?php $this->HeadScript()->prependFile($this->basePath().'/public/js/jquery-1.11.1.min.js','text/javascript'); ?>
+		<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/bootstrap.js','text/javascript'); ?> 
+		<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/modernizr.js','text/javascript'); ?>
+		<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/salvattore.min.js','text/javascript'); ?>	
+   
+        <?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery-migrate-1.0.0.js','text/javascript'); ?>
+        <?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery.iframe-transport.js','text/javascript'); ?>
+        <?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery.fileupload.js','text/javascript'); ?>		
+		<?php echo $this->headScript(); ?>	
+		<script>var baseurl = '<?php echo $this->basePath(); ?>'</script>
+		<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.15/angular.min.js"></script>
+		
+	</head>
+    <body>   
+	<div id="ajax_loader" style="text-align:center;height:100%;width:100%;vertical-align:middle;display:table;"><img src="<?php echo $this->basePath(); ?>/public/images/loader.gif" style="vertical-align:middle;display:table-cell"></div>
+	<div id="page_main_loadHtml" style="display:none">
+    <div id="layout-top" class="jeera-fixed-header" ng-app="profile-top">
+		<div ng-controller="profileTopController">
+    	<div class="fixed-logo"><a href="{{baseurl}}"><img src="<?php echo $this->basePath(); ?>/public/images/jeera-logo-2.png" alt="" /></a></div>
+        <div class="fixed-menu">
+        	<ul>
+            	<li><a href="{{baseurl}}/explore" ng-class="{'active':action == 'explore'}">Explore</a></li>
+                <li><a href="{{baseurl}}/feeds" ng-class="{'active':action == 'feeds'}">My Feed</a></li>
+            </ul>
+        </div>
+        <div class="fixed-search">
+        	<input name="search" type="text" ng-model="searchjeera" placeholder="Search Jeera..." ng-keypress="Search(searchjeera)" />
+            <a href="javascript:void(0);"></a>
+			<div class="spotsearchresult" ng-if="searchActive==1" ng-mouseenter="onList = 1;" ng-mouseleave="onList=0">
+				<div class="notification_nor" ng-repeat="items in userInfo">
+					<div class="noti_user-img">
+					<a href="<?php echo $this->basePath(); ?>/{{items.user_profile_name}}">	
+						<img alt="" ng-if="items.profile_photo!=null&&items.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{items.user_id}}/{{ items.profile_photo }}">
+						<img alt="" ng-if="(items.profilephoto==null||items.profilephoto=='')&&(items.user_fbid!=null&&items.user_fbid!='')" src="https://graph.facebook.com/{{items.user_fbid}}/picture?width=66&&height=66">
+						<img alt="" ng-if="(items.profilephoto==null||items.profilephoto=='')&&(items.user_fbid==null||items.user_fbid=='')" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg"></a>
+					</div>
+					<div class="noti_text">
+					<a href="<?php echo $this->basePath(); ?>/{{items.user_profile_name}}">	<span>{{items.user_given_name}}</span></a> 	
+					<br>
+					<span>{{items.city_name}}, {{items.country_title}}</span>					 
+					</div>
+					<div class="clear"></div>
+				</div>
+				<div class="notification_nor" ng-repeat="items in groupInfo">
+					<div class="noti_group-img">
+					<a href="<?php echo $this->basePath(); ?>/groups/{{items.group_seo_title}}">	<img ng-if="items.group_photo_photo!=''&&items.group_photo_photo!=null" src="<?php echo $this->basePath(); ?>/public/datagd/group/{{items.group_id}}/medium/{{items.group_photo_photo}}" alt="" />
+						<img ng-if="items.group_photo_photo==''||items.group_photo_photo==null" src="<?php echo $this->basePath(); ?>/public/images/group-img_def.jpg" alt="" /> </a>
+					</div>
+					<div class="noti_text">
+						<a href="<?php echo $this->basePath(); ?>/groups/{{items.group_seo_title}}"> <span>{{items.group_title}}</span> </a>
+						 
+					</div>
+					<div class="clear"></div>
+				</div>
+				<div><a href="<?php echo $this->basePath(); ?>/search?str={{searchjeera}}">Show more</a></div>
+			</div>
+        </div>
+		
+        <div class="fixed-right">
+        	<div class="fixed-myprofile">
+            	<span class="vertical_align"></span>
+                <div class="header-profile_image"><a href="{{baseurl}}/{{profilename}}">
+				<img alt="" ng-if="profilephoto!=null&&profilephoto!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{user_id}}/{{ profilephoto }}">
+				<img alt="" ng-if="(profilephoto==null||profilephoto=='')&&(user_fbid!=null&&user_fbid!='')" src="https://graph.facebook.com/{{user_fbid}}/picture?width=66&&height=66">
+				<img alt="" ng-if="(profilephoto==null||profilephoto=='')&&(user_fbid==null||user_fbid=='')" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">
+				</a></div>
+                <div class="header-profile_name"><a href="{{baseurl}}/{{profilename}}">{{user_name}}</a></div>
+            </div>
+            <div class="header-notification" ng-mouseenter="onNotificationList = 1;" ng-mouseleave="onNotificationList=0">
+            	<a href="javascript:void(0);" class="notification-link" id="show_notification" ng-click="showNotifications();" ><span ng-init="getNotificationCount()">{{NotificationCount}}</span></a>
+                <div class="notification-list-outer" id="notifications-outer" ng-if="notificationShow==1" >
+					<span ng-if="notificationAjax == 1" ><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </span>
+					<span ng-if="notificationAjax==0" >
+						<span class="noti_arrow"><img src="<?php echo $this->basePath(); ?>/public/images/notification-arrow.png" alt=""></span>
+						<div class="notification-list_head">Notifications<span>{{NotificationCount}}</span></div>
+						<div class="notification_nor" ng-class="{'notification_unread':items.user_notification_status == 'unread'}" ng-repeat="items in NotificationList">
+							<div class="noti_user-img">
+								<img alt="" ng-if="items.sender_profile_photo!=null&&items.sender_profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{items.user_notification_sender_id}}/{{ items.sender_profile_photo }}">
+								<img alt="" ng-if="(items.sender_profile_photo==null||items.sender_profile_photo=='')&&(items.sender_user_fbid!=null&&items.sender_user_fbid!='')" src="https://graph.facebook.com/{{items.sender_user_fbid}}/picture?width=66&&height=66">
+								<img alt="" ng-if="(items.sender_profile_photo==null||items.sender_profile_photo=='')&&(items.sender_user_fbid==null||items.sender_user_fbid=='')" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">
+							</div>
+							<div class="noti_text">
+								{{items.user_notification_content}}
+								<div class="noti_time"><i></i>{{items.user_notification_added_timestamp}}</div>
+							</div>
+							<div class="clear"></div>
+						</div>
+						<div class="clear"></div>
+						<div class="more_notification"><a href="<?php echo $this->basePath(); ?>/notifications">See All</a></div>
+                    </span>
+                </div>
+            </div>
+            <div class="header-settings">
+            	<a href="javascript:void(0);" class="settings-link" data-toggle="dropdown" id="dLabel"></a>
+                <ul class="dropdown-menu settings_dropdown" role="menu" aria-labelledby="dLabel">
+                	<li><a href="{{baseurl}}/settings">Account Settings</a></li>
+                     
+                    <li><a href="javascript:void(0);">Help &amp; Support</a></li>
+                    <li><a href="<?php echo $this->url('user/logout'); ?>">Log Out</a></li>
+              	</ul>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="clear"></div>
+		</div>
+    </div>  	
+    <?php echo $this->content; ?>
+	</div>
+ <script>
+	 
+	var topbarApp = angular.module('profile-top',[]);
+		topbarApp.config(function ($httpProvider) {
+			$httpProvider.defaults.transformRequest = function(data){
+				if (data === undefined) {
+					return data;
+				}
+				return $.param(data);
+			}
+		});
+		topbarApp.controller('profileTopController',function($scope, $http){
+			$scope.baseurl = '<?php echo $this->basePath(); ?>';
+			$scope.user_name = '<?php echo @$this->layout()->identity->user_given_name; ?>';
+			$scope.profilename = '<?php echo @$this->layout()->identity->user_profile_name; ?>';			
+			$scope.profilephoto = '<?php echo @$this->layout()->identity->profile_pic; ?>';
+			$scope.user_id = '<?php echo @$this->layout()->identity->user_id; ?>';
+			$scope.user_fbid = '<?php echo @$this->layout()->identity->user_fbid; ?>';
+			$scope.searchjeera = '';
+			$scope.searchActive = 0;
+			$scope.searchFlag = 0;
+			$scope.userInfo = [];
+			$scope.groupInfo = [];
+			$scope.onList = 0;
+			$scope.onNotificationList=0;
+			$scope.notificationShow = 0;
+			$scope.NotificationCount = 0;
+			$scope.NotificationList = '';
+			$scope.action = '<?php echo $this->getHelperPluginManager()->getServiceLocator()->get('Application')->getMvcEvent()->getRouteMatch()->getParam('action'); ?>';
+			$scope.Search = function(txtsearch){
+				if($scope.searchFlag==0){
+					$scope.searchFlag=1;
+					$scope.searchActive = 1;
+					 url = baseurl + '/quicksearch';
+					$http.post(url,{searchdata:txtsearch},{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+					).success(function(data, status, headers, config) {
+						 if(data.return_array.process_status == 'success'){
+							 $scope.joingroupStep = 3;
+							 $scope.searchFlag=0;	
+							 $scope.groupInfo = data.return_array.groupinfo;
+							 $scope.userInfo = data.return_array.user_info;
+						 }else{
+							 alert(data.return_array.process_info);
+							 $scope.aboutmeAjax =0;		
+						 }
+
+					}).error(function(data, status, headers, config) {
+						 alert("Error occured. Please try again");
+					}); 
+				}
+			}
+			 window.onclick = function() {
+				if($scope.onList==0){
+					$scope.searchActive = 0;
+					 					
+				}
+				if($scope.onNotificationList==0){
+					$scope.NotificationCount = 0; 
+					$scope.notificationShow = 0;					
+				}
+			 }
+			 $scope.notificationAjax = 0;
+			 $scope.showNotifications = function(){
+				$scope.notificationShow = 1;
+				if( $scope.notificationAjax == 0){
+					$scope.notificationAjax = 1;
+					url = baseurl + '/getNotificationlist';
+					$http({
+					  method: 'POST',
+					  url: url
+					}
+					).success(function(data, status, headers, config) {
+						 if(data.return_array.process_status == 'success'){
+							  $scope.NotificationList = data.return_array.notification_list;
+							  $scope.makeNotificationReaded();
+						 }else{
+							 alert(data.return_array.process_info);
+								
+						 }
+						 $scope.notificationAjax = 0;
+
+					}).error(function(data, status, headers, config) {
+						 alert("Error occured. Please try again");
+						  $scope.notificationAjax = 0;
+					});
+				}
+			 }
+			 $scope.getNotificationCount = function(){
+				url = baseurl + '/getNotificationCount';
+				$http({
+				  method: 'POST',
+				  url: url
+				}
+				).success(function(data, status, headers, config) {
+					 if(data.return_array.process_status == 'success'){
+						  $scope.NotificationCount = data.return_array.notification_count;
+					 }else{
+						 alert(data.return_array.process_info);
+						  	
+					 }
+
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				}); 
+			 }
+			 
+			 $scope.makeNotificationReaded = function(){ 
+				url = baseurl + '/makenotificationreaded';
+				$http({
+				  method: 'POST',
+				  url: url
+				}
+				).success(function(data, status, headers, config) {
+					 ;
+				}).error(function(data, status, headers, config) {
+					;  
+				});
+			 }
+		});
+		$(window).load(function(){ $("#page_main_loadHtml").show(); $("#ajax_loader").hide();
+		<?php if($this->getHelperPluginManager()->getServiceLocator()->get('Application')->getMvcEvent()->getRouteMatch()->getParam('action')=='feeds'){ ?>
+			createMap();
+		<?php } ?>
+			
+		}) ;
+</script>
+    </body>
+</html>
+

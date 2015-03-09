@@ -1,0 +1,32 @@
+<?php
+// module/User/view/user/user/add.phtml:
+$this->headTitle($this->translate('Login'));
+?>
+<h1><?php echo $this->escapeHtml($this->translate('Login')); ?></h1>
+<!--flash Messages.Stored in session-->
+<?php if(isset($flashMessages) && count($flashMessages)) : ?>
+<ul class="session">
+    <?php foreach ($flashMessages as $msg) : ?>
+    <li><?php echo $msg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+
+<!--error Message-->
+<?php if(isset($error) && count($error)) : ?>
+<ul class="error">
+    <?php foreach ($error as $errormsg) : ?>
+    <li><?php echo $errormsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+
+<!--success message-->
+<?php if(isset($success) && count($success)) : ?>
+<ul class="success">
+    <?php foreach ($success as $successmsg) : ?>
+    <li><?php echo $successmsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<a href="<?php echo $this->url('user/resendverification'); ?>">Click here </a>for resend verification code.

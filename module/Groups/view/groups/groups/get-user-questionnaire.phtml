@@ -1,0 +1,23 @@
+<?php
+	if(!empty($error)){	
+		echo "<ul>";
+		foreach($error as $msg){
+			echo "<li>".$msg."</li>";
+		}
+		echo "</ul>";
+	}else{
+		if(!empty($questionnaire)){
+			foreach($questionnaire as $question){
+?>
+	 <div class="question-answers">		 
+		<div class="questoin">Q :<?php echo $question['questions']; ?></div>		 
+		<div class="questoin">A :<?php echo ($question['answer']!='')?$question['answer']:'Not answered'; ?></div>
+	 </div>
+	 <div class="clear"></div>
+<?php
+	}
+	}else{
+		echo "given question not existing in this system";
+	}
+	}
+ ?>

@@ -1,0 +1,34 @@
+<?php
+$title = 'Delete Tag Category';
+$this->headTitle($title);
+?>
+<section id="secondary_bar">
+    <div class="breadcrumbs_container">
+        <article class="breadcrumbs">
+		<a href="<?php echo $this->url('jadmin') ?>">Admin Dashboard </a>
+		<div class="breadcrumb_divider"></div>
+		<a href="<?php echo $this->url('jadmin/admin-tags-category') ?>">Manage Tag categories</a>
+		<div class="breadcrumb_divider"></div>
+		<a href="javascript:void(0);">Delete</a>
+		</article>
+    </div>
+</section><!-- end of secondary bar -->
+<section id="main" class="column">
+	<article class="module width_full">
+		<header><h3><?php echo $this->escapeHtml($title); ?></h3></header>
+		<div class="module_content">
+			<p>Are you sure that you want to delete '<?php echo $this->escapeHtml($tag->tag_category_title); ?>'?</p>
+			<?php 
+			$url = $this->url('jadmin/admin-tag-categories-delete', array('action' => 'delete', 'id'=>$this->id)); ?>
+			<form action="<?php echo $url; ?>" method="post">
+				<div>
+					<input type="hidden" name="id" value="<?php echo (int)$tag->tag_category_id; ?>" />
+					<input type="submit" name="del" value="Yes" />
+					<input type="submit" name="del" value="No" />
+				</div>
+			</form>
+		</div>
+	</article>    
+	<div class="clear"></div>
+	<div class="spacer"></div>
+</section>

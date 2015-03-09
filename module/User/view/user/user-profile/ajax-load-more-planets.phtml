@@ -1,0 +1,27 @@
+<?php $i=0; foreach($planets as $list){ $i++; ?>
+                    <div class="planet-list-outer">
+                        <div class="planet-tab-img"><a href="<?php echo $this->url('groups/planethome',array('group_id'=>$list->parent_seo_title,'planet_id'=>$list->group_seo_title));?>">
+							<?php   if($list->data_content){ ?>
+							<img src="<?php echo $this->basePath() ?>/public/album/<?php echo $list->group_id; ?>/cover/<?php echo $list->data_content; ?>" alt="" />
+							<?php }else{ ?>
+								<img src="<?php echo $this->basePath() ?>/public/images/planet-cover-default.jpg" alt="" />
+							<?php } ?>
+						</a></div>
+                        <div class="planet-details">
+                            <div class="planet-icon"></div>
+                            <div class="planet-head">
+                                <h3><a href="<?php echo $this->url('groups/planethome',array('group_id'=>$list->parent_seo_title,'planet_id'=>$list->group_seo_title));?>"><?php echo $list->group_title; ?></a></h3>
+                                <div class="members-amnt"><?php echo $list->member_count; ?> engaged</div>
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                    </div>
+					<div class="clear"></div>
+					<?php } ?>
+					<?php if($i==0){ ?>
+						No more planets availabe
+					<?php }else{ ?>
+				<div class="load-more-butn">
+                    	<a href="javascript:void(0)" class="blue-butn" id="loadMore_planet">Load more</a>
+                    </div>
+					<?php } ?>

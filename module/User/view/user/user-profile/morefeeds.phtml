@@ -1,0 +1,1187 @@
+ 
+<?php 
+$i=$page*10;
+foreach($feedSummery as $news){
+	$i++;
+	switch($news['type']){
+	case "New Activity":
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> Created a new activity under the group <a href="<?php echo $this->url('groups/planethome', array('action' => 'planethome', 'group_id'=>$news['content']['group_info']->galexy_seo_title, 'planet_id'=>$news['content']['group_info']->group_seo_title)) ?>"><?php echo $news['content']['group_info']->group_title; ?></a></div>
+		<div class="clear"></div>
+		<div class="activity-main-outer">
+			<div class="activity-author"><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>"><?php echo $news['content']['user_given_name']; ?></a></div>
+			<div class="activity-text"><a href="<?php echo $this->url('activity/activity-view', array('action' => 'view', 'group_id'=>$news['content']['group_info']->galexy_seo_title, 'planet_id'=>$news['content']['group_info']->group_seo_title,'id'=>$news['content']['group_activity_id'])) ?>"><?php echo $news['content']['group_activity_title']; ?> on <?php echo date("F d,g A",strtotime($news['content']['group_activity_start_timestamp'])) ?> .</a></div>
+			<div class="activity-text">
+				<?php echo $news['content']['group_activity_content']; ?>
+			</div>
+			<div class="activity-location"><?php echo $news['content']['group_activity_location']; ?></div>
+			<div class="activity-details_planet">
+				<div class="like-comment-outer">
+					<div class="likes act_likes_<?php echo $news['content']['group_activity_id']; ?>" id="act_likes_<?php echo $news['content']['group_activity_id']; ?>">
+						<?php if($news['content']['activity_like']->is_liked){  
+							if($news['content']['group_info']->is_member){
+						?>
+							<a href="javascript:void(0)"  class="activity-unlikes" id="<?php echo $news['content']['group_activity_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>
+						<?php
+							}else{
+						?>
+							<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /> 
+						<?php	}
+						}else{ 
+						if($news['content']['group_info']->is_member){ ?>
+							<a href="javascript:void(0)" id="<?php echo $news['content']['group_activity_id']; ?>" class="activity-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>
+						<?php }else{
+						?>
+							<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+						<?php	} }  
+						 if($news['content']['activity_like']->likes_counts){echo $news['content']['activity_like']->likes_counts;} ?>
+					</div>
+					<input type="hidden" id="galexy_<?php echo $news['content']['group_activity_id']; ?>" value="<?php echo $news['content']['group_info']->galexy_seo_title; ?>" />
+					<input type="hidden" id="planet_<?php echo $news['content']['group_activity_id']; ?>" value="<?php echo $news['content']['group_info']->group_seo_title; ?>" />
+					<div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($news['content']['comment_count']){echo $news['content']['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+					<div class="clear"></div>
+				</div>
+			</div>
+		</div>
+		<div class="clear"></div>
+		<div class="discussion-comments" id="new_activity_comments">
+			<div id="loadmore_<?php echo $i; ?>"><?php if($news['content']['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $i; ?>" class="loadmore_activity_comments">View <span id="comment_count_<?php echo $i; ?>"><?php echo $news['content']['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+			<input type="hidden" id="comment_refer_<?php echo $i; ?>" value="<?php echo $news['content']['group_activity_id']; ?>" />
+			<div id="comment_area_<?php echo $i; ?>" class="activity_comment_area_<?php echo $news['content']['group_activity_id']; ?> activity_comments">
+				<?php  
+					$arr_comments = array();
+					foreach($news['content']['comments'] as $comments){
+						$arr_comments[] = $comments;
+					}
+					$newcommnt =  array_reverse($arr_comments);
+					foreach($newcommnt as $comments){  
+					?>
+					<div class="comments-outer" id="comments-outer-<?php echo $comments->comment_id ?>">
+						<div class="comment-profil-img profile-image-comn" >
+							<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+							<?php if($comments->profile_photo!=''){ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+							<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+								<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+							<?php }else{ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+							<?php } ?>
+							</a>
+						</div>
+						<div class="comment-text comment-text2"  >
+							<span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+							<div class="comment_text_<?php echo $comments->comment_id; ?>" id="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>								
+							<div><?php if($comments->user_id == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a><?php } ?><?php if($comments->user_id == $this->layout()->identity->user_id || $news['content']['is_admin'] ||$news['content']['group_activity_owner_user_id'] == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a><?php } ?></div>								
+							<div class="activity-comment-like" id="comments_likes<?php echo $comments->comment_id; ?>">
+							<?php if($comments->islike){ ?>
+								<?php if($news['content']['group_info']->is_member){ ?>
+									<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+								<?php }else{ ?>
+									<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />
+								<?php } ?>
+							<?php }else{ ?>
+								<?php if($news['content']['group_info']->is_member){ ?>
+									<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+								<?php }else{ ?>
+									<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+								<?php } ?>
+							<?php }?>
+							<?php echo $comments->likes_count; ?>
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				<?php } ?>
+			</div>
+			<?php if($news['content']['group_info']->is_member){ ?>
+			<div class="activity-add-comment">
+				<textarea name="comment" id="comment_<?php echo $news['content']['group_activity_id']; ?>" class="activity_comments" placeholder="Comment"></textarea>
+			</div>
+			<?php } ?>
+		</div>
+	</div>
+<?php 
+	break;
+	case "New Discussion":
+?>
+	<div class="news_outer">	
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> started a new Discussion under the group <a href="<?php echo $this->url('groups/planethome', array('action' => 'planethome', 'group_id'=>$news['content']['group_info']->galexy_seo_title, 'planet_id'=>$news['content']['group_info']->group_seo_title)) ?>"><?php echo $news['content']['group_info']->group_title; ?></a></div>
+		<div class="clear"></div>
+		<div class="activity-main-outer">
+			<div class="activity-author"><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>"><?php echo $news['content']['user_given_name']; ?></a></div>
+		</div>
+		<div class="activity-text">
+			<?php echo $news['content']['group_discussion_content']; ?>
+		</div>
+		<div class="activity-details_planet">
+			<div class="like-comment-outer"> 
+				<div class="likes discussion_likes_<?php echo $news['content']['group_discussion_id']; ?>" id="discussion_likes_<?php echo $news['content']['group_discussion_id']; ?>">
+				<?php if($news['content']['descussion_like']->is_liked){  ?>
+					<?php if($news['content']['group_info']->is_member){ ?>
+						<a href="javascript:void(0)"  class="discussion-unlikes" id="<?php echo $news['content']['group_discussion_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>
+					<?php }else{  ?>
+						<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /> 
+					<?php }
+				}else{ ?> 
+					<?php if($news['content']['group_info']->is_member){ ?>	
+						<a href="javascript:void(0)" id="<?php echo $news['content']['group_discussion_id']; ?>" class="discussion-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>
+					<?php }else{ ?>
+						<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+					<?php } ?>
+				<?php } ?>
+				<?php if($news['content']['descussion_like']->likes_counts){echo $news['content']['descussion_like']->likes_counts;} ?>
+				</div>
+				<input type="hidden" id="discussion_galexy_<?php echo $news['content']['group_discussion_id']; ?>" value="<?php echo $news['content']['group_info']->galexy_seo_title; ?>" />
+				<input type="hidden" id="discussion_planet_<?php echo $news['content']['group_discussion_id']; ?>" value="<?php echo $news['content']['group_info']->group_seo_title; ?>" />
+				<div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($news['content']['comment_count']){echo $news['content']['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+				<div class="clear"></div>
+			</div>						 
+			<div class="clear"></div>
+		</div>
+		<div class="clear"></div>		 
+		<div class="activity-comments" id="new_activity_comments">
+			<div id="loadmore_<?php echo $i; ?>"><?php if($news['content']['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $i; ?>" class="loadmore_discussion_comments">View <span id="comment_count_<?php echo $i; ?>"><?php echo $news['content']['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+			<input type="hidden" id="comment_refer_<?php echo $i; ?>" value="<?php echo $news['content']['group_discussion_id']; ?>" />
+			<div id="comment_area_<?php echo $i; ?>" class="discussion_comment_area_<?php echo $news['content']['group_discussion_id']; ?>">
+				<?php  
+					$arr_comments = array();
+					foreach($news['content']['comments'] as $comments){
+						$arr_comments[] = $comments;
+					}
+					$newcommnt =  array_reverse($arr_comments);
+					foreach($newcommnt as $comments){  
+					?>
+					<div class="comments-outer" id="comments-outer-<?php echo $comments->comment_id ?>">
+						<div class="comment-profil-img profile-image-comn" >
+							<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+							<?php if($comments->profile_photo!=''){ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+							<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+								<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+							<?php }else{ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+							<?php } ?>
+							</a>
+						</div>
+						<div class="comment-text comment-text2" >
+							<span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+							<div id="comment_text_<?php echo $comments->comment_id; ?>" class="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>								
+							<div><?php if($comments->user_id == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a><?php } ?><?php if($comments->user_id == $this->layout()->identity->user_id || $news['content']['is_admin'] ){ ?><a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a><?php } ?></div>								
+							<div class="activity-comment-like comments_likes<?php echo $comments->comment_id; ?>" id="comments_likes<?php echo $comments->comment_id; ?>">
+							<?php if($comments->islike){ ?>
+								<?php if($news['content']['group_info']->is_member){ ?>
+									<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+								<?php }else{ ?>
+									<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />
+								<?php } ?>
+							<?php }else{ ?>
+								<?php if($news['content']['group_info']->is_member){ ?>
+									<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+								<?php }else{ ?>
+									<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+								<?php } ?>
+							<?php }?>
+							<?php echo $comments->likes_count; ?>
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+				<?php } ?>
+			</div>
+			<?php if($news['content']['group_info']->is_member){ ?>
+			<div class="activity-add-comment">
+				<textarea name="comment" id="comment_<?php echo $news['content']['group_discussion_id']; ?>" class="discussion_comments" placeholder="Comment"></textarea>
+			</div>
+			<?php } ?>
+		</div>
+	</div>
+<?php
+	break;
+	case "New Activity Member":
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> joined the activity <a href="<?php echo $this->url('activity/activity-view', array('action' => 'view', 'group_id'=>$news['content']['activity_group']->parent_seo_title, 'planet_id'=>$news['content']['activity_group']->group_seo_title,'id'=>$news['content']['activity_id'])) ?>"><?php echo $news['content']['group_activity_title']; ?></a> under the group <a href="<?php echo $this->url('groups/planethome', array('action' => 'planethome', 'group_id'=>$news['content']['activity_group']->parent_seo_title, 'planet_id'=>$news['content']['activity_group']->group_seo_title)) ?>"><?php echo $news['content']['activity_group']->group_title; ?></a></div>
+		<div class="clear"></div>
+	</div>
+<?php
+	break;
+	case "Activity Like":
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> likes activity <a href="<?php echo $this->url('activity/activity-view', array('action' => 'view', 'group_id'=>$news['content']['group_info']->galexy_seo_title, 'planet_id'=>$news['content']['group_info']->group_seo_title,'id'=>$news['content']['group_activity_id'])) ?>"><?php echo $news['content']['group_activity_title']; ?></a> under the group <a href="<?php echo $this->url('groups/planethome', array('action' => 'planethome', 'group_id'=>$news['content']['group_info']->galexy_seo_title, 'planet_id'=>$news['content']['group_info']->group_seo_title)) ?>"><?php echo $news['content']['group_info']->group_title; ?></a></div>
+		<div class="clear"></div>
+		<div class="activity-main-outer">
+			<div class="activity-author"><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>"><?php echo $news['content']['user_given_name']; ?></a></div>
+			<div class="activity-text"><a href="<?php echo $this->url('activity/activity-view', array('action' => 'view', 'group_id'=>$news['content']['group_info']->galexy_seo_title, 'planet_id'=>$news['content']['group_info']->group_seo_title,'id'=>$news['content']['group_activity_id'])) ?>"><?php echo $news['content']['group_activity_title']; ?> on <?php echo date("F d,g A",strtotime($news['content']['group_activity_start_timestamp'])) ?> .</a></div>
+			<div class="activity-text">
+				<?php echo $news['content']['group_activity_content']; ?>
+			</div>
+			<div class="activity-location"><?php echo $news['content']['group_activity_location']; ?></div>
+			<div class="activity-details_planet">
+				<div class="like-comment-outer">
+					<div class="likes act_likes_<?php echo $news['content']['group_activity_id']; ?>" id="act_likes_<?php echo $news['content']['group_activity_id']; ?>">
+					<?php if($news['content']['activity_like']->is_liked){  ?>
+						<?php if($news['content']['group_info']->is_member){ ?>
+							<a href="javascript:void(0)"  class="activity-unlikes" id="<?php echo $news['content']['group_activity_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>
+						<?php }else{  ?>
+							<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /> 
+						<?php }
+					}else{ ?> 
+						<?php if($news['content']['group_info']->is_member){ ?>	
+							<a href="javascript:void(0)" id="<?php echo $news['content']['group_activity_id']; ?>" class="activity-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>
+						<?php }else{ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+						<?php } ?>
+					<?php } ?>
+					<?php if($news['content']['activity_like']->likes_counts){echo $news['content']['activity_like']->likes_counts;} ?>
+					</div>
+					<input type="hidden" id="galexy_<?php echo $news['content']['group_activity_id']; ?>" value="<?php echo $news['content']['group_info']->galexy_seo_title; ?>" />
+					<input type="hidden" id="planet_<?php echo $news['content']['group_activity_id']; ?>" value="<?php echo $news['content']['group_info']->group_seo_title; ?>" />
+					<div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($news['content']['comment_count']){echo $news['content']['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+					<div class="clear"></div>
+				</div>						 
+				<div class="clear"></div>
+			</div>
+		</div>
+		<div class="clear"></div>
+		<div class="activity-comments" id="new_activity_comments">
+			<div id="loadmore_<?php echo $i; ?>"><?php if($news['content']['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $i; ?>" class="loadmore_activity_comments">View <span id="comment_count_<?php echo $i; ?>"><?php echo $news['content']['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+			<input type="hidden" id="comment_refer_<?php echo $i; ?>" value="<?php echo $news['content']['group_activity_id']; ?>" />
+			<div id="comment_area_<?php echo $i; ?>" class="activity_comment_area_<?php echo $news['content']['group_activity_id']; ?>">
+				<?php  
+				$arr_comments = array();
+				foreach($news['content']['comments'] as $comments){
+					$arr_comments[] = $comments;
+				}
+				$newcommnt =  array_reverse($arr_comments);
+				foreach($newcommnt as $comments){  
+				?>
+				<div class="comments-outer" id="comments-outer-<?php echo $comments->comment_id ?>">
+					<div class="comment-profil-img profile-image-comn" >
+						<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+						<?php if($comments->profile_photo!=''){ ?>
+						<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+						<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+							<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+						<?php }else{ ?>
+						<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+						<?php } ?>
+						</a>
+					</div>
+					<div class="comment-text comment-text2" >
+						<span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+						 <div class="comment_text_<?php echo $comments->comment_id; ?>" id="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>							
+						<div><?php if($comments->user_id == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a><?php } ?><?php if($comments->user_id == $this->layout()->identity->user_id || $news['content']['is_admin'] ||$news['content']['group_activity_owner_user_id'] == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a><?php } ?></div>							
+						<div class="activity-comment-like comments_likes<?php echo $comments->comment_id; ?>" id="comments_likes<?php echo $comments->comment_id; ?>">
+						<?php if($comments->islike){ ?>
+							<?php if($news['content']['group_info']->is_member){ ?>
+								<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+							<?php }else{ ?>
+								<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />
+							<?php } ?>
+						<?php }else{ ?>
+							<?php if($news['content']['group_info']->is_member){ ?>
+								<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+							<?php }else{ ?>
+								<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+							<?php } ?>
+						<?php }?>
+						<?php echo $comments->likes_count; ?>
+						</div>
+					</div>
+					<div class="clear"></div>
+				</div>
+				<?php } ?>
+			</div>
+			<?php if($news['content']['group_info']->is_member){ ?>
+			<div class="activity-add-comment">
+				<textarea name="comment" id="comment_<?php echo $news['content']['group_activity_id']; ?>" class="activity_comments" placeholder="Comment"></textarea>
+			</div>
+			<?php } ?>
+		</div>
+	</div>
+<?php
+	break;
+	case "Activity Comment":
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> Commented on the activity <a href="<?php echo $this->url('activity/activity-view', array('action' => 'view', 'group_id'=>$news['content']['group_info']->galexy_seo_title, 'planet_id'=>$news['content']['group_info']->group_seo_title,'id'=>$news['content']['group_activity_id'])) ?>"><?php echo $news['content']['group_activity_title']; ?></a> under the group <a href="<?php echo $this->url('groups/planethome', array('action' => 'planethome', 'group_id'=>$news['content']['group_info']->galexy_seo_title, 'planet_id'=>$news['content']['group_info']->group_seo_title)) ?>"><?php echo $news['content']['group_info']->group_title; ?></a></div>
+		<div class="clear"></div>
+		<div class="activity-main-outer">
+			<div class="activity-author"><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>"><?php echo $news['content']['user_given_name']; ?></a></div>
+			<div class="activity-text"><a href="<?php echo $this->url('activity/activity-view', array('action' => 'view', 'group_id'=>$news['content']['group_info']->galexy_seo_title, 'planet_id'=>$news['content']['group_info']->group_seo_title,'id'=>$news['content']['group_activity_id'])) ?>"><?php echo $news['content']['group_activity_title']; ?> on <?php echo date("F d,g A",strtotime($news['content']['group_activity_start_timestamp'])) ?> .</a></div>
+			<div class="activity-text">
+				<?php echo $news['content']['group_activity_content']; ?>
+			</div>
+			<div class="activity-location"><?php echo $news['content']['group_activity_location']; ?></div>
+			<div class="activity-details_planet">
+				<div class="like-comment-outer">
+					<div class="likes act_likes_<?php echo $news['content']['group_activity_id']; ?>" id="act_likes_<?php echo $news['content']['group_activity_id']; ?>">
+					<?php if($news['content']['activity_like']->is_liked){  ?>
+						<?php if($news['content']['group_info']->is_member){ ?>
+							<a href="javascript:void(0)"  class="activity-unlikes" id="<?php echo $news['content']['group_activity_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>
+						<?php }else{  ?>
+							<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /> 
+						<?php }
+					}else{ ?> 
+						<?php if($news['content']['group_info']->is_member){ ?>	
+							<a href="javascript:void(0)" id="<?php echo $news['content']['group_activity_id']; ?>" class="activity-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>
+						<?php }else{ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+						<?php } ?>
+					<?php } ?>
+					<?php if($news['content']['activity_like']->likes_counts){echo $news['content']['activity_like']->likes_counts;} ?>
+					</div>
+					<input type="hidden" id="galexy_<?php echo $news['content']['group_activity_id']; ?>" value="<?php echo $news['content']['group_info']->galexy_seo_title; ?>" />
+					<input type="hidden" id="planet_<?php echo $news['content']['group_activity_id']; ?>" value="<?php echo $news['content']['group_info']->group_seo_title; ?>" />
+					<div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($news['content']['comment_count']){echo $news['content']['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+					<div class="clear"></div>
+				</div>						 
+				<div class="clear"></div>
+			</div>
+		</div>
+		<div class="clear"></div>
+		<div class="activity-comments" id="new_activity_comments">
+			<div id="loadmore_<?php echo $i; ?>"><?php if($news['content']['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $i; ?>" class="loadmore_activity_comments">View <span id="comment_count_<?php echo $i; ?>"><?php echo $news['content']['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+			<input type="hidden" id="comment_refer_<?php echo $i; ?>" value="<?php echo $news['content']['group_activity_id']; ?>" />
+			<div id="comment_area_<?php echo $i; ?>" class="activity_comment_area_<?php echo $news['content']['group_activity_id']; ?>">
+				<?php  
+							$arr_comments = array();
+							foreach($news['content']['comments'] as $comments){
+								$arr_comments[] = $comments;
+							}
+							$newcommnt =  array_reverse($arr_comments);
+							foreach($newcommnt as $comments){  
+							?>
+							<div class="comments-outer activity_comments_outer comments-outer-<?php echo $comments->comment_id ?>" id="comments-outer-<?php echo $comments->comment_id ?>">
+								<div class="comment-profil-img profile-image-comn" >
+									<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+													<?php if($comments->profile_photo!=''){ ?>
+													<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+													<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+														<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+													<?php }else{ ?>
+													<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+													<?php } ?>
+													</a>
+									</div>
+								<div class="comment-text comment-text2" >
+									<span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+									  <div class="comment_text_<?php echo $comments->comment_id; ?>" id="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>
+										
+										<div><?php if($comments->user_id == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a><?php } ?><?php if($comments->user_id == $this->layout()->identity->user_id || $news['content']['is_admin'] ||$news['content']['group_activity_owner_user_id'] == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a><?php } ?></div>
+										
+									<div class="activity-comment-like comments_likes<?php echo $comments->comment_id; ?>" id="comments_likes<?php echo $comments->comment_id; ?>">
+									<?php if($comments->islike){ ?>
+										<?php if($news['content']['group_info']->is_member){ ?>
+											<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+										<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />
+										<?php } ?>
+									<?php }else{ ?>
+										<?php if($news['content']['group_info']->is_member){ ?>
+											<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+										<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+										<?php } ?>
+									<?php }?>
+									<?php echo $comments->likes_count; ?>
+									</div>
+								</div>
+								<div class="clear"></div>
+							</div>
+							<?php } ?>
+			</div>
+			<?php if($news['content']['group_info']->is_member){ ?>
+			<div class="activity-add-comment">
+				<textarea name="comment" id="comment_<?php echo $news['content']['group_activity_id']; ?>" class="activity_comments" placeholder="Comment"></textarea>
+			</div>
+			<?php } ?>
+		</div>
+	</div>
+<?php
+	break;
+	case "Discussion Like":
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> like the Discussion under the group <a href="<?php echo $this->url('groups/planethome', array('action' => 'planethome', 'group_id'=>$news['content']['group_info']->galexy_seo_title, 'planet_id'=>$news['content']['group_info']->group_seo_title)) ?>"><?php echo $news['content']['group_info']->group_title; ?></a></div>
+		<div class="clear"></div>
+		<div class="activity-main-outer">
+			<div class="activity-author"><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>"><?php echo $news['content']['user_given_name']; ?></a></div>
+		</div>
+		<div class="activity-text">
+			<?php echo $news['content']['group_discussion_content']; ?>
+		</div>
+		<div class="activity-details_planet">
+			<div class="like-comment-outer"> 
+				<div class="likes discussion_likes_<?php echo $news['content']['group_discussion_id']; ?>" id="discussion_likes_<?php echo $news['content']['group_discussion_id']; ?>">
+				<?php if($news['content']['descussion_like']->is_liked){  ?>
+					<?php if($news['content']['group_info']->is_member){ ?>
+						<a href="javascript:void(0)"  class="discussion-unlikes" id="<?php echo $news['content']['group_discussion_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>
+					<?php }else{  ?>
+						<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /> 
+					<?php }
+				}else{ ?> 
+					<?php if($news['content']['group_info']->is_member){ ?>	
+						<a href="javascript:void(0)" id="<?php echo $news['content']['group_discussion_id']; ?>" class="discussion-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>
+					<?php }else{ ?>
+						<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+					<?php } ?>
+				<?php } ?>
+				<?php if($news['content']['descussion_like']->likes_counts){echo $news['content']['descussion_like']->likes_counts;} ?>
+				</div>
+				<input type="hidden" id="discussion_galexy_<?php echo $news['content']['group_discussion_id']; ?>" value="<?php echo $news['content']['group_info']->galexy_seo_title; ?>" />
+				<input type="hidden" id="discussion_planet_<?php echo $news['content']['group_discussion_id']; ?>" value="<?php echo $news['content']['group_info']->group_seo_title; ?>" />
+				<div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($news['content']['comment_count']){echo $news['content']['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+				<div class="clear"></div>
+			</div>						 
+			<div class="clear"></div>
+		</div>
+		<div class="clear"></div>
+		<div class="discussion-comments" id="new_activity_comments">
+		<div id="loadmore_<?php echo $i; ?>"><?php if($news['content']['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $i; ?>" class="loadmore_discussion_comments">View <span id="comment_count_<?php echo $i; ?>"><?php echo $news['content']['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+			<input type="hidden" id="comment_refer_<?php echo $i; ?>" value="<?php echo $news['content']['group_discussion_id']; ?>" />
+			<div id="comment_area_<?php echo $i; ?>" class="discussion_comment_area_<?php echo $news['content']['group_discussion_id']; ?>">
+				<?php  
+							$arr_comments = array();
+							foreach($news['content']['comments'] as $comments){
+								$arr_comments[] = $comments;
+							}
+							$newcommnt =  array_reverse($arr_comments);
+							foreach($newcommnt as $comments){  
+							?>
+							<div class="comments-outer discussion_comment_outer comments-outer-<?php echo $comments->comment_id ?>" id="comments-outer-<?php echo $comments->comment_id ?>">
+								<div class="comment-profil-img profile-image-comn" >
+									<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+											<?php if($comments->profile_photo!=''){ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+											<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+												<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+											<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php } ?>
+											</a>
+									</div>
+								<div class="comment-text comment-text2" >
+									<span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+									  <div id="comment_text_<?php echo $comments->comment_id; ?>" class="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>
+										
+										<div><?php if($comments->user_id == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a><?php } ?><?php if($comments->user_id == $this->layout()->identity->user_id || $news['content']['is_admin'] ){ ?><a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a><?php } ?></div>
+										
+									<div class="activity-comment-like comments_likes<?php echo $comments->comment_id; ?>" id="comments_likes<?php echo $comments->comment_id; ?>">
+									<?php if($comments->islike){ ?>
+										<?php if($news['content']['group_info']->is_member){ ?>
+											<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+										<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />
+										<?php } ?>
+									<?php }else{ ?>
+										<?php if($news['content']['group_info']->is_member){ ?>
+											<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+										<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+										<?php } ?>
+									<?php }?>
+									<?php echo $comments->likes_count; ?>
+									</div>
+								</div>
+								<div class="clear"></div>
+							</div>
+							<?php } ?>
+			</div>
+			<?php if($news['content']['group_info']->is_member){ ?>
+			<div class="activity-add-comment">
+				<textarea name="comment" id="comment_<?php echo $news['content']['group_discussion_id']; ?>" class="discussion_comments" placeholder="Comment"></textarea>
+			</div>
+			<?php } ?>
+		</div>
+	</div>
+<?php
+	break;
+	case "Discussion Comment":	
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> commented on the discussion under the group <a href="<?php echo $this->url('groups/planethome', array('action' => 'planethome', 'group_id'=>$news['content']['group_info']->galexy_seo_title, 'planet_id'=>$news['content']['group_info']->group_seo_title)) ?>"><?php echo $news['content']['group_info']->group_title; ?></a></div>
+		<div class="clear"></div>
+		<div class="activity-main-outer">
+			<div class="activity-author"><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>"><?php echo $news['content']['user_given_name']; ?></a></div>
+		</div>
+		<div class="activity-text">
+			<?php echo $news['content']['group_discussion_content']; ?>
+		</div>
+		<div class="activity-details_planet">
+			<div class="like-comment-outer"> 
+				<div class="likes discussion_likes_<?php echo $news['content']['group_discussion_id']; ?>" id="discussion_likes_<?php echo $news['content']['group_discussion_id']; ?>">
+				<?php if($news['content']['descussion_like']->is_liked){  ?>
+					<?php if($news['content']['group_info']->is_member){ ?>
+						<a href="javascript:void(0)"  class="discussion-unlikes" id="<?php echo $news['content']['group_discussion_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>
+					<?php }else{  ?>
+						<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /> 
+					<?php }
+				}else{ ?> 
+					<?php if($news['content']['group_info']->is_member){ ?>	
+						<a href="javascript:void(0)" id="<?php echo $news['content']['group_discussion_id']; ?>" class="discussion-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>
+					<?php }else{ ?>
+						<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+					<?php } ?>
+				<?php } ?>
+				<?php if($news['content']['descussion_like']->likes_counts){echo $news['content']['descussion_like']->likes_counts;} ?>
+				</div>
+				<input type="hidden" id="discussion_galexy_<?php echo $news['content']['group_discussion_id']; ?>" value="<?php echo $news['content']['group_info']->galexy_seo_title; ?>" />
+				<input type="hidden" id="discussion_planet_<?php echo $news['content']['group_discussion_id']; ?>" value="<?php echo $news['content']['group_info']->group_seo_title; ?>" />
+				<div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($news['content']['comment_count']){echo $news['content']['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+				<div class="clear"></div>
+			</div>						 
+			<div class="clear"></div>
+		</div>
+		<div class="clear"></div>
+		<div class="discussion-comments" id="new_activity_comments">
+		<div id="loadmore_<?php echo $i; ?>"><?php if($news['content']['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $i; ?>" class="loadmore_discussion_comments">View <span id="comment_count_<?php echo $i; ?>"><?php echo $news['content']['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+			<input type="hidden" id="comment_refer_<?php echo $i; ?>" value="<?php echo $news['content']['group_discussion_id']; ?>" />
+			<div id="comment_area_<?php echo $i; ?>" class="discussion_comment_area_<?php echo $news['content']['group_discussion_id']; ?>">
+				<?php  
+							$arr_comments = array();
+							foreach($news['content']['comments'] as $comments){
+								$arr_comments[] = $comments;
+							}
+							$newcommnt =  array_reverse($arr_comments);
+							foreach($newcommnt as $comments){  
+							?>
+							<div class="comments-outer discussion_comment_outer comments-outer-<?php echo $comments->comment_id ?>" id="comments-outer-<?php echo $comments->comment_id ?>">
+								<div class="comment-profil-img profile-image-comn" >
+									<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+											<?php if($comments->profile_photo!=''){ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+											<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+												<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+											<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php } ?>
+											</a>
+									</div>
+								<div class="comment-text comment-text2" >
+									<span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+									  <div id="comment_text_<?php echo $comments->comment_id; ?>" class="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>
+										
+										<div><?php if($comments->user_id == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a><?php } ?><?php if($comments->user_id == $this->layout()->identity->user_id || $news['content']['is_admin'] ){ ?><a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a><?php } ?></div>
+										
+									<div class="activity-comment-like comments_likes<?php echo $comments->comment_id; ?>" id="comments_likes<?php echo $comments->comment_id; ?>">
+									<?php if($comments->islike){ ?>
+										<?php if($news['content']['group_info']->is_member){ ?>
+											<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+										<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />
+										<?php } ?>
+									<?php }else{ ?>
+										<?php if($news['content']['group_info']->is_member){ ?>
+											<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+										<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+										<?php } ?>
+									<?php }?>
+									<?php echo $comments->likes_count; ?>
+									</div>
+								</div>
+								<div class="clear"></div>
+							</div>
+							<?php } ?>
+			</div>
+			<?php if($news['content']['group_info']->is_member){ ?>
+			<div class="activity-add-comment">
+				<textarea name="comment" id="comment_<?php echo $news['content']['group_discussion_id']; ?>" class="discussion_comments" placeholder="Comment"></textarea>
+			</div>
+			<?php } ?>
+		</div>
+	</div>
+<?php
+	break;
+	case "New Group Members":
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> joined the group <a href="<?php echo $this->url('groups/planethome', array('action' => 'planethome', 'group_id'=>$news['content']['parent_seo_title'], 'planet_id'=>$news['content']['group_seo_title'])) ?>"><?php echo $news['content']['group_title']; ?></a></div>
+		<div class="clear"></div>
+	</div>
+<?php
+	break;
+	case "New Group Albums":
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> created a new album<a href="<?php echo $this->url('groups/group-album', array('action' => 'view', 'group_id'=>$news['content']['parent_seo_title'], 'sub_group_id'=>$news['content']['group_seo_title'],'id'=>$news['content']['album_seotitle'])) ?>"> <?php echo $news['content']['album_title'] ?></a> under  the group <a href="<?php echo $this->url('groups/planethome', array('action' => 'planethome', 'group_id'=>$news['content']['parent_seo_title'], 'planet_id'=>$news['content']['group_seo_title'])) ?>"><?php echo $news['content']['group_title']; ?></a></div>
+		<div class="clear"></div>
+	</div>
+<?php
+	break;
+	case "New Group Album Pictures":
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> added an image to the album<a href="<?php echo $this->url('groups/group-album', array('action' => 'view', 'group_id'=>$news['content']['parent_seo_title'], 'sub_group_id'=>$news['content']['group_seo_title'],'id'=>$news['content']['album_seotitle'])) ?>"> <?php echo $news['content']['album_title'] ?></a> under  the group <a href="<?php echo $this->url('groups/planethome', array('action' => 'planethome', 'group_id'=>$news['content']['parent_seo_title'], 'planet_id'=>$news['content']['group_seo_title'])) ?>"><?php echo $news['content']['group_title']; ?></a></div>
+		<div class="clear"></div>
+		<div class="activity-details_planet">
+			<div class="preview-img">	
+				<?php if($news['content']['data_type'] == 'image'){ ?>
+					<div class="album-img" id="album-img-<?php echo $news['content']['data_id']; ?>">
+						<a href="<?php echo $this->basePath(); ?>/album/photo/<?php echo $news['content']['data_id']; ?>"><img src="<?php echo $this->basePath()?>/public/album/<?php echo $news['content']['group_id'].'/'.$news['content']['album_id'].'/medium/medium-'.$news['content']['data_content'];?>" /></a>
+					</div>
+				<?php }
+					if($news['content']['data_type'] == 'youtube'){ ?>
+						<a href="<?php echo $this->basePath(); ?>/album/photo/<?php echo $news['content']['data_id']; ?>">
+							<?php $url = $news['content']['data_content'];
+								preg_match('/[\\?\\&]v=([^\\?\\&]+)/',$url,$matches);
+								$id = $matches[1];					 
+								$width = '700';
+								$height = '390';
+								echo '<object width="' . $width . '" height="' . $height . '"><param name="movie" value="http://www.youtube.com/v/' . $id . '&amp;hl=en_US&amp;fs=1?rel=0"></param><param name="allowFullScreen" value="true"></param><param name="allowscriptaccess" value="always"></param><embed src="http://www.youtube.com/v/' . $id . '&amp;hl=en_US&amp;fs=1?rel=0" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="' . $width . '" height="' . $height . '"></embed></object>';?>
+						</a>
+				<?php	}
+				?>
+			</div>
+			<div class="like-comment-outer"> 
+				<div class="likes group_picture_likes group_picture_likes_<?php echo $news['content']['data_id']; ?>" id="group_picture_likes_<?php echo $news['content']['data_id']; ?>">
+				<?php if($news['content']['file_like']->is_liked){  ?>						 
+						<a href="javascript:void(0)"  class="album-file-unlikes" id="<?php echo $news['content']['data_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>						 
+				<?php }else{ ?>						 
+						<a href="javascript:void(0)" id="<?php echo $news['content']['data_id']; ?>" class="album-file-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>						
+				<?php } ?>
+				<?php if($news['content']['file_like']->likes_counts){echo $news['content']['file_like']->likes_counts;} ?>				 
+				</div>
+				<input type="hidden" id="groupalbum_galexy_<?php echo $news['content']['data_id']; ?>" value="<?php echo $news['content']['parent_seo_title']; ?>" />
+				<input type="hidden" id="groupalbum_planet_<?php echo $news['content']['data_id']; ?>" value="<?php echo $news['content']['group_seo_title']; ?>" />
+				<div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($news['content']['comment_count']){echo $news['content']['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+				<div class="clear"></div>
+			</div>						 
+			<div class="clear"></div>
+		</div>
+		<div class="clear"></div>
+		<div class="groupalbum-comments" id="new_activity_comments">
+			<div id="loadmore_<?php echo $i; ?>"><?php if($news['content']['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $i; ?>" class="loadmore_groupalbum_comments">View <span id="comment_count_<?php echo $i; ?>"><?php echo $news['content']['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+			<input type="hidden" id="comment_refer_<?php echo $i; ?>" value="<?php echo $news['content']['data_id']; ?>" />
+			<div id="comment_area_<?php echo $i; ?>" class="group_picture_comment_area_<?php echo $news['content']['data_id']; ?>">
+				<?php  
+				$arr_comments = array();
+				foreach($news['content']['comments'] as $comments){
+					$arr_comments[] = $comments;
+				}
+				$newcommnt =  array_reverse($arr_comments);
+				foreach($newcommnt as $comments){  
+				?>
+				<div class="comment-container comments-outer-<?php echo $comments->comment_id ?>" id="comments-outer-<?php echo $comments->comment_id ?>">
+					<div class="comment-profil-img">
+						 <a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+							<?php if($comments->profile_photo!=''){ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+							<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+								<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+							<?php }else{ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+							<?php } ?>
+							</a>
+					</div>
+					<div class="comment-text">
+						<span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+						 <div id="comment_text_<?php echo $comments->comment_id; ?>" class="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>
+						
+						<div><?php if($comments->user_id == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a><?php } ?><?php if($comments->user_id == $this->layout()->identity->user_id || $news['content']['added_user_id']== $this->layout()->identity->user_id ||$news['content']['is_admin'] ){ ?><a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a><?php } ?></div>
+						
+					</div>
+					<div class="comment-like">
+						 <div class="activity-comment-like comments_likes<?php echo $comments->comment_id; ?>" id="comments_likes<?php echo $comments->comment_id; ?>">
+							<?php if($comments->islike){ ?>
+								 
+								<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+								 
+							<?php }else{ ?>
+								 
+									<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+								 
+							<?php }?>
+							<?php echo $comments->likes_count; ?>
+							</div>
+					</div>
+					<div class="clear"></div>
+				</div>
+				<?php } ?>
+			</div>			 
+			<div class="activity-add-comment">
+				<textarea name="comment" id="comment_<?php echo $news['content']['data_id']; ?>" class="group_picture_comments" placeholder="Comment"></textarea>
+			</div>			
+		</div>
+	</div>	
+<?php
+	break;
+	case "All Tagged Pictures":
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> tegged you in this image</div>
+		<div class="clear"></div>
+		<div class="activity-details_planet">
+			<div class="preview-img">
+				<div class="album-img" id="album-img-<?php echo $news['content']['data_id']; ?>">
+					<?php if($news['content']['album_type'] == 'Media'){ ?>
+					<a href="<?php echo $this->basePath(); ?>/album/photo/<?php echo $news['content']['data_id']; ?>"><img src="<?php echo $this->basePath()?>/public/album/<?php echo $news['content']['group_info']->group_id.'/'.$news['content']['album_id'].'/medium/medium-'.$news['content']['data_content'];?>" /></a>
+					<?php }else{ ?>
+					<a href="<?php echo $this->basePath(); ?>/album/photo/<?php echo $news['content']['data_id']; ?>"><img src="<?php echo $this->basePath()?>/public/album/profile/<?php echo $news['content']['album_user_id'].'/'.$news['content']['album_id'].'/medium/medium-'.$news['content']['data_content'];?>" /></a>
+					<?php } ?>
+				</div>	
+			</div>
+			<div class="likes-outer">
+				<div class="like-comment-outer" >
+					<div class="likes <?php echo ($news['content']['album_type'] == 'Media')?'group_picture_likes group_picture_likes_'.$news['content']['data_id']:'user_picture_likes user_picture_likes_'.$news['content']['data_id']; ?>" id="<?php echo ($news['content']['album_type'] == 'Media')?'group_tag_likes_'.$news['content']['data_id']:'user_tag_likes_'.$news['content']['data_id']; ?>">
+					<?php if($news['content']['file_like']->is_liked){  ?>						 
+							<a href="javascript:void(0)"  class="album-file-unlikes" id="<?php echo $news['content']['data_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>						 
+					<?php }else{ ?>						 
+							<a href="javascript:void(0)" id="<?php echo $news['content']['data_id']; ?>" class="album-file-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>						
+					<?php } ?>
+					<?php if($news['content']['file_like']->likes_counts){echo $news['content']['file_like']->likes_counts;} ?>
+					</div>
+					<div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($news['content']['comment_count']){echo $news['content']['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+					<div class="clear"></div>
+					<?php if($news['content']['album_type'] == 'Media'){ ?>
+					<input type="hidden" id="groupalbum_galexy_<?php echo $news['content']['data_id']; ?>" value="<?php echo $news['content']['group_info']->parent_seo_title; ?>" />
+					<input type="hidden" id="groupalbum_planet_<?php echo $news['content']['data_id']; ?>" value="<?php echo $news['content']['group_info']->group_seo_title; ?>" />
+					<?php } ?>
+				</div>
+				<div class="photo-location"><?php echo $news['content']['album_location']; ?></div>
+				<div class="clear"></div>
+			</div>
+		</div>
+		<div class="clear"></div>
+		<div class="<?php echo ($news['content']['album_type'] == 'Media')?'groupalbum-comments':'userfile-comments'; ?>" id="new_activity_comments">
+			<div id="loadmore_<?php echo $i; ?>"><?php if($news['content']['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $i; ?>" class="<?php echo ($news['content']['album_type'] == 'Media')?'loadmore_groupalbum_comments':'loadmore_userfile_comments'; ?>">View <span id="comment_count_<?php echo $i; ?>"><?php echo $news['content']['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+			<input type="hidden" id="comment_refer_<?php echo $i; ?>" value="<?php echo $news['content']['data_id']; ?>" />
+			<div id="comment_area_<?php echo $i; ?>" class="<?php echo ($news['content']['album_type'] == 'Media')?'group_picture_comment_area_'.$news['content']['data_id']:'user_picture_comment_area_'.$news['content']['data_id']; ?>">
+				<?php  
+				$arr_comments = array();
+				foreach($news['content']['comments'] as $comments){
+					$arr_comments[] = $comments;
+				}
+				$newcommnt =  array_reverse($arr_comments);
+				foreach($newcommnt as $comments){  
+				?>
+				<div class="comment-container comments-outer-<?php echo $comments->comment_id ?>" id="comments-outer-<?php echo $comments->comment_id ?>">
+					<div class="comment-profil-img">
+						 <a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+							<?php if($comments->profile_photo!=''){ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+							<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+								<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+							<?php }else{ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+							<?php } ?>
+							</a>
+					</div>
+					<div class="comment-text">
+						<span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+						 <div id="comment_text_<?php echo $comments->comment_id; ?>" class="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>
+						
+						<div><?php if($comments->user_id == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a><?php } ?><?php if($comments->user_id == $this->layout()->identity->user_id || $news['content']['added_user_id']== $this->layout()->identity->user_id ||$news['content']['is_admin'] ){ ?><a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a><?php } ?></div>
+						
+					</div>
+					<div class="comment-like">
+						 <div class="activity-comment-like comments_likes<?php echo $comments->comment_id; ?>" id="comments_likes<?php echo $comments->comment_id; ?>">
+							<?php if($comments->islike){ ?>
+								 
+								<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+								 
+							<?php }else{ ?>
+								 
+									<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+								 
+							<?php }?>
+							<?php echo $comments->likes_count; ?>
+							</div>
+					</div>
+					<div class="clear"></div>
+				</div>
+				<?php } ?>
+			</div>			 
+			<div class="activity-add-comment">
+				<textarea name="comment" id="comment_<?php echo $news['content']['data_id']; ?>" class="<?php echo ($news['content']['album_type'] == 'Media')?'group_picture_comments':'user_picture_comments'; ?>" placeholder="Comment"></textarea>
+			</div>			
+		</div>
+	</div>
+<?php
+	break;
+	case "All Picture Like":
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> Like this image</div>
+		<div class="clear"></div>
+		<div class="activity-details_planet">
+			<div class="preview-img">
+				<div class="album-img" id="album-img-<?php echo $news['content']['data_id']; ?>">
+					<?php if($news['content']['album_type'] == 'Media'){ ?>
+					<a href="<?php echo $this->basePath(); ?>/album/photo/<?php echo $news['content']['data_id']; ?>"><img src="<?php echo $this->basePath()?>/public/album/<?php echo $news['content']['group_info']->group_id.'/'.$news['content']['album_id'].'/medium/medium-'.$news['content']['data_content'];?>" /></a>
+					<?php }else{ ?>
+					<a href="<?php echo $this->basePath(); ?>/album/photo/<?php echo $news['content']['data_id']; ?>"><img src="<?php echo $this->basePath()?>/public/album/profile/<?php echo $news['content']['album_user_id'].'/'.$news['content']['album_id'].'/medium/medium-'.$news['content']['data_content'];?>" /></a>
+					<?php } ?>
+				</div>	
+			</div>
+			<div class="likes-outer">
+				<div class="like-comment-outer" >
+					<div class="likes <?php echo ($news['content']['album_type'] == 'Media')?'group_picture_likes group_picture_likes_'.$news['content']['data_id']:'user_picture_likes user_picture_likes_'.$news['content']['data_id']; ?>" id="<?php echo ($news['content']['album_type'] == 'Media')?'group_tag_likes_'.$news['content']['data_id']:'user_tag_likes_'.$news['content']['data_id']; ?>">
+					<?php if($news['content']['file_like']->is_liked){  ?>						 
+							<a href="javascript:void(0)"  class="album-file-unlikes" id="<?php echo $news['content']['data_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>						 
+					<?php }else{ ?>						 
+							<a href="javascript:void(0)" id="<?php echo $news['content']['data_id']; ?>" class="album-file-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>						
+					<?php } ?>
+					<?php if($news['content']['file_like']->likes_counts){echo $news['content']['file_like']->likes_counts;} ?>
+					</div>
+					<div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($news['content']['comment_count']){echo $news['content']['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+					<div class="clear"></div>
+					<?php if($news['content']['album_type'] == 'Media'){ ?>
+					<input type="hidden" id="groupalbum_galexy_<?php echo $news['content']['data_id']; ?>" value="<?php echo $news['content']['group_info']->parent_seo_title; ?>" />
+					<input type="hidden" id="groupalbum_planet_<?php echo $news['content']['data_id']; ?>" value="<?php echo $news['content']['group_info']->group_seo_title; ?>" />
+					<?php } ?>
+				</div>
+				<div class="photo-location"><?php echo $news['content']['album_location']; ?></div>
+				<div class="clear"></div>
+			</div>
+		</div>
+		<div class="clear"></div>
+		<div class="<?php echo ($news['content']['album_type'] == 'Media')?'groupalbum-comments':'userfile-comments'; ?>" id="new_activity_comments">
+			<div id="loadmore_<?php echo $i; ?>"><?php if($news['content']['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $i; ?>" class="<?php echo ($news['content']['album_type'] == 'Media')?'loadmore_groupalbum_comments':'loadmore_userfile_comments'; ?>">View <span id="comment_count_<?php echo $i; ?>"><?php echo $news['content']['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+			<input type="hidden" id="comment_refer_<?php echo $i; ?>" value="<?php echo $news['content']['data_id']; ?>" />
+			<div id="comment_area_<?php echo $i; ?>" class="<?php echo ($news['content']['album_type'] == 'Media')?'group_picture_comment_area_'.$news['content']['data_id']:'user_picture_comment_area_'.$news['content']['data_id']; ?>">
+				<?php  
+				$arr_comments = array();
+				foreach($news['content']['comments'] as $comments){
+					$arr_comments[] = $comments;
+				}
+				$newcommnt =  array_reverse($arr_comments);
+				foreach($newcommnt as $comments){  
+				?>
+				<div class="comment-container comments-outer-<?php echo $comments->comment_id ?>" id="comments-outer-<?php echo $comments->comment_id ?>">
+					<div class="comment-profil-img">
+						 <a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+							<?php if($comments->profile_photo!=''){ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+							<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+								<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+							<?php }else{ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+							<?php } ?>
+							</a>
+					</div>
+					<div class="comment-text">
+						<span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+						 <div id="comment_text_<?php echo $comments->comment_id; ?>" class="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>
+						
+						<div><?php if($comments->user_id == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a><?php } ?><?php if($comments->user_id == $this->layout()->identity->user_id || $news['content']['added_user_id']== $this->layout()->identity->user_id ||$news['content']['is_admin'] ){ ?><a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a><?php } ?></div>
+						
+					</div>
+					<div class="comment-like">
+						 <div class="activity-comment-like comments_likes<?php echo $comments->comment_id; ?>" id="comments_likes<?php echo $comments->comment_id; ?>">
+							<?php if($comments->islike){ ?>
+								 
+								<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+								 
+							<?php }else{ ?>
+								 
+									<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+								 
+							<?php }?>
+							<?php echo $comments->likes_count; ?>
+							</div>
+					</div>
+					<div class="clear"></div>
+				</div>
+				<?php } ?>
+			</div>			 
+			<div class="activity-add-comment">
+				<textarea name="comment" id="comment_<?php echo $news['content']['data_id']; ?>" class="<?php echo ($news['content']['album_type'] == 'Media')?'group_picture_comments':'user_picture_comments'; ?>" placeholder="Comment"></textarea>
+			</div>			
+		</div>
+	</div>
+<?php
+	break;
+	case "All Picture Comments":
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> commented about this image</div>
+		<div class="clear"></div>
+		<div class="activity-details_planet">
+			<div class="preview-img">
+				<div class="album-img" id="album-img-<?php echo $news['content']['data_id']; ?>">
+					<?php if($news['content']['album_type'] == 'Media'){ ?>
+					<a href="<?php echo $this->basePath(); ?>/album/photo/<?php echo $news['content']['data_id']; ?>"><img src="<?php echo $this->basePath()?>/public/album/<?php echo $news['content']['group_info']->group_id.'/'.$news['content']['album_id'].'/medium/medium-'.$news['content']['data_content'];?>" /></a>
+					<?php }else{ ?>
+					<a href="<?php echo $this->basePath(); ?>/album/photo/<?php echo $news['content']['data_id']; ?>"><img src="<?php echo $this->basePath()?>/public/album/profile/<?php echo $news['content']['album_user_id'].'/'.$news['content']['album_id'].'/medium/medium-'.$news['content']['data_content'];?>" /></a>
+					<?php } ?>
+				</div>	
+			</div>
+			<div class="likes-outer">
+				<div class="like-comment-outer" >
+					<div class="likes <?php echo ($news['content']['album_type'] == 'Media')?'group_picture_likes group_picture_likes_'.$news['content']['data_id']:'user_picture_likes user_picture_likes_'.$news['content']['data_id']; ?>" id="<?php echo ($news['content']['album_type'] == 'Media')?'group_tag_likes_'.$news['content']['data_id']:'user_tag_likes_'.$news['content']['data_id']; ?>">
+					<?php if($news['content']['file_like']->is_liked){  ?>						 
+							<a href="javascript:void(0)"  class="album-file-unlikes" id="<?php echo $news['content']['data_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>						 
+					<?php }else{ ?>						 
+							<a href="javascript:void(0)" id="<?php echo $news['content']['data_id']; ?>" class="album-file-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>						
+					<?php } ?>
+					<?php if($news['content']['file_like']->likes_counts){echo $news['content']['file_like']->likes_counts;} ?>
+					</div>
+					<div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($news['content']['comment_count']){echo $news['content']['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+					<div class="clear"></div>
+					<?php if($news['content']['album_type'] == 'Media'){ ?>
+					<input type="hidden" id="groupalbum_galexy_<?php echo $news['content']['data_id']; ?>" value="<?php echo $news['content']['group_info']->parent_seo_title; ?>" />
+					<input type="hidden" id="groupalbum_planet_<?php echo $news['content']['data_id']; ?>" value="<?php echo $news['content']['group_info']->group_seo_title; ?>" />
+					<?php } ?>
+				</div>
+				<div class="photo-location"><?php echo $news['content']['album_location']; ?></div>
+				<div class="clear"></div>
+			</div>
+		</div>
+		<div class="clear"></div>
+		<div class="<?php echo ($news['content']['album_type'] == 'Media')?'groupalbum-comments':'userfile-comments'; ?>" id="new_activity_comments">
+		<div id="loadmore_<?php echo $i; ?>"><?php if($news['content']['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $i; ?>" class="<?php echo ($news['content']['album_type'] == 'Media')?'loadmore_groupalbum_comments':'loadmore_userfile_comments'; ?>">View <span id="comment_count_<?php echo $i; ?>"><?php echo $news['content']['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+			<input type="hidden" id="comment_refer_<?php echo $i; ?>" value="<?php echo $news['content']['data_id']; ?>" />
+			<div id="comment_area_<?php echo $i; ?>" class="<?php echo ($news['content']['album_type'] == 'Media')?'group_picture_comment_area_'.$news['content']['data_id']:'user_picture_comment_area_'.$news['content']['data_id']; ?>">
+				<?php  
+				$arr_comments = array();
+				foreach($news['content']['comments'] as $comments){
+					$arr_comments[] = $comments;
+				}
+				$newcommnt =  array_reverse($arr_comments);
+				foreach($newcommnt as $comments){  
+				?>
+				<div class="comment-container comments-outer-<?php echo $comments->comment_id ?>" id="comments-outer-<?php echo $comments->comment_id ?>">
+					<div class="comment-profil-img">
+						 <a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>" class="profile-img-link">
+							<?php if($comments->profile_photo!=''){ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $comments->user_id ?>/66x66/<?php echo $comments->profile_photo; ?>" alt="" />
+							<?php }else if($comments->user_register_type == 'facebook' && $comments->user_fbid!=''){ ?>
+								<img src="https://graph.facebook.com/<?php echo $comments->user_fbid; ?>/picture?width=66&&height=66" />
+							<?php }else{ ?>
+							<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+							<?php } ?>
+							</a>
+					</div>
+					<div class="comment-text">
+						<span><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$comments->user_profile_name)) ?>"><?php echo $comments->user_given_name; ?></a></span>
+						 <div id="comment_text_<?php echo $comments->comment_id; ?>" class="comment_text_<?php echo $comments->comment_id; ?>"> <?php echo $comments->comment_content; ?></div>
+						
+						<div><?php if($comments->user_id == $this->layout()->identity->user_id ){ ?><a href="javascript:void(0)" id="edit_comment_<?php echo $comments->comment_id; ?>" class="edit_comment">Edit</a><?php } ?><?php if($comments->user_id == $this->layout()->identity->user_id || $news['content']['added_user_id']== $this->layout()->identity->user_id ||$news['content']['is_admin'] ){ ?><a href="javascript:void(0)" id="delete_comment_<?php echo $comments->comment_id; ?>" class="delete_comment">Delete</a><?php } ?></div>
+						
+					</div>
+					<div class="comment-like">
+						 <div class="activity-comment-like comments_likes<?php echo $comments->comment_id; ?>" id="comments_likes<?php echo $comments->comment_id; ?>">
+							<?php if($comments->islike){ ?>
+								 
+								<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+								 
+							<?php }else{ ?>
+								 
+									<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+								 
+							<?php }?>
+							<?php echo $comments->likes_count; ?>
+							</div>
+					</div>
+					<div class="clear"></div>
+				</div>
+				<?php } ?>
+			</div>			 
+			<div class="activity-add-comment">
+				<textarea name="comment" id="comment_<?php echo $news['content']['data_id']; ?>" class="<?php echo ($news['content']['album_type'] == 'Media')?'group_picture_comments':'user_picture_comments'; ?>" placeholder="Comment"></textarea>
+			</div>			
+		</div>
+	</div>
+<?php
+	break;
+	case "New Friendship":
+?>
+	<div class="news_outer">
+		<div class="activity-outer" style="border-top:none">
+			<div class="activity-profileimg profile-image-comn">
+				<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$news['content']['user_profile_name'])) ?>" class="profile-img-link">
+				<?php  if($news['content']['profile_photo']!=''){ ?>
+				<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $news['content']['user_id'] ?>/66x66/<?php echo $news['content']['profile_photo']; ?>" alt="" />
+				<?php }else if($news['content']['user_register_type'] == 'facebook' && $news['content']['user_fbid']!=''){ ?>
+					 <img src="https://graph.facebook.com/<?php echo $news['content']['user_fbid']; ?>/picture?width=66&&height=66" />
+				<?php }else{ ?>
+					<img src="<?php echo $this->basePath() ?>/public/images/noimg.jpg" alt="" />
+				<?php } ?>
+				</a>
+			</div>
+		</div>
+		<div class="profile-name_container"><?php echo $news['content']['user_profile_name'] ?> is now your friend  </div>
+		<div class="clear"></div>
+	</div>
+<?php
+	break;
+	} 
+}
+ 
+if($i == $page*10){
+ echo "No more feeds";
+}
+ ?>

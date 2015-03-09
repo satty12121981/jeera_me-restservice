@@ -1,0 +1,138 @@
+<?php echo $this->profileWidget; ?>
+<div class="right_container" id="search_right_container" ng-app="searchapp" ng-controller="searchController">
+    	<div class="right-profile_links">
+        	<div class="right-profile_links_inner">
+            	<ul>
+                	<li>Search Results</li>
+                </ul>
+            </div>
+        </div>
+        <div class="right-content_outer">
+        	<div class="notification_sort color-trans">
+            	Show:
+                <a href="javascript:void(0);" ng-class="{'active':selectedTab == 'All'}" ng-click="selectAll()">All</a>
+                <a href="javascript:void(0);" ng-class="{'active':selectedTab == 'Groups'}" ng-click="selectGroups()">Groups</a>
+                <a href="javascript:void(0);" ng-class="{'active':selectedTab == 'Members'}" ng-click="selectMembers()">Members</a>                
+            </div>
+            
+            <div class="notification_list-outer" scroller>
+				<div ng-if="ajaxFlag==1&&page==1"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"></div>
+            	<span ng-if="ajaxFlag==0||page!=1">
+                <div class="notification_list" ng-repeat="items in userInfo">
+                	<span class="vertical_align"></span>
+                    <div class="notification-profile_image comn_profile_img">
+						<a href="<?php echo $this->basePath(); ?>/{{items.user_profile_name}}">	<img alt="" ng-if="items.profile_photo!=null&&items.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{items.user_id}}/{{ items.profile_photo }}">
+						<img alt="" ng-if="items.profile_photo==null||items.profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg"></a>
+					</div>
+                    <div class="notification_details">
+                    	<a href="<?php echo $this->basePath(); ?>/{{items.user_profile_name}}">	<span>{{items.user_given_name}}</span></a> 			
+                    </div>
+                    
+                    <div class="clear"></div>
+                </div>               
+                <div class="notification_list" ng-repeat="items in groupInfo">
+                	<span class="vertical_align"></span>
+                    <div class="notification-profile_image comn_profile_img">
+						<a href="<?php echo $this->basePath(); ?>/groups/{{items.group_seo_title}}">	<img ng-if="items.group_photo_photo!=''&&items.group_photo_photo!=null" src="<?php echo $this->basePath(); ?>/public/datagd/group/{{items.group_id}}/medium/{{items.group_photo_photo}}" alt="" />
+						<img ng-if="items.group_photo_photo==''||items.group_photo_photo==null" src="<?php echo $this->basePath(); ?>/public/images/group-img_def.jpg" alt="" /> </a>
+					</div>
+                    <div class="notification_details">
+                    	<a href="<?php echo $this->basePath(); ?>/groups/{{items.group_seo_title}}"> <span>{{items.group_title}}</span> </a>
+                    </div>                 
+                </div>
+                </span>
+            </div>           
+            <div class="clear"></div>
+        </div>      
+    </div>    
+    <div class="clear"></div>
+	<script>
+		var page =1;
+		var searchapp = angular.module('searchapp',[]);
+     searchapp.config(function ($httpProvider) {
+			$httpProvider.defaults.transformRequest = function(data){
+				if (data === undefined) {
+					return data;
+				}
+				return $.param(data);
+			}
+		});
+		searchapp.directive('scroller', function ($window) {
+		return {
+			restrict: 'A',
+			link: function(scope, element, attrs) {
+			  var windowEl = angular.element($window); 		  
+			  var handler = function() { scope.handler();  }
+			  windowEl.on('scroll', scope.$apply.bind(scope, handler));
+			 
+				}
+			};
+		});
+		 searchapp.controller('searchController',function($scope, $http){
+			$scope.selectedTab = "All";
+			$scope.groupInfo = <?php echo json_encode($groupinfo); ?>;
+			$scope.userInfo = <?php echo json_encode($user_info); ?>;
+			$scope.searchdata =  '<?php echo $searchdata; ?>';
+			$scope.ajaxFlag = 0;
+			$scope.page =1;
+			$scope.selectAll = function(){
+				$scope.selectedTab = "All";
+				$scope.ajaxFlag =0;
+				$scope.getResults(false);
+			}
+			$scope.selectGroups = function(){
+				$scope.selectedTab = "Groups";
+				$scope.ajaxFlag =0;
+				$scope.getResults(false);
+			}
+			$scope.selectMembers = function(){
+				$scope.selectedTab = "Members";
+				$scope.ajaxFlag =0;
+				$scope.getResults(false);
+			}
+			$scope.handler = function() {		 
+				$scope.getResults(true);
+			}
+			$scope.getResults = function (page_scroller){
+				if($scope.ajaxFlag ==0 ){
+					if(page_scroller){page++;}else{page=1;}
+					$scope.ajaxFlag = 1;
+					$scope.page = page;
+					url = baseurl + '/moresearchresults';
+					$http.post(url,{
+							searchdata:$scope.searchdata,
+							type:$scope.selectedTab,
+							page:page,		
+					},{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+					).success(function(data, status, headers, config) {
+						 if(data.return_array.process_status == 'success'){		
+							if($scope.page>1){
+								if(data.return_array.groupinfo.length>0){
+								$scope.groupInfo = $scope.groupInfo.concat(data.return_array.groupinfo);
+								}
+								if(data.return_array.user_info.length>0){
+									$scope.userInfo = $scope.userInfo.concat(data.return_array.user_info);
+								}								
+							}else{
+								$scope.groupInfo = data.return_array.groupinfo;
+								$scope.userInfo = data.return_array.user_info;
+							}
+							 $scope.ajaxFlag = 0;
+						 }else{
+							 alert(data.return_array.process_info);	
+							$scope.ajaxFlag = 0;							 
+						 }
+					}).error(function(data, status, headers, config) {
+						 alert("Error occured. Please try again");
+						 $scope.ajaxFlag = 0;
+					});
+				}						
+			}
+		 });
+		 angular.element(document).ready(function() {
+    angular.bootstrap(document.getElementById("profile_div"), ["myapp"]);
+    angular.bootstrap(document.getElementById("search_right_container"), ["searchapp"]);
+
+
+});
+	</script>

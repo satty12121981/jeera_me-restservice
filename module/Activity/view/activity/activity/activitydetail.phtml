@@ -1,0 +1,377 @@
+<?php  $this->HeadLink()->appendStylesheet($this->basePath().'/public/css/jquery-ui.css'); ?>
+<?php  $this->HeadLink()->appendStylesheet($this->basePath().'/public/css/activity.css'); ?>
+<?php  $this->HeadLink()->appendStylesheet($this->basePath().'/public/css/eventcalendar/fullcalendar.css'); ?>
+<?php  $this->HeadLink()->appendStylesheet($this->basePath().'/public/css/eventcalendar/fullcalendar.print.css'); ?>
+
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery.min.js','text/javascript'); ?>
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/popscript.js','text/javascript'); ?>
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery-ui.js','text/javascript'); ?>
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery-ui-timepicker-addon.js','text/javascript'); ?>
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery.leanModal.min.js','text/javascript'); ?>
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery.tabs.js','text/javascript'); ?>
+
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/eventcalendar/jquery-ui.custom.min.js','text/javascript'); ?>
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/eventcalendar/fullcalendar.min.js','text/javascript'); ?>
+ 
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+	$(function() {
+	
+	$('#activity_list').load('<?php echo $this->basePath()?>/activity/group/<?php echo $subGroupData->group_id; ?>'); 
+		var date = new Date();
+		var d = date.getDate();
+		var m = date.getMonth();
+		var y = date.getFullYear();
+		
+		
+		$('#calendar').fullCalendar({
+		
+			header: {
+				left: 'prev,next today',
+				center: 'title',
+				right: 'month,agendaWeek,agendaDay'
+			},
+			 editable: true,
+			
+			events: <?php echo $json;?>, 
+			
+			eventDrop: function(event, delta) {
+				alert(event.title + ' was moved ' + delta + ' days\n' +
+					'(should probably update your database)');
+			},
+			
+			loading: function(bool) {
+			
+				if (bool) $('#loading').show();
+				else $('#loading').hide();
+			}
+		
+		});
+		
+	$(".tabs").accessibleTabs({
+            tabhead:'h2',
+            fx:"fadeIn"
+        });
+	$("#invite_user").leanModal({ top : 90, overlay : 0.4, closeButton: ".close_invite" });
+ $('#group_activity_start_timestamp').datetimepicker({   
+ beforeShow: function() {
+        setTimeout(function(){
+            $('.ui-datepicker').css('z-index', 99999);
+        }, 0);
+    } , 
+	dateFormat: 'yy-mm-dd', 
+	timeFormat: 'hh:mm:ss',
+    //minDate: 0
+	
+	});  
+		//fetch all the activities for this galaxy 
+		
+	});
+
+	function goeload() {
+	
+	   var mapOptions = {
+    center: new google.maps.LatLng(25.271139000000000000, 55.307485000000040000),
+    zoom: 13
+  };
+  var map = new google.maps.Map(document.getElementById('map-canvas'),
+    mapOptions);
+
+  var input = /** @type {HTMLInputElement} */(
+      document.getElementById('group_activity_location'));
+
+ 
+
+  var autocomplete = new google.maps.places.Autocomplete(input);
+  autocomplete.bindTo('bounds', map);
+
+  var infowindow = new google.maps.InfoWindow();
+  var marker = new google.maps.Marker({
+    map: map
+  });
+
+  google.maps.event.addListener(autocomplete, 'place_changed', function() {
+    infowindow.close();
+    marker.setVisible(false);
+    var place = autocomplete.getPlace();
+    if (!place.geometry) {
+      return;
+    }
+
+    // If the place has a geometry, then present it on a map.
+    if (place.geometry.viewport) {
+      map.fitBounds(place.geometry.viewport);
+    } else {
+      map.setCenter(place.geometry.location);
+      map.setZoom(17);  // Why 17? Because it looks good.
+    }
+    marker.setIcon(/** @type {google.maps.Icon} */({
+      url: place.icon,
+      size: new google.maps.Size(71, 71),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(17, 34),
+      scaledSize: new google.maps.Size(35, 35)
+    }));
+    marker.setPosition(place.geometry.location);
+    marker.setVisible(true);
+
+    var address = '';
+    if (place.address_components) {
+      address = [
+        (place.address_components[0] && place.address_components[0].short_name || ''),
+        (place.address_components[1] && place.address_components[1].short_name || ''),
+        (place.address_components[2] && place.address_components[2].short_name || '')
+      ].join(' ');
+    }
+
+    infowindow.setContent('<div><strong>' + place.name + '</strong><br>' + address);
+    infowindow.open(map, marker);
+  });
+
+  // Sets a listener on a radio button to change the filter type on Places
+  // Autocomplete.
+  function setupClickListener(id, types) {
+    var radioButton = document.getElementById(id);
+    google.maps.event.addDomListener(radioButton, 'click', function() {
+      autocomplete.setTypes(types);
+    });
+  }
+
+  setupClickListener('changetype-all', []);
+  setupClickListener('changetype-establishment', ['establishment']);
+  setupClickListener('changetype-geocode', ['geocode']);
+
+	
+	
+	
+	}
+	
+</script>
+ <script>
+ var group = '<?php echo $groupData->group_seo_title; ?>';
+ var planet = '<?php echo $subGroupData->group_seo_title; ?>' ;
+ var siteurl = '<?php echo $this->basePath(); ?>' ;
+  var past_page = '<?php echo $pastactivity_page; ?>' ;
+ </script>
+<style>
+
+	body {
+		margin-top: 40px;
+		text-align: center;
+		font-size: 14px;
+		font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+		}
+		
+	#loading {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		}
+
+	#calendar {
+		width: 98%;
+		margin: 0 auto;
+		}
+	#map-canvas{
+	    height: 310px;
+		width: 425px;
+		border : 2px solid #A9D0F5;
+		}
+	.form_right{
+	     float:right;
+		 height:auto;
+		 width:50%;
+	}
+    .form_left{
+	      float:left;
+		  height:auto;
+		  width:50%;
+	}	
+
+</style>
+<br />
+<?php if(isset($flashMessages) && count($flashMessages)) : ?>
+<ul class="session">
+    <?php foreach ($flashMessages as $msg) : ?>
+    <li><?php echo $msg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<?php if(isset($error) && count($error)) : ?>
+<ul class="error">
+    <?php foreach ($error as $errormsg) : ?>
+    <li><?php echo $errormsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<?php if(isset($success) && count($success)) : ?>
+<ul class="success">
+    <?php foreach ($success as $successmsg) : ?>
+    <li><?php echo $successmsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<div class="activity_main">
+	<div class="tabs">
+        <h2>Upcoming</h2>
+        <div class="tabbody">
+			<div id='loadingDiv'>Please wait...</div>  
+			<?php if(isset($userRegisteredGroup->user_group_id) && !empty($userRegisteredGroup->user_group_id)) : ?>
+			<br>
+			<a class="new_activity" id="new_activity">Add New</a>
+			<a class="cancel_activity" id="cancel_activity" style="display:none;">Cancel</a>
+			<br>
+			<div id="activity_form" style="display:none;">
+				<div class="form_left">
+				<!-- Add activity form -->
+				<?php
+				$form = $this->form;
+				if($form!=''){
+					$form->setAttribute('action', $this->url('activity/join', array('action' => 'join','planet_id'=>$subGroupData->group_seo_title)));
+					$form->prepare();
+					echo $this->form()->openTag($form);
+					// echo $this->formRow($form->get('csrf'));?> 
+					<input type="hidden" id="hid_inviteid" value="0">
+					<p><?php echo $this->formRow($form->get('group_activity_title')); ?>
+					<br>
+					<span class="actvity-error" id="act_title_err"></span>
+					</p>
+					<p><?php echo $this->formRow($form->get('group_activity_start_timestamp')); ?>
+					<br>
+					<span class="actvity-error" id="act_date_err"></span>
+					</p>
+					<fieldset><label for="group_activity_type">Activity Type:</label><?php echo $this->formRow($form->get('group_activity_type')); ?></fieldset>
+					<div id="invitation_container" style="display:none;">
+						<label for="group_activity_invitation">Invite Users :</label>
+						<div class="tag_container" id="tag_container"></div>
+						&nbsp;&nbsp;<a id="invite_user" rel="leanModal" name="invite_user" href="#list_planet_users"><img src="<?php echo $this->basePath()?>/public/images/invite_users.png" width="20px;" title="Invite Users" /></a>
+						<br>
+						<span class="actvity-error" id="act_member_err"></span>
+					</div>
+					<!--<p><a href="javascript:void(0)" class="topopup">Invite Users</a></p>-->
+					<p><?php echo $this->formRow($form->get('group_activity_location')); ?>
+					<br>
+					<span class="actvity-error" id="act_lacation_err"></span>
+					<br>
+					</p>
+					<p><?php echo $this->formRow($form->get('group_activity_content')); ?>
+					<br>
+					<span class="actvity-error" id="act_content_err"></span>
+					</p>
+					<br class="clear"/>
+					<div id="list_planet_users" class="list_planet_users" style="display:none;"> 
+						<div class="close_invite" id="close_invite"></div>
+						<div id="popup_content" class="srch_member"> <!--your content start-->
+							<p></p>
+							<p style="text-align:center;"> <input name="q" type="text" size="40" placeholder="Search Menbers..." /></p>		
+							<div class="planet_members">		
+								<p>		
+								<?php //echo '<pre>'; print_r($selectAllUserForPlanet); 
+								$i=0;
+								if(isset ($selectAllUserForPlanet) && count($selectAllUserForPlanet)):
+									foreach ($selectAllUserForPlanet as $key=>$value) : $i++;		
+								?>
+								<span class="tagBox-item" id="invitetag_<?php echo $i;?>">
+									<span  class="tagBox-item-content">
+										<a id="inviteid_<?php echo $i?>" rel="<?php echo $value?>" title="Add Tag" class="tagBox-add tagBox-add-<?php echo $key?>" href="javascript:void(0)">+</a>
+										<span id="tagBox_item_<?php echo $i;  ?>"><?php echo $value?></span>
+									</span>
+									<span class="tagBox-bullet" id="tagBox_bullet_<?php echo $i;?>"><?php echo $key?></span>			
+								</span>					
+								<!--<label><input name="InviteAct[]" value="<?php echo $key?>" type="checkbox"><?php echo $value?></label>-->
+								<?php 
+									endforeach;
+								endif; 
+								?>
+								</p>
+							</div>
+						</div>		
+					</div>	
+					<div class="buttn_con"><?php echo $this->formSubmit($form->get('submit')); ?></div>
+					<?php
+					echo $this->form()->closeTag();
+				} ?>
+				</div>
+				 <div class="form_right">
+					<div id="map-canvas"></div>
+				</div>
+				<div style="clear:both;"></div>
+			</div>	
+			<?php endif; ?>
+			<br>
+			<div id="activity_list"></div>
+		</div>
+		<h2>Past</h2>
+        <div class="tabbody">		
+			<div class="col right-main" id="past_activities">
+				<div class="guide-results-bar">
+					Past Activities 
+					(<?php echo count($activityData_past);?> found)
+				</div>
+				<div class="clearfix"></div>
+				<div class="clearfix"></div>
+				<div class="guide-search-results-list">
+				<?php  
+				if(isset($activityData_past) && count($activityData_past)) { 
+					foreach ($activityData_past as $activity) : 
+						$iamattending =false;
+				?>
+					<div class="result">
+						<div class="result-left">               
+							<p class="title"><a href="<?php echo $this->url('activity/activity-view',
+										array('action'=>'view', 'id' => $activity['group_activity_id']));?>"><?php echo $activity['group_activity_title']; ?></a>
+							</p>
+							<p class="location"><?php echo date("F j, Y, g:i a", strtotime($activity['group_activity_start_timestamp'])); ?></p>                
+							<div class="venue-comments">
+								<div id="likes_<?php echo $activity['group_activity_id'];?>">
+						<?php 
+						if ( $activity['user_check'] && $activity['likes_count'] > 1 ) {
+							echo "<a href=\"#\" class=\"activity-unlikes\" id=\"".$activity['group_activity_id']."\">UnLike</a>&nbsp;&nbsp;You&nbsp;+&nbsp;";
+							echo ($activity['likes_count']-2);
+						} else if ($activity['user_check'] && $activity['likes_count'] == 1 ) {
+							echo "<a href=\"#\" class=\"activity-unlikes\" id=\"".$activity['group_activity_id']."\">UnLike</a>&nbsp;&nbsp;You&nbsp;";
+						} else{
+							echo "<a href=\"#\" class=\"activity-likes\" id=\"".$activity['group_activity_id']."\">Like</a>&nbsp;&nbsp;".$activity['likes_count'];
+						}
+						?>
+					</div>	
+					<a href="#" class="activity-comments" id="<?php echo $activity['group_activity_id'];?>"><?php echo $activity['comments_count'];?> comments</a>
+				<div id="result_<?php echo $activity['group_activity_id'];?>" style="display:none"></div>					
+							</div>
+							<div class="teaser"><?php echo $activity['group_activity_content']; ?> <!--<a href="#">View Event</a>--></div>
+						</div>						
+						<?php if(isset($activity['rsvp']) && count($activity['rsvp'])) : ?>
+						<div class="invited_members">
+							<?php foreach ($activity['rsvp'] as $rsvp) :			
+							if($rsvp['user_id']==$userData->user_id) {
+								$iamattending =true;					 
+							}
+							?>
+							<span>
+								<?php if(isset($rsvp['photo_name']) && !empty($rsvp['photo_name'])) : ?>
+								<img src="<?php echo $this->basePath()?>/public/datagd/profile/<?php echo $rsvp['photo_name']?>" title="<?php echo $rsvp['user_first_name']?> <?php echo $rsvp['user_last_name']?> is attending this activity" />
+								<?php else : ?>
+								<img src="<?php echo $this->basePath()?>/public/datagd/profile/no-image.jpg" width="30px;" title="<?php echo $rsvp['user_first_name']?> <?php echo $rsvp['user_last_name']?>  is attending this activity" />	
+								<?php endif; ?>
+							</span>         
+							<?php endforeach; ?>	
+						</div>
+						<?php endif; ?>	
+						<div class="clearfix"></div>
+					</div>
+				<?php endforeach; 
+				} else { echo "<div class='no-result'>Sorry ! No Past activity found in this planet.</div>";} ?>
+</div>
+			</div>
+			<div>
+			<a href="javascript:void(0)" id="loadmore_past">Loadmore..</a>
+			</div>
+        </div>
+		<h2>Calendar</h2>
+		<div class="tabbody"> 		
+			<div id='calendar'></div>
+		</div>
+	</div>
+</div>
+	
+	

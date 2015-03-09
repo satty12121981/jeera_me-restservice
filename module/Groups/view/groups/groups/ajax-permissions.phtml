@@ -1,0 +1,28 @@
+<?php 
+if(!empty($error)){
+?>
+<ul>
+<?php foreach($error as $list){ ?>
+<li><?php echo $list; ?></li>
+<?php } ?>
+</ul>
+<?php 
+}
+ ?>
+ <ul>
+	<?php foreach($group_role_permissions as $roles){ ?>
+		<li><?php echo $roles->group_roles_name; ?></li>
+		<?php 
+			$arr_functions = array();
+			if($roles->functions){ 
+			$arr_functions = explode(",",$roles->functions);
+			} ?>
+			</span>Permissions:</span>
+			<ul class="permission_check_list"><?php $arr_functions = explode(",",$roles->functions);
+			foreach($group_functions as $functions){	?>					
+			<li><input type="checkbox" id="chk_function<?php echo $functions->group_functions_id; ?>" name="chk_function[]" class="chk_function" value="<?php echo $functions->group_functions_id; ?>" <?php if(in_array($functions->group_functions_id,$arr_functions)) { echo 'checked="checked"'; } ?>><?php  echo $functions->functions; ?></li>
+			<?php	} ?></ul>
+		
+					<?php } ?>
+					</ul>
+					

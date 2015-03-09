@@ -1,0 +1,79 @@
+<?php 
+$title = 'Planet Tags';
+$this->headTitle($title); 
+?>
+<section id="secondary_bar">
+    <div class="breadcrumbs_container">
+        <article class="breadcrumbs"><a href="<?php echo $this->url('jadmin') ?>">Admin Dashboard </a><div class="breadcrumb_divider"></div>  <a class="current" href="<?php echo $this->url('jadmin/admin-planet-tags') ?>">Manage Planet Tags</a></article>
+    </div>
+</section><!-- end of secondary bar -->
+<section id="main" class="column">
+    <article class="module width_3_quarter">
+        <header><h3 class="tabs_involved"><?php echo $this->escapeHtml($title); ?></h3>             
+        </header>
+		<div class="tag_quick_search">
+			<form  method="post" action="<?php echo $this->url('jadmin/admin-planet-tags');?>">
+				<input type="text" id="tag_search" name="tag_search" value="<?php echo $search; ?>" />
+				<input type="submit" value="Search" />
+			</form>
+		</div>
+		<div>Page <?php echo $page  ?> out of <?php echo $total_pages; ?> page</div>
+        <div class="tab_container">
+            <div id="tab1" class="tab_content">
+                <table class="tablesorter" cellspacing="0"> 
+                    <thead> 
+                        <tr>                             
+                            <th>Id</th>
+							<th><?php if($search!=''){ ?>
+							<a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=> $page,'sort'=>'group','order'=>($field=='group'&&$order=='ASC')?'desc':'asc','search'=>$search));?>">
+							<?php }else{ ?>
+							<a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=> $page,'sort'=>'group','order'=>($field=='group'&&$order=='ASC')?'desc':'asc'));?>">
+							<?php } ?>
+							Group</a></th>
+							<th><?php if($search!=''){ ?>
+							<a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=> $page,'sort'=>'tags','order'=>($field=='tags'&&$order=='ASC')?'desc':'asc','search'=>$search));?>">
+							<?php }else{ ?>
+							<a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=> $page,'sort'=>'tags','order'=>($field=='tags'&&$order=='ASC')?'desc':'asc'));?>">
+							<?php } ?>Tags</a></th>
+							<th>Actions</th>
+                        </tr> 
+                    </thead> 
+                    <tbody> 
+                       <?php 
+					   $i=($page==1)?0:$page-1;
+					   $i = $i*20;
+					   foreach($allGroupTagData as $groupTag) :
+					   $i++;
+					   ?> 
+                            <tr>                                  
+                                 <td><?php echo $i;?></td>
+								 <td><?php echo $this->escapeHtml($groupTag->group_title);?></td>	
+								 <td><?php echo $this->escapeHtml($groupTag->tags);?></td>	
+								 <td><a href="<?php echo $this->url('jadmin/admin-palnet-tags-view',    array('action'=>'view', 'id' => $groupTag->group_id));?>"><img src="<?php echo $this->basePath(); ?>/public/images/view.png" title="View"></a></td> 
+                            </tr> 
+                        <?php endforeach; ?>
+					<tr>
+						<td colspan="3"> 
+						<?php if($search!=''){ ?>
+							<a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=>(($page-1)>0)?$page-1:1,'sort'=>$field,'order'=>strtolower($order),'search'=>$search));?>">&laquo; Prev</a>
+							<a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=>1 ,'sort'=>$field,'order'=>strtolower($order),'search'=>$search));?>">Frist</a>
+							<span> <?php echo $page; ?> </span>
+							<a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=>$total_pages,'sort'=>$field,'order'=>strtolower($order),'search'=>$search));?>">Last</a>
+							<a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=>(($page+1)<=$total_pages)?$page+1:$total_pages,'sort'=>$field,'order'=>strtolower($order),'search'=>$search));?>">Next &raquo;</a>
+						<?php }else{ ?>
+							<a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=>(($page-1)>0)?$page-1:1,'sort'=>$field,'order'=>strtolower($order),'search'=>$search));?>">&laquo; Prev</a>
+							<a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=>1 ,'sort'=>$field,'order'=>strtolower($order),'search'=>$search));?>">Frist</a>
+							<span> <?php echo $page; ?> </span>
+							<a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=>$total_pages,'sort'=>$field,'order'=>strtolower($order),'search'=>$search));?>">Last</a>
+							<a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=>(($page+1)<=$total_pages)?$page+1:$total_pages,'sort'=>$field,'order'=>strtolower($order),'search'=>$search));?>">Next &raquo;</a>
+						<?php } ?>
+						</td>
+					</tr>						
+                    </tbody> 
+                </table>
+            </div><!-- end of #tab1 -->
+        </div><!-- end of .tab_container -->
+    </article><!-- end of content manager article -->
+    <div class="clear"></div>
+    <div class="spacer"></div>
+</section>

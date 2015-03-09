@@ -1,0 +1,21 @@
+<?php if(isset($error) && count($error)) { ?>
+<ul class="error">
+    <?php foreach ($error as $errormsg) : ?>
+    <li><?php echo $errormsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php }else{ ?>
+<?php 
+$i=0;
+foreach($notification_list as $list){ $i++; ?>
+<div class="activity-notification">
+	<a href="#"><?php echo $list->user_notification_content; ?></a>
+</div>
+<?php } ?>
+<?php if($i==0||$i<20){
+	echo "No more notifications are exist";
+}else{
+	echo '<a href="javascript:void(0)" id="notification_loadmore">Load more</a>';
+}
+}
+?>

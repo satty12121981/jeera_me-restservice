@@ -1,0 +1,25 @@
+
+
+
+@media screen and (min-width:1400px){
+
+	.event_butn{padding-top:0; float:right; vertical-align:middle;}
+	.my_post-time{padding-top:23px;}
+	.post_event-header{text-align:left;}
+	.friends_list-outer{width:30%;}
+	
+}
+
+@media screen and (min-width:240px) and (max-width:1200px){
+  
+  .home-container{width:95%;}
+  
+  
+}
+@media screen and (min-width:240px) and (max-width:1250px){
+	
+}
+
+@media screen and (min-width:240px) and (max-width:1220px){
+	
+}

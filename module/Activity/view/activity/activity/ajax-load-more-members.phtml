@@ -1,0 +1,55 @@
+
+ <?php 
+ 
+ if(isset($error) && count($error)) { ?>
+<ul class="error">
+    <?php foreach ($error as $errormsg) : ?>
+    <li><?php echo $errormsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php }else{ ?>
+ 
+	<?php 
+	if(isset($members) && count($members)) {
+					foreach($members as $usersdata){ ?>
+	<div class="connection-list-outer">
+		<div class="connection-img profile-image-comn">
+		<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$usersdata->user_profile_name)) ?>" class="profile-img-link">
+		<?php if($usersdata->profile_photo!=''){ ?>
+		<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $usersdata->user_id ?>/66x66/<?php echo $usersdata->profile_photo; ?>" alt="" />
+		<?php }else if($usersdata->user_register_type == 'facebook' && $usersdata->user_fbid!=''){ ?>
+			<img src="https://graph.facebook.com/<?php echo $usersdata->user_fbid; ?>/picture?width=66&&height=66" />
+		<?php }else{ ?>
+		<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+		<?php } ?>
+		</a>
+        </div>
+		<div class="connection-name"><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$usersdata->user_profile_name)) ?>"><?php echo $usersdata->user_given_name; ?></a></div>
+		<div class="connection-status" id="connection-status_<?php echo $usersdata->user_id; ?>"><?php if($user_id!=$usersdata->user_id ){ 
+			if($usersdata->is_friend){ ?>		
+			<span>Friends</span>
+			<?php }else if($usersdata->is_requested){
+				echo "Already requested";
+			}else if($usersdata->get_request){
+				echo '<a href="javascript:void(0)" class="blue-butn accept_friend" id="accept_friend_'.$usersdata->user_id.'">Accept request</a>';
+			}else{
+				echo '<a href="javascript:void(0)" class="blue-butn add_friend" id="add_friend_'.$usersdata->user_id.'">Add friend</a>';
+			}
+		
+		} ?></div>
+		
+		<?php if($delete_permission){ ?>
+							<div>
+								<a href="javascript:void(0)" id="remove_user_<?php echo $usersdata->user_id; ?>" class="blue-butn remove_user">Remove</a>
+							</div>
+							<?php } ?>
+		<div class="clear"></div>
+	</div> 
+
+<?php } }else{   
+?> <?php
+ echo "No more members"; ?>
+ <script>
+ $(".members_loadmore").hide();
+ </script>
+<?php } } ?>

@@ -1,0 +1,844 @@
+
+<?php //print_r($profile_data); ?>
+     <!-- Left Fixed part -->
+   <?php echo $this->profileWidget; ?>
+  
+    <!-- Left Fixed part Close -->
+<div id="group_right_container" ng-app="groupapp" ng-controller="groupController" ng-switch on="profileData.switch"> 
+    <div class="right_container">
+    	<div class="right-profile_links">
+        	<div class="right-profile_links_inner">
+            	<ul class="color-trans">
+                	<li><a href="my-posts.html">Posts</a></li>
+                    <li><a href="javascript:void(0);" class="active" >Groups (5)</a></li>
+                    <li><a href="my-friends.html">Friends (14)</a></li>
+                    <li><a href="my-activity.html">My Activity</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="right-content_outer">
+        	<div class="friends_sort">
+            	<div class="group_sort color-trans">
+                    Show:
+                    <a href="javascript:void(0);" class="active">All</a>
+                    <a href="javascript:void(0);">Created (1)</a>
+                    <a href="javascript:void(0);">Joined (2)</a>
+                    <a href="javascript:void(0);">Pending Requests (2)</a>
+                </div>
+             <div class="create_group">
+                <a data-target="#create_group" data-toggle="modal" class="default_butn_violet" href="javascript:void(0);" ng-click="switchForm()">Create New Group</a>
+             </div>
+                <div class="clear"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="group-list-outer">
+                        <div class="group-img_head">
+                            <img alt="" src="images/group-img_1.png">
+                            <div class="group-shadow"></div>
+                            <div class="join-group-butn"><a class="button_corner_red" href="javascript:void(0);">Leave This Group</a></div>
+                            <div class="group-titles">
+                                NY Lifestyle
+                                <span>
+                                    <i class="group-open"></i><!-- Change the <i> class when chenge the group privacy -->
+                                    Open Group
+                                </span>
+                            </div>
+                        </div>
+                        <div class="group-body">
+                            <div class="group-interest_location">
+                                <div class="group_interest">Group Interests</div>
+                                <div class="group_location"><i class="group-location"></i>New York, NY</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="group-category_icons">
+                                <img alt="" src="images/photography-icon.png">
+                            </div>
+                            <div class="group-interest_list">
+                                Group Interest · Interest · Group Interest · Interest · Group Interest
+                            </div>
+                            <div class="group_members-friends">
+                                <div class="group_members">members: <span>3k</span></div>
+                                <div class="group_friends">friends: <span>0</span></div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="group-list-outer">
+                        <div class="group-img_head">
+                            <div class="own_group-label">
+                            	<div class="owner_profile">
+                                	<img src="images/main-profile-img.jpg" alt="" />
+                                    <span class="owner-badge"></span>
+                                </div>
+                            </div>
+                            <img alt="" src="images/group-img_2.png">
+                            <div class="group-shadow"></div>
+                            <div class="join-group-butn"><a class="button_corner_yellow" href="javascript:void(0);">Edit Group</a></div>
+                            <div class="group-titles">
+                                Scuba Diving
+                                <span>
+                                    <i class="group-open"></i><!-- Change the <i> class when chenge the group privacy -->
+                                    Open Group
+                                </span>
+                            </div>
+                        </div>
+                        <div class="group-body">
+                            <div class="group-interest_location">
+                                <div class="group_interest">Group Interests</div>
+                                <div class="group_location"><i class="group-location"></i>Dubai, UAE</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="group-category_icons">
+                                <img alt="" src="images/travel-icon.png">
+                                <img alt="" src="images/sports-icon.png">
+                            </div>
+                            <div class="group-interest_list">
+                                Group Interest · Interest · Group Interest · Interest · Group Interest
+                            </div>
+                            <div class="group_members-friends">
+                                <div class="group_members">members: <span>2.7k</span></div>
+                                <div class="group_requests">new requests: <span><a href="javascript:void(0);">1</a></span></div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="group-list-outer">
+                        <div class="group-img_head">
+                            <img alt="" src="images/group-img_4.png">
+                            <div class="group-shadow"></div>
+                            <div class="join-group-butn"><a class="button_corner_red" href="javascript:void(0);">Leave This Group</a></div>
+                            <div class="group-titles">
+                                Nature Escape Plan
+                                <span>
+                                    <i class="group-open"></i><!-- Change the <i> class when chenge the group privacy -->
+                                    Open Group
+                                </span>
+                            </div>
+                        </div>
+                        <div class="group-body">
+                            <div class="group-interest_location">
+                                <div class="group_interest">Group Interests</div>
+                                <div class="group_location"><i class="group-location"></i>New York, NY</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="group-category_icons">
+                                <img alt="" src="images/cinema-icon.png">
+                            </div>
+                            <div class="group-interest_list">
+                                Group Interest · Interest · Group Interest · Interest · Group Interest
+                            </div>
+                            <div class="group_members-friends">
+                                <div class="group_members">members: <span>1.6k</span></div>
+                                <div class="group_friends">friends: <span>0</span></div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="group-list-outer">
+                        <div class="group-img_head">
+                            <img alt="" src="images/group-img_5.png">
+                            <div class="group-shadow"></div>
+                            <div class="join-group-butn"><a class="button_corner_grey" href="javascript:void(0);">Pending Approval</a></div>
+                            <div class="group-titles">
+                                Camp Fire
+                                <span>
+                                    <i class="group-open"></i><!-- Change the <i> class when chenge the group privacy -->
+                                    Open Group
+                                </span>
+                            </div>
+                        </div>
+                        <div class="group-body">
+                            <div class="group-interest_location">
+                                <div class="group_interest">Group Interests</div>
+                                <div class="group_location"><i class="group-location"></i>Dubai, UAE</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="group-category_icons">
+                                <img alt="" src="images/travel-icon.png">
+                                <img alt="" src="images/sports-icon.png">
+                            </div>
+                            <div class="group-interest_list">
+                                Group Interest · Interest · Group Interest · Interest · Group Interest
+                            </div>
+                            <div class="group_members-friends">
+                                <div class="group_members">members: <span>2.7k</span></div>
+                                <div class="group_friends">friends: <span>0</span></div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="group-list-outer">
+                        <div class="group-img_head">
+                            <img alt="" src="images/group-img_6.png">
+                            <div class="group-shadow"></div>
+                            <div class="join-group-butn"><a class="button_corner_grey" href="javascript:void(0);">Pending Approval</a></div>
+                            <div class="group-titles">
+                                Road To Nowhere
+                                <span>
+                                    <i class="group-open"></i><!-- Change the <i> class when chenge the group privacy -->
+                                    Open Group
+                                </span>
+                            </div>
+                        </div>
+                        <div class="group-body">
+                            <div class="group-interest_location">
+                                <div class="group_interest">Group Interests</div>
+                                <div class="group_location"><i class="group-location"></i>Dubai, UAE</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="group-category_icons">
+                                <img alt="" src="images/cinema-icon.png">
+                                <img alt="" src="images/sports-icon.png">
+                            </div>
+                            <div class="group-interest_list">
+                                Group Interest · Interest · Group Interest · Interest · Group Interest
+                            </div>
+                            <div class="group_members-friends">
+                                <div class="group_members">members: <span>2.7k</span></div>
+                                <div class="group_friends">friends: <span>0</span></div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+          </div>
+
+            <div class="clear"></div>
+        </div>
+
+    </div>
+
+    <div class="clear"></div>
+    <div class="pop_bg modal fade" id="create_group" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" ng-show="allforms">
+      <div class="modal-dialog group_popup">
+        <div class="modal-content create_group_outer">
+          <div class="modal-header create_group-head">
+            <div class="create_group-header">
+            	<div class="level-1">
+                	1<i></i>Group Info
+                </div>
+                <div class="level-2">
+                	2<i></i>Interests
+                </div>
+                <div class="level-3">
+                	3<i></i>INVITE &amp; ASK
+                </div>
+            </div>
+            <button type="button" class="close" data-dismiss="modal" ng-click="removeData();"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <div class="clear"></div>
+          </div>
+          <div class="modal-body signup_body">
+            <div id="signup_step1" ng-show="Step1">
+                <form name="frmUserGroupFirst" id="frmUserGroupFirst" method="post" action="" novalidate >
+                    <input type="hidden" name="hdnoldimage" id="hdnoldimage" ng-model="user.oldimage"/>
+                    <input type="hidden" name="hdnCityId" id="hdnCityId" ng-model="user.cityId" />
+                    <div class="step1_outer" ng-switch-when="1">
+                        <div class="create_group-label">Name Your Group*</div>
+                        <div class="login-field">
+							<input name="txtGroupName" id="txtGroupName" type="text" placeholder="e.g. Arsenal Lovers" required maxlength="100" ng-model="user.groupname"/>
+							<span style="color:red" ng-show="frmUserGroupFirst.txtGroupName.$dirty && frmUserGroupFirst.txtGroupName.$invalid">
+								<span ng-show="frmUserGroupFirst.txtGroupName.$error.required">Group name is required.</span>
+							</span>
+                        </div>
+                        <div ng-show="loading" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+                        <div class="group_select_col-left" id="CountryDropDown">
+                            <div class="create_group-label">Choose Group Country</div>
+							<select id="country" class="styled" required ng-model="user.country" ng-change="CitySelect(user.country)">
+								<option  ng-repeat="item in countrylist" ng-selected="{{item.country_code == country}}" value="{{item.country_id}}">{{item.country_title}}</option>
+							</select>
+                        </div>
+                        <div class="group_select_col-right" id="CityDropDown">
+                            <div class="create_group-label">Choose Group City</div>
+                            <select id="city" class="styled" required ng-model="user.city" ng-change="getCityId(user.city)">
+                                 <option  ng-repeat="item in citylist" ng-selected="{{item.name == city}}" value="{{item.city_id}}">{{item.name}}</option>
+                            </select>
+                        </div>
+                        <div class="clear"></div>
+                         <!-- The file input-button span is used to style the file input field as button -->
+                        <div class="create_group-label" >Upload Banner Photo</div>
+                        <div class="drag_drop-media group_drag-drop">
+                            <div class="drag-caption" onClick="getFile()" id="uplodbtn">
+                                <center><div id="ImageUploadStatus"></div></center>
+                                <img src="<?php echo $this->basePath();?>/public/images/drag_drop-img.png" alt="" id="imgUserImage" /><br />Choose a photo to upload
+<input type="file" name="btnUploadImage" id="btnUploadImage"  style="display:none"  >
+                                 <div class="uploadfilbtn">
+                                    
+                                  </div>
+                            </div>
+							
+                        </div>
+						<div id="uploadPreview"></div>
+                        <div class="create_group-label">Choose Group Type</div>
+                        <div class="select_group-type">
+                            <input type="radio" name="group_type" id="open-group" value="1" ng-model="user.grouptype">
+                            <label for="open-group">
+                                    <i class="radio-styled"></i>
+                                    <i class="group-open_black"></i>Open Group
+                            </label>
+                            <div class="group-type_details">
+                                This group will be visible to everyone and can be joined immediately <br />
+                                (without group owner approval).
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="select_group-type">
+                            <input type="radio" name="group_type" id="Public-group"  value="2" ng-model="user.grouptype">
+                            <label for="Public-group">
+                                    <i class="radio-styled"></i>
+                                    <i class="group-public_black"></i>Public Group
+                            </label>
+                            <div class="group-type_details">
+                                This group will be visible to everyone, but the group owner receives <br />
+                                requests for the group joining which he can accept or decline.
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="select_group-type">
+                            <input type="radio" name="group_type" id="closed-group"  value="0" ng-model="user.grouptype">
+                            <label for="closed-group">
+                                    <i class="radio-styled"></i>
+                                    <i class="group-private_black"></i>Private Group
+                            </label>
+                            <div class="group-type_details">
+                                This group will not be visible to anyone in regular search. It is invite <br />
+                                based and users can not join the group unless you invite them.
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="create_group-label">Describe Your Group*</div>
+                        <div class="login-field">
+                  <textarea name="txtDescription" id="txtDescription" placeholder="Tell us what is your group about" required ng-model="user.groupdecp"></textarea>
+                  <span style="color:red" ng-show="frmUserGroupFirst.txtDescription.$dirty && frmUserGroupFirst.txtDescription.$invalid">
+                <span ng-show="frmUserGroupFirst.txtDescription.$error.required">Group description is required.</span>
+            </span>
+                        </div>
+                        <div class="signup_button">
+
+                            <div class="signup-link">
+                                 <a href="javascript:void(0);" class="default_butn_normal" data-dismiss="modal" aria-hidden="true" ng-click="removeData();">Cancel</a>
+                                <button class="default_butn_blue" ng-click="switchForm2()" ng-disabled="frmUserGroupFirst.txtGroupName.$invalid || frmUserGroupFirst.txtDescription.$invalid">Continue</button>
+
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                    </div>
+                    </form>
+            </div>
+              <form name="testForm">
+                  <input type="hidden" name="hdnTagId" id="hdnTagId" ng-model="tagId" value="2" />
+                  <input type="hidden" name="hdnCatImage" id="hdnCatImage" ng-model="CatImage" />
+            <div id="signup_step2" ng-show="Step2">
+                <div class="group_select_col-left" id="categoryDropDown">
+                    <div class="create_group-label">Choose Category</div>
+					<div class="interest_category-outer dropdown_icons-outer group_dd-category" ng-switch on="intrest.switch">
+						<ul class="color-trans dropdown_icons border_radius {{drpClass}}"    ng-switch-when="1">
+							<li   ng-repeat="item in categorylist" ng-show="isVisible==1 || $index==selectedIndex"   ng-class="{active:$index==selectedIndex}" >
+							<a href="javascript:void(0);" ng-click="selectCategory(item.tag_category_id,$index)">
+							<img ng-if="item.tag_category_icon!=''" src="{{categoryImagePath}}{{item.tag_category_icon}}" alt="{{item.tag_category_title}}" />
+							<img ng-if="item.tag_category_icon==''" src="<?php echo $this->basePath(); ?>/public/images/category-icon.png" alt="{{item.tag_category_title}}" /> 
+							{{item.tag_category_title}}</a>
+							</li>
+						</ul>
+						<div ng-switch-when="2" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+					</div>					
+                </div>
+                <div class="group_select_col-right">
+                    <div class="create_group-label">&nbsp;</div>
+                    <div class="fixed-search interest_search">
+                        <input type="text"   ng-model="tag_search" name="search" id="search" placeholder="Interest" class="ng-valid ng-dirty">
+                        <a href="javascript:void(0);"></a>
+                    </div>
+                </div>
+                <div class="clear"></div>
+                <div class="popup_interest-lists" ng-show="showtags" >
+                        <a class="interest_add" href="javascript:void(0);" remove-on-click  ng-repeat="items in tags|filter:tag_search">{{items.tag_title}}
+                            <span class="addTag" ng-click="addToSelected(items.category_id,items.tag_id,items.tag_title);remove()"></span>
+                        </a>
+                </div>
+                <div class="create_group-label">Chosen Group Interests</div>
+              <div class="selected_interest" id="catIconDisplayId">
+                <img  ng-repeat="items in objSelectedCategory"   ng-if="items.category_icon!=''" src="{{categoryImagePath}}{{items.category_icon}}" alt="{{items.category_title}}" />
+				<img ng-repeat="items in objSelectedCategory" ng-if="items.category_icon==''" src="<?php echo $this->basePath(); ?>/public/images/category-icon.png" alt="{{items.category_title}}" /> 
+
+                  </div>
+                <div ng-model="tagerror" style="color:red;">{{tagerror}}</div>
+                <div class="popup_interest-lists" id="addedTags"  >
+                   <a class="interest_added" href="javascript:void(0);" ng-repeat="items in objSelectedTags" remove-on-click ng-click="remove();removeFromSelected(items.tag_name,items.category)" >{{items.tag_name}}<span></span></a>
+                </div>
+
+                <div class="signup_button">
+                    <div class="signup-link">
+                        <a href="javascript:void(0);" class="default_butn_normal" ng-click="switchFormBack1()">Back</a>
+                        <a href="javascript:void(0);" class="default_butn_blue" ng-click="saveStep2(user)">Continue</a>
+
+                    </div>
+                    <div class="clear"></div>
+                </div>
+            </div>
+              </form>
+
+            <div id="signup_step3" style="display:none;">
+                <div class="create_group-label">Invite People to Your Group (Optional)</div>
+                <div class="login-field">
+                    <input name="name" type="text" placeholder="+ Add more people" />
+                </div>
+                <div class="invited_friends">
+                	<div class="invited_names comn_profile_img">
+                    	<img src="images/profile-img-2.jpg" alt="" /> Sandrine Birote<span></span>
+                    </div>
+                    <div class="invited_names comn_profile_img">
+                    	<img src="images/profile-img-5.jpg" alt="" /> Manuella Fratz<span></span>
+                    </div>
+                </div>
+                <div class="create_group-label">Add Questionary (Optional)</div>
+                <div class="create_group_info">Once people start sending their requests to join your group, the questionnaire can be helpful. By asking few questions, you can learn about your potential group members and make better choices about who should be able to join your group.</div>
+                <div class="create_group-label">Question 1</div>
+                <div class="group_select_col-left">
+                    <select name="" class="styled">
+                        <option>Text</option>
+                        <option>Checkbox</option>
+                        <option>Radio Button</option>
+                    </select>
+                </div>
+                <div class="clear"></div>
+                <div class="login-field">
+                        <textarea name="discribe_group" placeholder="Type Your Question"></textarea>
+                    </div>
+                <div class="create_group-label">Question 2</div>
+                <div class="group_select_col-left">
+                    <select name="" class="styled">
+                        <option>Text</option>
+                        <option>Checkbox</option>
+                        <option>Radio Button</option>
+                    </select>
+                </div>
+                <div class="clear"></div>
+                <div class="login-field">
+                        <textarea name="discribe_group" placeholder="Type Your Question"></textarea>
+                    </div>
+                <div class="group_select_col-left">
+                    <input name="" type="text" placeholder="Type The Right Answer " />
+                </div>
+                <div class="clear"></div>
+                <div class="group_select_col-left">
+                    <input name="" type="text" placeholder="Type the Wrong Answer" />
+                </div>
+                <div class="clear"></div>
+                <div class="group_select_col-left">
+                    <input name="" type="text" placeholder="Type the Wrong Answer" />
+                </div>
+                <div class="clear"></div>
+                <div class="login-field">
+                	<span class="group_questionary create_group_questionary"><a href="javascript:void(0);"><i></i>Click to add question (1 questions left)</a></span>
+                </div>
+
+                <div class="signup_button">
+                    <div class="signup-link">
+                        <a href="javascript:void(0);" class="default_butn_normal" id="">Back</a>
+                        <a href="javascript:void(0);" class="default_butn_blue" id="">Finish</a>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    </div>
+
+
+<script>
+	var image_paths = <?php echo json_encode($image_folders); ?>;
+	var uploadFIle = '';
+     var groupapp = angular.module('groupapp',[]);
+     groupapp.config(function ($httpProvider) {
+			$httpProvider.defaults.transformRequest = function(data){
+				if (data === undefined) {
+					return data;
+				}
+				return $.param(data);
+			}
+		});
+     groupapp.controller('groupController',function($scope, $http){
+           $scope.user = {};
+           $scope.item = {};
+		   $scope.categoryImagePath=(image_paths.tag_category!='')?baseurl+"/public/"+image_paths.tag_category:baseurl+'/public/images/';
+           $scope.loading=false;
+           $scope.profileData = {};
+           $scope.country = '';
+           $scope.user.country = '';
+           $scope.city = '';
+           $scope.profileData.switch  =  1;
+           $scope.user.cityId   = '';
+           $scope.user.grouptype = 1;
+           $scope.master = {};
+           $scope.addedtags = [];
+		   $scope.intrest = {};
+		   $scope.intrest.switch = 2; 
+		   $scope.drpClass = "dropdown_close";
+		   $scope.isVisible = 0;		
+		   $scope.selectedIndex = 0;
+		   $scope.tag_search='';
+		   $scope.objSelectedCategory =  new Array();
+           // display firts form and country list
+           $scope.switchForm = function() {
+               $scope.allforms  = 1;
+               $scope.Step1     = 1;
+               $scope.Step2     = 0;
+               $scope.removeData();
+               $('.level-2').removeClass('active');
+               $('.level-1').addClass('active');
+				$scope.loading=true;
+				//$scope.profileData.switch  =  2;
+				url  = baseurl+'/country/ajaxCountryList';
+				$http({
+				  method: 'POST',
+				  url: url
+				}).success(function(data, status, headers, config) {
+				    $scope.countrylist=data.countries;
+                    $scope.country   = data.countries[0].country_code;
+                    $scope.user.country   = data.countries[0].country_id;
+				   angular.forEach(data.countries, function(dataset){
+					if(dataset.country_code == $scope.country){
+						$scope.CitySelect(dataset.country_id);
+						$scope.loading=false;
+					}
+				   });                  
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			};
+			$scope.CitySelect = function(country_value){
+				$scope.loading=true;
+				url  = baseurl+'/city/ajaxCitiesList';
+				$http.post(url,{country_id:country_value}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+				).success(function(data, status, headers, config) {
+				    $scope.citylist=data.cities;
+                    $scope.loading=false;
+                    $scope.city  = data.cities[0].name;
+                    $scope.user.cityId    = data.cities[0].city_id;                    
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			};
+            // display second form
+            $scope.category = '';
+            $scope.switchForm2 = function() {
+                   $scope.tagerror  = '';
+                   $scope.Step1     = 0;
+                   $scope.Step2     = 1;
+
+                  $('.level-1').removeClass('active');
+                  $('.level-2').addClass('active');
+
+                  $scope.loading=true;
+				//$scope.profileData.switch  =  2;
+				url = baseurl+'/tag/getAllActiveCategories';
+				$http({
+				  method: 'POST',
+				  url: url
+				}).success(function(data, status, headers, config) {
+				    $scope.categorylist=data.tag_category;
+					$scope.intrest.switch = 1; 
+                    $scope.category      = data.tag_category[0].tag_category_title;
+                    $scope.CatImage     = data.tag_category[0].tag_category_icon;
+                    $scope.getTags(data.tag_category[0].tag_category_id);
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+
+			};
+            // back to form 1
+             $scope.switchFormBack1 = function() {
+                 $scope.Step1 = 1;
+                 $scope.Step2 = 0;
+                 $('.level-2').removeClass('active');
+                 $('.level-1').addClass('active');
+                 $scope.loading=false;
+             };           
+           
+			$scope.selectedCategory = '';
+            // get tag as par category
+            $scope.getTags = function(category){
+                $scope.selectedCategory = category;
+                $scope.showtags = 0;
+				url  = baseurl+'/tag/getAllTagsOfSelectedCategory';	
+				$http.post(url,{category_id:category,search:''}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+				).success(function(data, status, headers, config) {					 
+					if(data.tags.length>0){
+					$scope.tags = data.tags; 	
+					$scope.showtags = 1;
+					}else{$scope.showtags = 0;}					 
+				}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+				});
+			};
+			$scope.selectCategory = function(category,selected){  
+				if($scope.isVisible){
+					$scope.isVisible = 0;
+					$scope.selectedIndex = selected;
+					$scope.drpClass = "dropdown_close";
+					$scope.selectedCategory = category;
+					$scope.showtags = 0;	
+					$scope.getTags(category);					 
+				}else{ 
+					$scope.isVisible = 1;
+					$scope.drpClass = "dropdown_open";
+				}
+			};
+			$scope.objSelectedTags = new Array();
+            $scope.addToSelected = function(category,tag_id,tag_name){ 
+				var incexist = 0;
+				angular.forEach($scope.objSelectedTags, function(dataset){ 
+					if(dataset.tag_name == tag_name){incexist++;}
+				});				
+				if(incexist == 0){
+					$scope.objSelectedTags.push({
+						category:category,tag_id:tag_id,tag_name:tag_name
+					});
+				}
+				angular.forEach($scope.categorylist, function(dataset){ 
+					if(dataset.tag_category_id == category){
+						var incexist = 0;
+						angular.forEach($scope.objSelectedCategory, function(datasets){ 
+							if(datasets.category_icon == dataset.tag_category_icon){incexist++;}
+							 
+						});	
+						if(incexist ==0){
+							$scope.objSelectedCategory.push({
+								category:dataset.tag_category_id,category_title:dataset.tag_category_title,category_icon:dataset.tag_category_icon
+							});	
+						}
+					}
+				   });
+				 
+			};
+            $scope.removeFromSelected = function(tag_name,category){ 			 
+				var array_index = $scope.getArrayIndex($scope.objSelectedTags,'tag_name',tag_name);
+				$scope.objSelectedTags.splice( array_index, 1 );
+				var incexist = 0;
+				angular.forEach($scope.objSelectedTags, function(dataset){ 
+					if(dataset.category == category){incexist++;}
+				});				
+				if(incexist == 0){
+					var array_index = $scope.getArrayIndex($scope.objSelectedCategory,'category',category);
+					$scope.objSelectedCategory.splice( array_index, 1 );
+				}
+			};
+			$scope.getArrayIndex = function(arr_elemnt,key,item){ 
+				var incexist = -1;
+				for(i=0;i<arr_elemnt.length;i++) {
+					if(arr_elemnt[i][key] == item){incexist = i;}
+				}
+				return incexist;
+			};
+
+            $scope.getCityId = function(cityId){
+                $scope.user.cityId = cityId;
+            }
+            $scope.removeData = function(){
+                $scope.user = angular.copy($scope.master);
+                $scope.user.grouptype = 1;
+				uploadFIle = '';
+				$('#uploadPreview').html('');
+            }            
+            $scope.saveStep2 = function(user) {	
+				var formData = new FormData();	
+				var addedTags = [];
+				var increment = 0;
+				angular.forEach($scope.objSelectedTags, function(dataset){ 
+					addedTags[increment] = dataset.tag_id;
+					increment++;
+				});
+				formData.append("groupImage",uploadFIle);
+				formData.append("strGroupName",user.groupname);
+				formData.append("intCountryId",user.country);
+                formData.append("intCityId",user.cityId);
+                formData.append("strDesp",user.groupdecp);
+				formData.append("intGroupType",user.grouptype);
+                formData.append("addedtags",addedTags);                 
+                if($scope.objSelectedTags.length == 0){
+                     $scope.tagerror    = 'Please add atleast one tag';
+                }else {
+                url = baseurl + '/groups/creategroup';
+                    $http.post(url,formData,{withCredentials: true, headers: {'Content-Type': undefined }, transformRequest: angular.identity})
+					.success(function(data, status, headers, config) {
+                                         
+                                        if(data.return_array.process_status == 'success'){
+                                            window.location.reload();
+                                        }else{
+											alert(data.return_array.process_info);
+										}
+					})
+					.error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+					});
+
+               }//else
+            }
+
+     });
+groupapp.directive('removeOnClick', function() {
+			return {
+				link: function(scope, elt, attrs) {
+					scope.remove = function() {
+						elt.remove();
+					};
+				}
+			}
+		});
+  
+	 
+
+	$( "#show_notification" ).click(function() {
+		$( "#notifications-outer" ).toggle( "fast" );
+	});
+	$(".feed-refresh a").click(function() {
+		$(".feed-refresh a").addClass("refresh-rotate");
+	});
+    $("#go_step-2").click(function() {
+		$("#signup_step1").hide("fast");
+		$("#signup_step2").show("fast");
+	});
+	$("#go_step-3").click(function() {
+		$("#signup_step2").hide("fast");
+		$("#signup_step3").show("fast");
+	});
+
+    function getFile(){
+        document.getElementById("btnUploadImage").click();
+    }
+    function fncResetForm(){
+        $('#txtGroupName').val('');
+        $('#CountryDropDown').find('.customSelectInner').html('');
+        $('#CityDropDown').find('.customSelectInner').html('');
+        $('#categoryDropDown').find('.customSelectInner').html('');
+        $("input:radio[name=group_type][disabled=false]:first").attr('checked', true);
+        $('#hdnoldimage').val('');
+        $('#hdnTagId').val('');
+        $('#txtDescription').val('');
+        $('#imgUserImage').attr('src','');
+		uploadFIle = '';
+		$('#uploadPreview').html('');
+    }
+
+    $(function () {
+        // code for implementing simple file upload as well as drag and drop upload functionality
+        'use strict';
+        $('#btnUploadImage').fileupload({
+        url:'/upload',
+        dataType: 'json',
+		drop: function(e,data){  
+			uploadFIle = data.files[0];	
+			var reader = new FileReader();
+			var image  = new Image();
+			reader.readAsDataURL(data.files[0]);  
+			reader.onload = function(_file) {
+				image.src    = _file.target.result;              // url.createObjectURL(file);
+				image.onload = function() {
+					var w = this.width,
+						h = this.height,
+						t = data.files[0].type,                           // ext only: // file.type.split('/')[1],
+						n = data.files[0].name,
+						s = ~~(data.files[0].size/1024) +'KB';
+						if(w<200 || h<100) {
+							alert("Please upload files with width more than 200 and height more than 100");
+						}else{
+							$('#uploadPreview').html('<img src="'+ this.src +'"> ');
+						}
+					//$('#uploadPreview').append('<img src="'+ this.src +'"> ');
+				};
+				image.onerror= function() {
+					alert('Invalid file type: '+ data.files[0].type);
+				};
+			};
+		},
+		change:function(e, data){ 
+			uploadFIle = data.files[0];
+			var reader = new FileReader();
+			var image  = new Image();
+			reader.readAsDataURL(data.files[0]);  
+			reader.onload = function(_file) {
+				image.src    = _file.target.result;              // url.createObjectURL(file);
+				image.onload = function() {
+					var w = this.width,
+						h = this.height,
+						t = data.files[0].type,                           // ext only: // file.type.split('/')[1],
+						n = data.files[0].name,
+						s = ~~(data.files[0].size/1024) +'KB';
+						if(w<200 || h<100) {
+							alert("Please upload files with width more than 200 and height more than 100");
+						}else{
+							$('#uploadPreview').html('<img src="'+ this.src +'"> ');
+						}
+					//$('#uploadPreview').append('<img src="'+ this.src +'"> ');
+				};
+				image.onerror= function() {
+					alert('Invalid file type: '+ data.files[0].type);
+				};
+			};
+		},
+        done: function (e, data) { 
+             
+        }, 
+          
+        }).prop('disabled', !$.support.fileInput)
+        .parent().addClass($.support.fileInput ? undefined : 'disabled');
+    });
+	 
+		$(document).on('change','#btnUploadImage',function(e){			  
+			fileInput = e.target.files;
+			uploadFIle = fileInput[0];
+			var reader = new FileReader();
+			var image  = new Image();
+			reader.readAsDataURL(fileInput[0]);  
+			reader.onload = function(_file) {
+				image.src    = _file.target.result;              // url.createObjectURL(file);
+				image.onload = function() {
+					var w = this.width,
+						h = this.height,
+						t = fileInput[0].type,                           // ext only: // file.type.split('/')[1],
+						n = fileInput[0].name,
+						s = ~~(fileInput[0].size/1024) +'KB';
+						if(w<200 || h<100) {
+							alert("Please upload files with width more than 200 and height more than 100");
+						}else{
+							$('#uploadPreview').html('<img src="'+ this.src +'"> ');
+						}
+					//$('#uploadPreview').append('<img src="'+ this.src +'"> ');
+				};
+				image.onerror= function() {
+					alert('Invalid file type: '+ fileInput[0].type);
+				};
+			};
+		});
+	 
+	 
+		angular.element(document).ready(function() {
+    angular.bootstrap(document.getElementById("profile_div"), ["myapp"]);
+    angular.bootstrap(document.getElementById("group_right_container"), ["groupapp"]);
+	 
+});
+</script>

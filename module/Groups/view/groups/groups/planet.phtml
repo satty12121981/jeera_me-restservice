@@ -1,0 +1,78 @@
+<?php $this->HeadScript()->prependFile($this->basePath().'/public/js/planet.js','text/javascript'); ?>
+<script type="text/javascript">
+	var galexy = '<?php echo $galexy; ?>';
+	var endresult = 1;
+</script>
+<?php if(isset($flashMessages) && count($flashMessages)) : ?>
+<ul>
+    <?php foreach ($flashMessages as $msg) : ?>
+    <li><?php echo $msg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?> 
+<?php if(isset($this->layout()->identity) && $this->layout()->identity!=NULL) { 
+	echo $planetSugessions;
+ }else{ ?>
+	<div class="video-head">Some text here explaining Galaxies</div>
+<?php } ?>
+            <div class="planet-tags">
+            	<ul>
+                	<li><a href="#" class="sort_planet">A</a></li>
+                    <li><a href="#" class="sort_planet">b</a></li>
+                    <li><a href="#" class="sort_planet">c</a></li>
+                    <li><a href="#" class="sort_planet">d</a></li>
+                    <li><a href="#" class="sort_planet">e</a></li>
+                    <li><a href="#" class="sort_planet">f</a></li>
+                    <li><a href="#" class="sort_planet">g</a></li>
+                    <li><a href="#" class="sort_planet">h</a></li>
+                    <li><a href="#" class="sort_planet">i</a></li>
+                    <li><a href="#" class="sort_planet">j</a></li>
+                    <li><a href="#" class="sort_planet">k</a></li>
+                    <li><a href="#" class="sort_planet">l</a></li>
+                    <li><a href="#" class="sort_planet">m</a></li>
+                    <li><a href="#" class="sort_planet">n</a></li>
+                    <li><a href="#" class="sort_planet">o</a></li>
+                    <li><a href="#" class="sort_planet">p</a></li>
+                    <li><a href="#" class="sort_planet">q</a></li>
+                    <li><a href="#" class="sort_planet">r</a></li>
+                    <li><a href="#" class="sort_planet">s</a></li>
+                    <li><a href="#" class="sort_planet">t</a></li>
+                    <li><a href="#" class="sort_planet">u</a></li>
+                    <li><a href="#" class="sort_planet">v</a></li>
+                    <li><a href="#" class="sort_planet">w</a></li>
+                    <li><a href="#" class="sort_planet">x</a></li>
+                    <li><a href="#" class="sort_planet">y</a></li>
+                    <li><a href="#" class="sort_planet">z</a></li>
+                </ul>
+            </div>
+			<div class="planet-search">
+            	<input name="planet_search" id="planet_search" type="text" placeholder="Search for planets" /><input id="btn_planet_search" type="image" src="<?php echo $this->basePath(); ?>/public/images/search-butn2.png" />
+            </div>
+			<div class="galaxy-container" id="planet_list">
+			<?php foreach($planet as $row){ ?>
+				<div class="planet-outer">
+                	<div class="planet-img">
+						<a href="<?php echo $this->url('groups/planethome',array('group_id'=>$row->parent_seo_title,'planet_id'=>$row->group_seo_title));?>">
+						<?php if($row->data_content!=''){ ?>
+                    	<img src="<?php echo $this->basePath(); ?>/public/album/<?php echo $row->group_id ?>/small/<?php echo $row->data_content; ?>" alt="" />
+						<?php 	}else{ ?>
+						<img src="<?php echo $this->basePath(); ?>/public/images/planet-noimg.jpg" alt="" />
+						<?php } ?>
+						</a>
+                        <div class="planet-engag">
+                        	<div class="planet-engag-inner"><?php echo $row->member_count;  ?> engaged</div>
+                        </div>
+                    </div>
+                    <div class="planet-info">
+                    	<div class="planet-list-head"><a href="<?php echo $this->url('groups/planethome',array('group_id'=>$row->parent_seo_title,'planet_id'=>$row->group_seo_title));?>"><?php echo $row->group_title; ?></a></div>
+                        <div class="planet-discr"><?php echo substr($row->group_discription,0,50); ?>...</div>
+						<?php if($row->is_member){ ?>
+                        <div class="planet-member">Planet member</div>
+						<?php } ?>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+				<?php } ?>
+			 <div class="clear"></div>
+			</div>
+			<div class="ajax_loader"></div>

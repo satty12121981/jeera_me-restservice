@@ -1,0 +1,84 @@
+<?php
+$title = 'Edit Tag Category';
+$this->headTitle($title);
+?>
+<section id="secondary_bar">
+    <div class="breadcrumbs_container">
+        <article class="breadcrumbs">
+		<a href="<?php echo $this->url('jadmin') ?>">Admin Dashboard </a>
+		<div class="breadcrumb_divider"></div>
+		<a href="<?php echo $this->url('jadmin/admin-tags-category') ?>">Manage Tag categories</a> 
+		<div class="breadcrumb_divider"></div>
+		<a class="current" href="javascript:void(0);">Edit</a></article>
+    </div>
+</section> 
+<section id="main" class="column">    
+    <?php if (isset($flashMessages) && count($flashMessages)) : ?>
+        <ul class="session">
+            <?php foreach ($flashMessages as $msg) : ?>
+                <li><?php echo $msg; ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+    <!--error Message-->
+    <?php if (isset($error) && count($error)) : ?>
+        <ul class="error">
+            <?php foreach ($error as $errormsg) : ?>
+                <li><?php echo $errormsg; ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+    <!--success message-->
+    <?php if (isset($success) && count($success)) : ?>
+        <ul class="success">
+            <?php foreach ($success as $successmsg) : ?>
+                <li><?php echo $successmsg; ?></li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+    <article class="module width_full">
+        <header><h3><?php echo $this->escapeHtml($title); ?></h3>
+		</header>
+        <?php
+        $form = $this->form;
+		$form->setAttribute('action',$this->url('jadmin/admin-tag-categories-edit', array('action' => 'edit', 'id'=>$this->id)));
+		$form->prepare();
+        echo $this->form()->openTag($form) . PHP_EOL;       
+		echo $this->formHidden($form->get('tag_category_id')) . PHP_EOL;
+        ?>
+        <div class="module_content">            
+            <fieldset>
+                <label>Name*</label>
+                <?php echo $this->formRow($form->get('tag_category_title')) . PHP_EOL; ?>
+            </fieldset>
+			<fieldset style="width:13%; float:left; text-align: center; padding: 5px;">
+            <?php
+            if ($icon_file) {       
+            ?>
+                 <!-- to make two field float next to one another, adjust values accordingly -->
+                    <div class="grp_img">
+                   <img src="<?php echo $this->basePath()."/public/".$icon_folder.$icon_file;?>" height="125px" width="125px">
+                     
+                   </div>                            
+            <?php
+            } 
+            ?>
+			<?php echo $this->formRow($form->get('tag_category_icon')) . PHP_EOL; ?>
+			 </fieldset>  
+			<div class="clear"></div>			 
+             <fieldset>
+                <label>Description</label>
+                <?php echo $this->formRow($form->get('tag_category_desc')) . PHP_EOL; ?>
+            </fieldset>            
+            <div class="clear"></div>
+        </div>
+        <footer>
+            <div class="submit_link">
+                <?php echo $this->formInput($form->get('submit')) . PHP_EOL; ?>
+            </div>
+        </footer>
+        <?php echo $this->form()->closeTag($form) . PHP_EOL; ?>
+    </article><!-- end of post new article -->
+    <div class="clear"></div>
+    <div class="spacer"></div>
+</section>

@@ -1,0 +1,96 @@
+<script>
+	  var past_page = <?php echo $pastactivity_page; ?> ;
+</script>
+<?php if(isset($flashMessages) && count($flashMessages)) : ?>
+<ul class="session">
+    <?php foreach ($flashMessages as $msg) : ?>
+    <li><?php echo $msg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<?php if(isset($error) && count($error)) : ?>
+<ul class="error">
+    <?php foreach ($error as $errormsg) : ?>
+    <li><?php echo $errormsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<?php if(isset($success) && count($success)) : ?>
+<ul class="success">
+    <?php foreach ($success as $successmsg) : ?>
+    <li><?php echo $successmsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+
+        
+        
+		 
+        
+				 
+				 
+				<div class="clearfix"></div>
+				<div class="guide-search-results-list">
+				<?php  
+				if(isset($activityData_past) && count($activityData_past)) { 
+					foreach ($activityData_past as $activity) : 
+						$iamattending =false;
+				?>
+					<div class="result">
+						<div class="result-left">               
+							<p class="title"><a href="<?php echo $this->url('activity/activity-view',
+										array('action'=>'view', 'id' => $activity['group_activity_id']));?>"><?php echo $activity['group_activity_title']; ?></a>
+							</p>
+							<p class="location"><?php echo date("F j, Y, g:i a", strtotime($activity['group_activity_start_timestamp'])); ?></p>                
+							<div class="venue-comments">
+								<div id="likes_<?php echo $activity['group_activity_id'];?>">
+						<?php 
+						if ( $activity['user_check'] && $activity['likes_count'] > 1 ) {
+							echo "<a href=\"#\" class=\"activity-unlikes\" id=\"".$activity['group_activity_id']."\">UnLike</a>&nbsp;&nbsp;You&nbsp;+&nbsp;";
+							echo ($activity['likes_count']-2);
+						} else if ($activity['user_check'] && $activity['likes_count'] == 1 ) {
+							echo "<a href=\"#\" class=\"activity-unlikes\" id=\"".$activity['group_activity_id']."\">UnLike</a>&nbsp;&nbsp;You&nbsp;";
+						} else{
+							echo "<a href=\"#\" class=\"activity-likes\" id=\"".$activity['group_activity_id']."\">Like</a>&nbsp;&nbsp;".$activity['likes_count'];
+						}
+						?>
+					</div>	
+					<a href="#" class="activity-comments" id="<?php echo $activity['group_activity_id'];?>"><?php echo $activity['comments_count'];?> comments</a>
+				<div id="result_<?php echo $activity['group_activity_id'];?>" style="display:none"></div>					
+							</div>
+							<div class="teaser"><?php echo $activity['group_activity_content']; ?> <!--<a href="#">View Event</a>--></div>
+						</div>						
+						<?php if(isset($activity['rsvp']) && count($activity['rsvp'])) : ?>
+						<div class="invited_members">
+							<?php foreach ($activity['rsvp'] as $rsvp) :			
+							if($rsvp['user_id']==$userData->user_id) {
+								$iamattending =true;					 
+							}
+							?>
+							<span>
+								<?php if(isset($rsvp['photo_name']) && !empty($rsvp['photo_name'])) : ?>
+								<img src="<?php echo $this->basePath()?>/public/datagd/profile/<?php echo $rsvp['photo_name']?>" title="<?php echo $rsvp['user_first_name']?> <?php echo $rsvp['user_last_name']?> is attending this activity" />
+								<?php else : ?>
+								<img src="<?php echo $this->basePath()?>/public/datagd/profile/no-image.jpg" width="30px;" title="<?php echo $rsvp['user_first_name']?> <?php echo $rsvp['user_last_name']?>  is attending this activity" />	
+								<?php endif; ?>
+							</span>         
+							<?php endforeach; ?>	
+						</div>
+						<?php endif; ?>	
+						<div class="clearfix"></div>
+					</div>
+					<div>
+					
+					</div>
+				<?php endforeach; ?> 
+				<div class="btn-loadmore">
+				<a href="javascript:void(0)" id="loadmore_past" class="">Load more..</a>
+				</div>
+		<?php		} else { echo "<div class='no-result'>Sorry ! No Past activity found in this planet.</div>";} ?>
+</div>
+			 
+		 
+
+
+	
+	

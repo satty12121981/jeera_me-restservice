@@ -1,0 +1,480 @@
+<?php //print_r($profile_data); ?>
+     <!-- Left Fixed part -->
+   <?php echo $this->profileWidget; ?>  
+    <!-- Left Fixed part Close -->
+    
+     <div class="right_container"   id="post_right_container" ng-app="post_app">
+		<div ng-controller="groupCreateController">
+    	<div class="right-profile_links">
+        	<div class="right-profile_links_inner" >
+            	<ul class="color-trans">
+                	<li><a href="my-posts.html">Posts</a></li>
+                    <li><a href="javascript:void(0);" class="active">Groups (5)</a></li>
+                     <li><a href="<?php echo $this->basePath()."/".$current_Profile ?>/friends">Friends ({{ frineds_count }})</a></li>
+                    <li><a href="my-activity.html">My Activity</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="right-content_outer">
+        	<div class="friends_sort">
+            	<div class="group_sort color-trans">
+                    Show:
+                    <a href="javascript:void(0);" class="active">All</a>
+                    <a href="javascript:void(0);">Created (1)</a>
+                    <a href="javascript:void(0);">Joined (2)</a>
+                    <a href="javascript:void(0);">Pending Requests (2)</a>
+                </div>
+                	<div class="create_group"><a class="default_butn_violet" href="javascript:void(0);" data-toggle="modal" data-target="#create_group" ng-click="loadpopup()">Create New Group</a></div>
+                <div class="clear"></div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="group-list-outer">
+                        <div class="group-img_head">
+                            <img alt="" src="images/group-img_1.png">
+                            <div class="group-shadow"></div>
+                            <div class="join-group-butn"><a class="button_corner_red" href="javascript:void(0);">Leave This Group</a></div>
+                            <div class="group-titles">
+                                NY Lifestyle
+                                <span>
+                                    <i class="group-open"></i><!-- Change the <i> class when chenge the group privacy -->
+                                    Open Group
+                                </span>
+                            </div>
+                        </div>
+                        <div class="group-body">
+                            <div class="group-interest_location">
+                                <div class="group_interest">Group Interests</div>
+                                <div class="group_location"><i class="group-location"></i>New York, NY</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="group-category_icons">
+                                <img alt="" src="images/photography-icon.png">
+                            </div>
+                            <div class="group-interest_list">
+                                Group Interest · Interest · Group Interest · Interest · Group Interest
+                            </div>
+                            <div class="group_members-friends">
+                                <div class="group_members">members: <span>3k</span></div>
+                                <div class="group_friends">friends: <span>0</span></div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="group-list-outer">
+                        <div class="group-img_head">
+                            <div class="own_group-label">
+                            	<div class="owner_profile">
+                                	<img src="images/main-profile-img.jpg" alt="" />
+                                    <span class="owner-badge"></span>
+                                </div>
+                            </div>
+                            <img alt="" src="images/group-img_2.png">
+                            <div class="group-shadow"></div>
+                            <div class="join-group-butn"><a class="button_corner_yellow" href="javascript:void(0);">Edit Group</a></div>
+                            <div class="group-titles">
+                                Scuba Diving
+                                <span>
+                                    <i class="group-open"></i><!-- Change the <i> class when chenge the group privacy -->
+                                    Open Group
+                                </span>
+                            </div>
+                        </div>
+                        <div class="group-body">
+                            <div class="group-interest_location">
+                                <div class="group_interest">Group Interests</div>
+                                <div class="group_location"><i class="group-location"></i>Dubai, UAE</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="group-category_icons">
+                                <img alt="" src="images/travel-icon.png">
+                                <img alt="" src="images/sports-icon.png">
+                            </div>
+                            <div class="group-interest_list">
+                                Group Interest · Interest · Group Interest · Interest · Group Interest
+                            </div>
+                            <div class="group_members-friends">
+                                <div class="group_members">members: <span>2.7k</span></div>
+                                <div class="group_requests">new requests: <span><a href="javascript:void(0);">1</a></span></div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="group-list-outer">
+                        <div class="group-img_head">
+                            <img alt="" src="images/group-img_4.png">
+                            <div class="group-shadow"></div>
+                            <div class="join-group-butn"><a class="button_corner_red" href="javascript:void(0);">Leave This Group</a></div>
+                            <div class="group-titles">
+                                Nature Escape Plan
+                                <span>
+                                    <i class="group-open"></i><!-- Change the <i> class when chenge the group privacy -->
+                                    Open Group
+                                </span>
+                            </div>
+                        </div>
+                        <div class="group-body">
+                            <div class="group-interest_location">
+                                <div class="group_interest">Group Interests</div>
+                                <div class="group_location"><i class="group-location"></i>New York, NY</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="group-category_icons">
+                                <img alt="" src="images/cinema-icon.png">
+                            </div>
+                            <div class="group-interest_list">
+                                Group Interest · Interest · Group Interest · Interest · Group Interest
+                            </div>
+                            <div class="group_members-friends">
+                                <div class="group_members">members: <span>1.6k</span></div>
+                                <div class="group_friends">friends: <span>0</span></div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="group-list-outer">
+                        <div class="group-img_head">
+                            <img alt="" src="images/group-img_5.png">
+                            <div class="group-shadow"></div>
+                            <div class="join-group-butn"><a class="button_corner_grey" href="javascript:void(0);">Pending Approval</a></div>
+                            <div class="group-titles">
+                                Camp Fire
+                                <span>
+                                    <i class="group-open"></i><!-- Change the <i> class when chenge the group privacy -->
+                                    Open Group
+                                </span>
+                            </div>
+                        </div>
+                        <div class="group-body">
+                            <div class="group-interest_location">
+                                <div class="group_interest">Group Interests</div>
+                                <div class="group_location"><i class="group-location"></i>Dubai, UAE</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="group-category_icons">
+                                <img alt="" src="images/travel-icon.png">
+                                <img alt="" src="images/sports-icon.png">
+                            </div>
+                            <div class="group-interest_list">
+                                Group Interest · Interest · Group Interest · Interest · Group Interest
+                            </div>
+                            <div class="group_members-friends">
+                                <div class="group_members">members: <span>2.7k</span></div>
+                                <div class="group_friends">friends: <span>0</span></div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="group-list-outer">
+                        <div class="group-img_head">
+                            <img alt="" src="images/group-img_6.png">
+                            <div class="group-shadow"></div>
+                            <div class="join-group-butn"><a class="button_corner_grey" href="javascript:void(0);">Pending Approval</a></div>
+                            <div class="group-titles">
+                                Road To Nowhere
+                                <span>
+                                    <i class="group-open"></i><!-- Change the <i> class when chenge the group privacy -->
+                                    Open Group
+                                </span>
+                            </div>
+                        </div>
+                        <div class="group-body">
+                            <div class="group-interest_location">
+                                <div class="group_interest">Group Interests</div>
+                                <div class="group_location"><i class="group-location"></i>Dubai, UAE</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="group-category_icons">
+                                <img alt="" src="images/cinema-icon.png">
+                                <img alt="" src="images/sports-icon.png">
+                            </div>
+                            <div class="group-interest_list">
+                                Group Interest · Interest · Group Interest · Interest · Group Interest
+                            </div>
+                            <div class="group_members-friends">
+                                <div class="group_members">members: <span>2.7k</span></div>
+                                <div class="group_friends">friends: <span>0</span></div>
+                                <div class="clear"></div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+          </div>
+            
+            <div class="clear"></div>
+        </div>
+        
+    
+    
+    <div class="clear"></div>
+	  <div class="pop_bg modal fade" id="create_group" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog group_popup" >
+        <div class="modal-content create_group_outer">
+          <div class="modal-header create_group-head">
+            <div class="create_group-header">
+            	<div class="level-1 active">
+                	1<i></i>Group Info
+                </div>
+                <div class="level-2">
+                	2<i></i>Interests
+                </div>
+                <div class="level-3">
+                	3<i></i>INVITE &amp; ASK
+                </div>
+            </div>
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <div class="clear"></div>
+          </div>
+          <div class="modal-body signup_body">
+            <div id="signup_step1">
+                <div class="step1_outer">
+                    <div class="create_group-label">Name Your Group</div>
+                    <div class="login-field">
+                        <input name="groupname" type="text" placeholder="e.g. Arsenal Lovers" ng-minlength="3" required  />
+                    </div>
+                    <div class="group_select_col-left">
+                    	<div class="create_group-label">Choose Group Country</div>
+                       <select id="country" class="styled" required ng-model="user.country" ng-change="CitySelect(user.country)">
+							<option  ng-repeat="item in countrylist" ng-selected="{{item.country_code == country}}" value="{{item.country_id}}">{{item.country_title}}</option>
+						</select>
+                    </div>
+                    <div class="group_select_col-right">
+                    	<div class="create_group-label">Choose Group City</div>
+                       <select id="city" class="styled" required ng-model="user.city">
+							<option  ng-repeat="item in citylist" ng-selected="{{item.name == city}}" value="{{item.city_id}}">{{item.name}}</option>
+						</select>
+                    </div>
+                    <div class="clear"></div>
+                    <div class="create_group-label">Upload Banner Photo</div>
+                    <div class="drag_drop-media group_drag-drop">
+                    	<div class="drag-caption"><img src="images/drag_drop-img.png" alt="" /><br />Choose a photo to upload</div>
+                    </div>
+                    <div class="create_group-label">Choose Group Type</div>
+                    <div class="select_group-type">
+                    	<input type="radio" name="group_type" id="open-group" checked>
+                        <label for="open-group"><i class="radio-styled"></i> <i class="group-open_black"></i>Open Group</label>
+                        <div class="group-type_details">
+                            This group will be visible to everyone and can be joined immediately <br />
+                            (without group owner approval).
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="select_group-type">
+                    	<input type="radio" name="group_type" id="Public-group">
+                        <label for="Public-group"><i class="radio-styled"></i> <i class="group-public_black"></i>Public Group</label>
+                        <div class="group-type_details">
+                            This group will be visible to everyone, but the group owner receives <br />
+                            requests for the group joining which he can accept or decline.
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="select_group-type">
+                    	<input type="radio" name="group_type" id="closed-group">
+                        <label for="closed-group"><i class="radio-styled"></i> <i class="group-private_black"></i>Private Group</label>
+                        <div class="group-type_details">
+                            This group will not be visible to anyone in regular search. It is invite <br />
+                            based and users can not join the group unless you invite them.
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="create_group-label">Describe Your Group</div>
+                    <div class="login-field">
+                        <textarea name="discribe_group" placeholder="Tell us what is your group about"></textarea>
+                    </div>
+                    <div class="signup_button">
+                        
+                        <div class="signup-link"><a href="javascript:void(0);" class="default_butn_normal" data-dismiss="modal">Cancel</a> <a href="javascript:void(0);" class="default_butn_blue" id="go_step-2">Continue</a></div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="signup_step2" style="display:none;">
+                <div class="group_select_col-left">
+                    <div class="create_group-label">Choose Category</div>
+                    <select name="" class="styled">
+                        <option>Popular Categories</option>
+                        <option>Entertainment</option>
+                        <option>Sports</option>
+                        <option>Cinema</option>
+                    </select>
+                </div>
+                <div class="group_select_col-right">
+                    <div class="create_group-label">&nbsp;</div>
+                    <div class="fixed-search interest_search">
+                        <input type="text" name="search" placeholder="City or Postal Code">
+                        <a href="javascript:void(0);"></a>
+                    </div>
+                </div>
+                <div class="clear"></div>
+                <div class="popup_interest-lists">
+                	<a href="javascript:void(0);" class="interest_add">Acting<span></span></a>
+                    <a href="javascript:void(0);" class="interest_add">Independent Filmmakers<span></span></a>
+                    <a href="javascript:void(0);" class="interest_add">Oldies<span></span></a>
+                    <a href="javascript:void(0);" class="interest_add">Camera &amp; Lighting<span></span></a>
+                    <a href="javascript:void(0);" class="interest_add">Drama<span></span></a>
+                    <a href="javascript:void(0);" class="interest_add">Comedy<span></span></a>
+                    <a href="javascript:void(0);" class="interest_add">Screenplay<span></span></a>
+                </div>
+                <div class="create_group-label">Chosen Group Interests</div>
+                <div class="selected_interest"><img alt="" src="images/history-icon.png"> <img alt="" src="images/cinema-icon.png"> <img alt="" src="images/medicine-icon.png"></div>
+                <div class="popup_interest-lists">
+                	<a href="javascript:void(0);" class="interest_added">Science Fiction<span></span></a>
+                    <a href="javascript:void(0);" class="interest_added">Classic Films<span></span></a>
+                    <a href="javascript:void(0);" class="interest_added">Electronic Music<span></span></a>
+                    <a href="javascript:void(0);" class="interest_added">Off Roads<span></span></a>
+                </div>
+                
+                <div class="signup_button">
+                    <div class="signup-link"><a href="javascript:void(0);" class="default_butn_normal" id="go_step-1">Back</a> <a href="javascript:void(0);" class="default_butn_blue" id="go_step-3">Continue</a></div>
+                    <div class="clear"></div>
+                </div>
+            </div>
+            
+            <div id="signup_step3" style="display:none;">
+                <div class="create_group-label">Invite People to Your Group (Optional)</div>
+                <div class="login-field">
+                    <input name="name" type="text" placeholder="+ Add more people" />
+                </div>
+                <div class="invited_friends">
+                	<div class="invited_names comn_profile_img">
+                    	<img src="images/profile-img-2.jpg" alt="" /> Sandrine Birote<span></span>
+                    </div>
+                    <div class="invited_names comn_profile_img">
+                    	<img src="images/profile-img-5.jpg" alt="" /> Manuella Fratz<span></span>
+                    </div>
+                </div>
+                <div class="create_group-label">Add Questionary (Optional)</div>
+                <div class="create_group_info">Once people start sending their requests to join your group, the questionnaire can be helpful. By asking few questions, you can learn about your potential group members and make better choices about who should be able to join your group.</div>
+                <div class="create_group-label">Question 1</div>
+                <div class="group_select_col-left">
+                    <select name="" class="styled">
+                        <option>Text</option>
+                        <option>Checkbox</option>
+                        <option>Radio Button</option>
+                    </select>
+                </div>
+                <div class="clear"></div>
+                <div class="login-field">
+                        <textarea name="discribe_group" placeholder="Type Your Question"></textarea>
+                    </div>
+                <div class="create_group-label">Question 2</div>
+                <div class="group_select_col-left">
+                    <select name="" class="styled">
+                        <option>Text</option>
+                        <option>Checkbox</option>
+                        <option>Radio Button</option>
+                    </select>
+                </div>
+                <div class="clear"></div>
+                <div class="login-field">
+                        <textarea name="discribe_group" placeholder="Type Your Question"></textarea>
+                    </div>
+                <div class="group_select_col-left">
+                    <input name="" type="text" placeholder="Type The Right Answer " />
+                </div>
+                <div class="clear"></div>
+                <div class="group_select_col-left">
+                    <input name="" type="text" placeholder="Type the Wrong Answer" />
+                </div>
+                <div class="clear"></div>
+                <div class="group_select_col-left">
+                    <input name="" type="text" placeholder="Type the Wrong Answer" />
+                </div>
+                <div class="clear"></div>
+                <div class="login-field">
+                	<span class="group_questionary create_group_questionary"><a href="javascript:void(0);"><i></i>Click to add question (1 questions left)</a></span>
+                </div>
+                
+                <div class="signup_button">
+                    <div class="signup-link"><a href="javascript:void(0);" class="default_butn_normal" id="">Back</a> <a href="javascript:void(0);" class="default_butn_blue" id="">Finish</a></div>
+                    <div class="clear"></div>
+                </div>
+                
+            </div>
+            
+          </div>
+          
+        </div>
+      </div>
+    </div>
+	</div>
+	</div>
+	<script type="text/javascript" src="<?php echo $this->basePath(); ?>/public/js/salvattore.min.js"></script>
+	<script type="text/javascript">
+	
+	$( "#show_notification" ).click(function() {
+		$( "#notifications-outer" ).toggle( "fast" );
+	});
+	$(".feed-refresh a").click(function() {
+		$(".feed-refresh a").addClass("refresh-rotate");
+	});
+	$("#edit_profile-butn").click(function() {
+		$("#profile_details-edit").show("fast");
+		$("#profile_details").hide("fast");
+	});
+	 var post_app = angular.module('post_app',[]);
+		post_app.config(function ($httpProvider) {
+			$httpProvider.defaults.transformRequest = function(data){
+				if (data === undefined) {
+					return data;
+				}
+				return $.param(data);
+			}
+		});
+ 
+	 
+	post_app.controller('groupCreateController',function($scope, $http){
+		$scope.frineds_count = <?php echo $friends_count; ?>;
+		$scope.countrylist=[];
+		 $scope.citylist=[];
+		$scope.loadpopup = function(){
+			url  = baseurl+'/country/ajaxCountryList';
+			$http({
+			  method: 'POST',
+			  url: url
+			}).success(function(data, status, headers, config) {
+			   $scope.countrylist=data.countries;
+			   angular.forEach(data.countries, function(dataset){
+				if(dataset.country_code == $scope.country){
+					$scope.CitySelect(dataset.country_id);
+					$scope.loading=false;
+				}
+			   });
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+		$scope.CitySelect = function(country_value){
+				 
+				url  = baseurl+'/city/ajaxCitiesList';
+				$http.post(url,{country_id:country_value}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}			
+				).success(function(data, status, headers, config) {
+				   $scope.citylist=data.cities;	
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				}); 
+			};
+	});
+	angular.element(document).ready(function() {
+    angular.bootstrap(document.getElementById("profile_div"), ["myapp"]);
+    angular.bootstrap(document.getElementById("post_right_container"), ["post_app"]);
+});
+</script>
+    

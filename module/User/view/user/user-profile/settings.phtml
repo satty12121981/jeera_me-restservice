@@ -1,0 +1,291 @@
+ <div class="feed-filter_outer sub_top-margin">
+    	<div class="home-container">
+        	<h1><a href="javascript:void(0);"><i class="back-button"></i></a>Settings</h1>
+        </div>
+    </div>
+    
+    <div class="home-container feeds-container"  id="setting_container" ng-controller="settingController">
+    	<div class="filter_sub-outer">
+        	<div class="row">
+            	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="show-sorting">
+                        <span><a href="javascript:void(0);" ng-class="{'active':activeTab == 'account'}" id="account_tab" ng-click="activeTab = 'account'">Account</a></span>
+                        <span><a href="javascript:void(0);" id="notification_tab" ng-class="{'active': activeTab == 'notification'}" ng-click="activeTab = 'notification'">Notifications</a></span>
+                        <span><a href="javascript:void(0);" id="password_tab" ng-class="{'active': activeTab == 'password'}" ng-click="activeTab = 'password'">Password</a></span>
+                    </div>
+                </div>
+                
+                <div class="clear"></div>
+            </div>
+        </div>
+            
+        <div class="account_settings-outer border_radius">
+				
+        	<div id="account_settings" ng-if="activeTab=='account'">
+                <div class="setting_label">Username</div>
+                <div class="setting_field">
+				<input name="username" type="text" ng-model="user.username" required/>
+				<span style="color:red" ng-if="username_error">User name required</span>
+				</div>
+                <div class="clear"></div>
+                <div class="setting_label">Email</div>
+                <div class="setting_field"><input name="email" ng-model="user.user_email" type="text"  required/>
+				<span style="color:red" ng-if="email_error">Email required</span>
+				</div>
+                <div class="clear"></div>
+                <div class="setting_label">Timezone</div>
+                <div class="setting_field">
+				<select id="timezone" class="styled setting_select hasCustomSelect ng-pristine ng-valid"  ng-model="user.timezone" >
+				<option value="">Please Select Timezone </option>
+				 <option  ng-repeat="item in timezonelist" ng-selected="{{item.timezone_id == user.timezoneID}}" value="{{item.timezone_id}}">{{item.timezone}}</option>
+                </select>
+				</div>
+                <div class="clear"></div>
+                <div class="setting_label">Phone</div>
+                <div class="setting_field"><input name="phone" maxlength="11" minlength="11" type="text" ng-model="user.phone"  /></div>
+                <div class="clear"></div>
+				<div ng-if="accountAjax==1"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"></div>
+                <div class="setting_save-butn" ng-if="accountAjax!=1"><a href="javascript:void(0);" class="default_butn_blue" ng-click="saveProfile()">Save</a></div>
+            </div>
+            <div ng-if="activeTab=='notification'">
+            	<div class="setting_label">Notify Me When</div>
+                <div class="setting_checkboxes" id="notifymelist">
+					<ul class="notify_list">
+						<li ng-repeat="item in notifymelist"><a href="javascript:void(0)" ng-click="selectNotifyList(item.notify_id)">
+						<i class="check_blue" ng-if="!checkInList(item.notify_id)"></i>
+						<i class="check_blue_checked" ng-if="checkInList(item.notify_id)"></i>
+						{{item.notify_content}}</a></li>
+					</ul>
+					 
+                                                  
+				</div>
+                <div class="clear"></div>
+                <div class="setting_label">Email Me When</div>
+                <div class="setting_checkboxes" id="emailmelist">
+					<ul class="notify_list">
+						<li ng-repeat="item in emailmelist"><a href="javascript:void(0)" ng-click="selectEmailmeList(item.emailme_id)">
+						<i class="check_blue" ng-if="!checkInEmailList(item.emailme_id)"></i>
+						<i class="check_blue_checked" ng-if="checkInEmailList(item.emailme_id)"></i>
+						{{item.emailme_content}}</a></li>
+					</ul>                        
+				</div>
+                <div class="clear"></div>
+				<div ng-if="notificationAjax==1"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"></div>
+                <div class="setting_save-butn" ng-if="notificationAjax!=1"><a href="javascript:void(0);" class="default_butn_blue"ng-click="saveNotification()" >Save</a></div>
+                
+            </div>
+            
+            <div id="password_settings" ng-if="activeTab=='password'">
+                <div class="setting_label">Current Password</div>
+                <div class="setting_field"><input required name="currentPassword" id="currentPassword" type="password"   ng-model="user.currentPassword" />  
+				<span style="color:red" ng-if="currentPassword_error">Current Password required</span>				
+                </div>
+                <div class="clear"></div>
+                <div class="setting_label">New Password</div>
+                <div class="setting_field"><input required name="newPassword" id="newPassword" type="password" ng-model="user.newPassword"/>
+				<span style="color:red" ng-if="newPassword_error">New Password required</span>
+				</div>
+                <div class="clear"></div>
+                <div class="setting_label">Confirm Password</div>
+                <div class="setting_field"><input required name="confirmPassword" id="confirmPassword" type="password" ng-model="user.confirmPassword" />
+				<span style="color:red" ng-if="confirmPassword_error">New Password and  Confirm Password must be same</span>	
+				</div>
+                <div class="clear"></div>
+				<div ng-if="passwordAjax==1"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"></div>
+                <div class="setting_save-butn" ng-if="passwordAjax!=1"><a href="javascript:void(0);" class="default_butn_blue" ng-click="savePassword(user)">Save</a></div>
+            </div>
+            
+        </div>
+        
+        <div class="clear"></div>
+    </div>
+<script type="text/javascript" src='<?php echo $this->basePath(); ?>/public/js/jquery-customSelect.js'></script>
+<script type="text/javascript">
+	
+	var profile = <?php echo json_encode($profile_data); ?>; 
+		var settingapp = angular.module('settingapp',[]);
+		settingapp.config(function ($httpProvider) {
+			$httpProvider.defaults.transformRequest = function(data){
+				if (data === undefined) {
+					return data;
+				}
+				return $.param(data);
+			}
+		});
+		settingapp.controller('settingController',function($scope, $http){ 
+			$scope.user = {};
+			$scope.profile = <?php echo json_encode($profile_data); ?>; 
+			$scope.user.username = $scope.profile.user_given_name;
+			$scope.user.user_email = $scope.profile.user_email;
+			$scope.user.phone = $scope.profile.user_profile_phone
+			$scope.user.timezoneID = $scope.profile.user_timezone_id;
+			$scope.timezonelist = <?php echo json_encode($timezones); ?>;
+			$scope.activeTab = "account" ;
+			$scope.notifymelist= <?php echo json_encode($notifyContent); ?>;
+			$scope.emailmelist=<?php echo json_encode($emailmecontent); ?>;	
+			$scope.username_error = 0;
+			$scope.email_error = 0;
+			$scope.selectedNofication = [<?php echo $user_notify_me_content; ?>];
+			$scope.selectedEmailme = [<?php echo $user_email_me_content; ?>];
+			$scope.accountAjax = 0;
+			$scope.saveProfile = function(){
+				var error = 0;
+				if($scope.user.username==''||$scope.user.username=='undefined'||$scope.user.username==undefined){
+					error++;
+					$scope.username_error = 1;
+				}
+				if($scope.user.user_email==''||$scope.user.user_email=='undefined'||$scope.user.user_email==undefined){
+					error++;
+					$scope.email_error = 1;
+				}
+				if(!validateEmail($scope.user.user_email)){
+					error++;
+					$scope.email_error = 1;
+				}
+				if(error==0){
+					$scope.accountAjax = 1;
+					url  = baseurl+'/user/savesettings';
+					$http.post(url,
+					{
+						user_name:$scope.user.username,
+						user_email:$scope.user.user_email,
+						timezone:$scope.user.timezone,
+						phone:$scope.user.phone,
+						settings_type:'account'
+					}
+					, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+					).success(function(data, status, headers, config) {
+						$scope.accountAjax =0;
+						if(data.return_array.process_status == 'success'){					
+						window.location.reload();					
+						}else{
+							alert(data.return_array.process_info);
+						}				     
+					}).error(function(data, status, headers, config) {
+						alert("Error occured. Please try again");
+						$scope.accountAjax =0;
+					});
+				}
+			}
+			$scope.selectNotifyList = function(notify_id){
+				var index = $scope.getArrayIndex($scope.selectedNofication,notify_id);			 
+				if(index>=0) {
+					$scope.selectedNofication.splice( index, 1 );			
+				} else {
+					$scope.selectedNofication.push(notify_id);			
+				}
+				
+			}
+			$scope.checkInList = function(notify_id){
+				 var index =  $scope.getArrayIndex($scope.selectedNofication,notify_id);
+				 if(index>=0){
+					return true;
+				 }else{return false;}
+			}
+			$scope.checkInEmailList = function(email_id){
+				 var index =  $scope.getArrayIndex($scope.selectedEmailme,email_id);
+				 if(index>=0){
+					return true;
+				 }else{return false;}
+			}
+			
+			$scope.selectEmailmeList = function(email_id){
+				var index = $scope.getArrayIndex($scope.selectedEmailme,email_id);			 
+				if(index>=0) {
+					$scope.selectedEmailme.splice( index, 1 );			
+				} else {
+					$scope.selectedEmailme.push(email_id);			
+				}			
+			}
+			$scope.notificationAjax = 0;
+			$scope.saveNotification = function(){
+				url  = baseurl+'/user/savesettings';
+				$scope.notificationAjax = 1;
+				$http.post(url,
+				{
+					EmailmeId:$scope.selectedEmailme,
+					NotifymeId:$scope.selectedNofication,					 
+					settings_type:'notification'
+				}
+				, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) {
+					$scope.notificationAjax = 0;
+					if(data.return_array.process_status == 'success'){					
+						window.location.reload();;					
+					}else{
+						alert(data.return_array.process_info);
+					}				     
+				}).error(function(data, status, headers, config) {
+					alert("Error occured. Please try again");
+					$scope.notificationAjax = 0;
+				});
+			}
+			$scope.currentPassword_error = 0;
+			$scope.newPassword_error = 0;
+			$scope.confirmPassword_error = 0;
+			$scope.passwordAjax = 0;
+			$scope.savePassword = function(){
+				url  = baseurl+'/user/savesettings';
+				var error = 0;
+				if($scope.user.currentPassword==''||$scope.user.currentPassword==undefined){
+					error++;
+					$scope.currentPassword_error = 1;
+				}
+				if($scope.user.newPassword==''||$scope.user.newPassword==undefined){
+					error++;
+					$scope.newPassword_error = 1;
+				}
+				if($scope.user.confirmPassword==''||$scope.user.confirmPassword==undefined){
+					error++;
+					$scope.confirmPassword_error = 1;
+				}
+				if($scope.user.confirmPassword!= $scope.user.newPassword==undefined){
+					error++;
+					$scope.confirmPassword_error = 1;
+				}
+				if(error==0){
+					$scope.passwordAjax = 1;
+					$scope.currentPassword_error = 0;
+					$scope.newPassword_error = 0;
+					$scope.confirmPassword_error = 0;
+					$http.post(url,
+					{					 
+						current_password:$scope.user.currentPassword,
+						user_password:$scope.user.newPassword,							
+						settings_type:'password'
+					}
+					, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+					).success(function(data, status, headers, config) {						 
+						$scope.passwordAjax = 0;
+						if(data.return_array.process_status == 'success'){					
+							alert("Sucessfully updated your password.");
+						window.location.reload();
+						}else{
+							alert(data.return_array.process_info);
+						}				     
+					}).error(function(data, status, headers, config) {
+						alert("Error occured. Please try again");
+						$scope.passwordAjax = 0;
+					});
+				}
+			}
+			$scope.getArrayIndex = function(arr_elemnt,item){ 
+				var incexist = -1;
+				for(i=0;i<arr_elemnt.length;i++) {
+					if(arr_elemnt[i] == item){incexist = i;}
+				}
+				return incexist;
+			}; 
+		});		 
+
+	 angular.element(document).ready(function() {
+	 angular.bootstrap(document.getElementById("setting_container"), ["settingapp"]);	 
+	
+	 
+});
+function validateEmail($email) {
+  var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+  if( !emailReg.test( $email ) ){ return false; } else { return true; }
+}  	
+ 
+</script>

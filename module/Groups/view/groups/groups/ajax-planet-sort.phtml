@@ -1,0 +1,38 @@
+
+	 <?php 
+		$i=0; 
+	 foreach($planet as $row){ $i++;?>
+				<div class="planet-outer">
+                	<div class="planet-img">
+					<a href="<?php echo $this->url('groups/planethome',array('group_id'=>$row->parent_seo_title,'planet_id'=>$row->group_seo_title));?>">
+						<?php if($row->data_content!=''){ ?>
+						
+                    	<img src="<?php echo $this->basePath(); ?>/public/album/<?php echo $row->group_id ?>/small/<?php echo $row->data_content; ?>" alt="" />
+						<?php 	}else{ ?>
+						<img src="<?php echo $this->basePath(); ?>/public/images/planet-noimg.jpg" alt="" />
+						<?php } ?>
+						</a>
+                        <div class="planet-engag">
+                        	<div class="planet-engag-inner"><?php echo $row->member_count;  ?> engaged</div>
+                        </div>
+                    </div>
+                    <div class="planet-info">
+                    	<div class="planet-list-head"><a href="<?php echo $this->url('groups/planethome',array('group_id'=>$row->parent_seo_title,'planet_id'=>$row->group_seo_title));?>"><?php echo $row->group_title; ?></a></div>
+                        <div class="planet-discr"><?php echo substr($row->group_discription,0,50); ?>...</div>
+                        <?php if($row->is_member){ ?>
+                        <div class="planet-member">Planet member</div>
+						<?php } ?>
+                    </div>
+					<script> endresult = 1;</script>
+                    <div class="clear"></div>
+                </div>
+				<?php }  
+				if($i==0){
+					echo "No more planets exist under thie criteria!";?>
+					<script> endresult = 0;</script>
+					<?php 
+				}
+				?>
+	
+	 <div class="clear"></div>
+	 

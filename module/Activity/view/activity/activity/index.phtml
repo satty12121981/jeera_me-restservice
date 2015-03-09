@@ -1,0 +1,115 @@
+<?php if($page==0){ ?>
+<div class="col right-main">
+
+        
+
+<div class="guide-results-bar-main">
+    Upcoming Activities 
+    (<?php echo count($activityData_upcoming);?> found)
+</div>
+<script>
+	var page = 1;
+</script>
+ <script>
+ var group = '<?php echo $groupData->group_seo_title; ?>';
+ var planet = '<?php echo $subGroupData->group_seo_title; ?>' ;
+ var planet_id = '<?php echo $subGroupData->group_id; ?>' ;
+ var siteurl = '<?php echo $this->basePath(); ?>' ;
+ </script>
+<div class="clearfix"></div>
+<div class="clearfix"></div>
+<?php } ?>
+<div id="guide-search-results-list<?php echo $page+1; ?>" class="guide-search-results-list">
+<?php	if(isset($groupData->group_title) && trim($groupData->group_title)!="") : ?><b><?php //echo $groupData->group_title?> </b><?php endif; ?>
+<?php	if(isset($subGroupData->group_title) && trim($subGroupData->group_title)!="") : ?><b><?php //echo $subGroupData->group_title?></b><?php endif; ?>
+
+<?php  
+//echo "<pre>"; print_r($activityData_upcoming);
+  if(isset($activityData_upcoming) && count($activityData_upcoming)) { ?>
+
+    <?php
+    // echo "<pre>";
+	// print_r($activityData);
+
+	foreach ($activityData_upcoming as $activity) : 
+		$iamattending =false;
+	 ?>
+	    <div class="result">
+		<div class="result-left">
+                <!--<div class="event-category">Sales</div>-->
+                
+                <p class="title"><a href="<?php echo $this->url('activity/activity-view',
+										array('action'=>'view', 'id' => $activity['group_activity_id']));?>"><?php echo $activity['group_activity_title']; ?></a></p>
+                <p class="location"><?php echo date("F j, Y, g:i a", strtotime($activity['group_activity_start_timestamp'])); ?></p>
+                
+                <div class="venue-comments">
+								<div id="likes_<?php echo $activity['group_activity_id'];?>">
+						<?php 
+						if ( $activity['user_check'] && $activity['likes_count'] > 1 ) {
+							echo "<a href=\"#\" class=\"activity-unlikes\" id=\"".$activity['group_activity_id']."\">UnLike</a>&nbsp;&nbsp;You&nbsp;+&nbsp;";
+							echo ($activity['likes_count']-2);
+						} else if ($activity['user_check'] && $activity['likes_count'] == 1 ) {
+							echo "<a href=\"#\" class=\"activity-unlikes\" id=\"".$activity['group_activity_id']."\">UnLike</a>&nbsp;&nbsp;You&nbsp;";
+						} else{
+							echo "<a href=\"#\" class=\"activity-likes\" id=\"".$activity['group_activity_id']."\">Like</a>&nbsp;&nbsp;".$activity['likes_count'];
+						}
+						?>
+					</div>	
+					<a href="#" class="activity-comments" id="<?php echo $activity['group_activity_id'];?>"><?php echo $activity['comments_count'];?> comments</a>
+				<div id="result_<?php echo $activity['group_activity_id'];?>" style="display:none"></div>					
+							</div>
+
+                <div class="teaser"><?php if(strlen($activity['group_activity_content'])>130){  echo substr($activity['group_activity_content'],0,130)."...."; ?><a href="<?php echo $this->url('activity/activity-view',
+										array('action'=>'view', 'id' => $activity['group_activity_id']));?>">Read More</a> <?php }else{ echo $activity['group_activity_content'];}?> <!--<a href="#">View Event</a>--></div>
+           </div>
+		   <!-- users who are attending the Activity -->
+	        <?php if(isset($activity['rsvp']) && count($activity['rsvp'])) : ?>
+			<div class="invited_members">
+    	     <?php foreach ($activity['rsvp'] as $rsvp) :		 	 
+		      ?>
+         	<?php 
+				//check if user has already attending this activity or not.If yes, Hide the Attned Actitiy form
+				if($rsvp['user_id']==$userData->user_id) {
+					 $iamattending =true;					 
+				}
+			?>
+           	<span>
+            	<?php if(isset($rsvp['photo_name']) && !empty($rsvp['photo_name'])) : ?>
+            	<img src="<?php echo $this->basePath()?>/public/datagd/profile/<?php echo $rsvp['photo_name']?>" title="<?php echo $rsvp['user_first_name']?> <?php echo $rsvp['user_last_name']?> is attending this activity" />
+                <?php else : ?>
+                <img src="<?php echo $this->basePath()?>/public/datagd/profile/no-image.jpg" width="30px;" title="<?php echo $rsvp['user_first_name']?> <?php echo $rsvp['user_last_name']?>  is attending this activity" />	
+                <?php endif; ?>
+            </span>         
+		 <?php endforeach; ?>	
+		 </div>
+	<?php endif; ?>	
+	
+	<!-- RSVP -->
+	<div class="activity_actions">
+	<?php if(isset($userRegisteredGroup->user_group_id) && !empty($userRegisteredGroup->user_group_id)) : ?>
+	<?php if(!$iamattending):?>    
+	<span id="activity-status" style="padding-right:20px;margin-right:20px;float:right;"><a href="javascript:void(0)" class="join-activity" id="<?php echo $activity['group_activity_id']; ?>">
+	<img src="<?php echo $this->basePath()?>/public/images/add_join.gif" title="Join Activity" /></a>&nbsp;&nbsp;&nbsp;<a href="javascript:void(0)" class="reject-activity" id="<?php echo $activity['group_activity_id']; ?>">
+	</a></span>
+     <?php else: ?>
+     		<span id="activity-status" style=" color: #008000;float: right;font-weight: bold;">You are Attending this Activity</span>
+			<a href="javascript:void(0)" class="quit-activity" id="<?php echo $activity['group_activity_id']; ?>"><img src="<?php echo $this->basePath()?>/public/images/reject.gif" title="Reject Activity" /> </a>
+    <?php endif; ?>
+	<?php endif; ?>
+	</div>
+	<!-- RSVP -->
+	
+                <div class="clearfix"></div>
+            </div>
+        
+
+	
+	
+    <?php endforeach; ?>
+<div>
+	<a href="javascript:void(0)" id="loadmore_upcoming">Loadmore...</a>
+</div>
+<?php } else { echo "<div>Sorry ! No Upcoming activity found in this planet.</div>";?>
+<?php } ?>
+</div>
+</div>

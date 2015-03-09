@@ -1,0 +1,55 @@
+<?php 
+if (defined('RUNNING_FROM_ROOT')) {
+  //$this->plugin('basePath')->setBasePath($this->basePath().'/public');
+} ?> 
+<?php echo $this->doctype(); ?> 
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8">
+        <?php echo $this->headTitle('1625 (Jeera) ::'. $this->translate('Explore Yourself'))->setSeparator(' - ')->setAutoEscape(false); ?>
+        <?php echo $this->headMeta()->appendName('viewport', 'width=device-width, initial-scale=1.0'); ?>
+        <!-- external styles -->
+        <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/favicon.icon', 'href' => $this->basePath() . '/img/favicon.ico'))
+                        ->prependStylesheet($this->basePath() . '/public/css/style.css');                       
+		?>
+        <!-- Scripts -->
+		<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery.js','text/javascript'); ?>
+		<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/common.js','text/javascript'); ?>
+		<?php echo $this->headScript(); ?>
+		<script>var baseurl = '<?php echo $this->basePath(); ?>'</script>
+	</head>
+    <body>  
+        <div class="outer-container">
+			<div class="left-container">
+				<div class="left-inner">
+					<div class="logo"><img src="<?php echo $this->basePath(); ?>/public/images/jeera-logo.png" alt="" /></div>
+					<div class="left-links">
+						<ul>
+							<li class="galaxy-menu"><a href="<?php echo $this->url('home');?>" class="active">Galaxy</a></li>
+							<li class="planet-menu"><a href="<?php echo $this->url('groups/planet',array('group_id'=>'all'));?>">Planet</a></li>
+							<li class="activity-menu"><a href="<?php echo $this->url('activity/popular');?>">Activities</a></li>
+						</ul>
+					</div>            
+				</div>
+			</div>
+			<div class="right-container">
+			 
+				<div class="header-container">
+					<?php echo $this->content; ?>
+				</div>				 
+				<div class="contant-container">
+					 <div class="video-head">Some text here welcoming to Jeera</div>
+					<div class="video-container">
+					<video width="806" height="454" controls>
+					  <source src="<?php echo $this->basePath(); ?>/public/videos/songs.mp4" type="video/mp4">
+					  <source src="movie.ogg" type="video/ogg">
+					  Your browser does not support the video tag.
+					</video>
+					 </div>
+				</div>
+			</div>
+			<div class="clear"></div>
+		</div>
+    </body>
+</html>
+

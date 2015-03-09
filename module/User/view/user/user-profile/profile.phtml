@@ -1,0 +1,594 @@
+ <div class="left-profile-details" id="profile_div" ng-modules="myapp" ng-cloak >
+	<div  ng-controller="profileController" ng-switch on="profileData.switch">
+    	<div class="left-profile-inner" id="profile_details" ng-switch-when="1" >
+        	<div class="profile-img-left">
+				<img alt="" ng-if="profile_pic!=null&&profile_pic!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{profileuser_id}}/{{ profile_pic }}">
+				<img alt="" ng-if="(profile_pic==null||profile_pic=='')&&(user_fbid!=null&&user_fbid!='')" src="https://graph.facebook.com/{{user_fbid}}/picture?width=66&&height=66">
+				<img alt="" ng-if="(profile_pic==null||profile_pic=='')&&(user_fbid==null||user_fbid=='')" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">
+                                     
+			</div>
+            <div class="profile-name-left">
+            	{{username}}
+                <span><i class="group-location"></i>{{city}}, {{country}}</span>
+            </div>
+            <div class="profile-brief-left">
+            	{{about}}
+            </div>
+            <div class="profile-edit-left"   >
+				<div ng-show="request_ajax_loader" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+				<div ng-show="!request_ajax_loader">
+            	<a href="javascript:void(0);" ng-if="myprofile == 1" class="default_butn_yellow" id="edit_profile-butn"  ng-click="switchForm()">Edit Profile</a>
+				<a href="javascript:void(0);" ng-if="myprofile != 1 && friendship_status == 'add friend'" class="default_butn_blue" ng-click="sentFriendRequest()">Add Friend</a>
+				<a href="javascript:void(0);" ng-if="myprofile != 1 && friendship_status == 'pending'" class="friend_accept" ng-click="acceptFriendRequest()" title="Accept request"></a>
+				<a href="javascript:void(0);" ng-if="myprofile != 1 && friendship_status == 'pending'" class="friend_ignore" ng-click="rejectFriendRequest()" title="Ignore Request"></a>
+				<a href="javascript:void(0);" ng-if="myprofile != 1 && friendship_status == 'friends'" class="default_butn_red" ng-click="unFriendRequest()">Unfriend</a>
+				<a ng-if="myprofile != 1 && friendship_status == 'requested'" href="javascript:void(0);" class="default_butn_grey">Pending</a>
+				 
+				</div>
+            </div>
+            
+        </div>
+        
+        <div class="left-profile-inner" id="profile_details-edit" ng-switch-when="2"  >
+        	<div class="profile-img-left profile_img-edit">
+            	<img alt="" ng-if="profile_pic!=null&&profile_pic!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{profileuser_id}}/{{ profile_pic }}">
+				<img alt="" ng-if="(profile_pic==null||profile_pic=='')&&(user_fbid!=null&&user_fbid!='')" src="https://graph.facebook.com/{{user_fbid}}/picture?width=66&&height=66">
+				<img alt="" ng-if="(profile_pic==null||profile_pic=='')&&(user_fbid==null||user_fbid=='')" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">
+            	<a href="javascript:void(0);"   data-toggle="modal" data-target="#upload_profile-image">
+                    <span>
+                        <i class="change_cover"></i><br>
+                        Change
+                    </span>
+                </a>
+            </div>
+            <div class="login-field profile_edit-field">
+            	<input type="text" placeholder="Username and Lastname"   name="name" ng-model="user.username" required>
+            </div>
+			<div ng-show="loading" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+            <div class="fixed-search profile-edit_search">
+                <select id="country" class="styled" required ng-model="user.country" ng-change="CitySelect(user.country)">
+                    <option  ng-repeat="item in countrylist" ng-selected="{{item.country_code == country}}" value="{{item.country_id}}">{{item.country_title}}</option>
+                </select>
+            </div>
+			<div class="fixed-search profile-edit_search" >
+                <select id="city" class="styled" required ng-model="user.city">
+                    <option  ng-repeat="item in citylist" ng-selected="{{item.name == city}}" value="{{item.city_id}}">{{item.name}}</option>
+                </select>
+            </div>
+            <div class="profile_edit-textarea" ng-model="about">
+            	<textarea name="" ng-model="user.about">{{about}} </textarea>
+            </div>
+            
+            <div class="profile-edit-left">
+            	<a href="javascript:void(0);" class="default_butn_normal" ng-click="cancelForm()" >Cancel</a> <a href="javascript:void(0);" class="default_butn_blue" ng-click="saveForm(user)">Save Changes</a>
+				
+            </div>
+            
+        </div>
+		   <div class="pop_bg modal fade" id="upload_profile-image" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog upload-img_popup">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <div class="clear"></div>
+          </div>
+          <div class="modal-body signup_body">
+                <div class="step1_outer">
+                    <h3>Position and Size Your Photo</h3>
+                    <div class="profile-pic_preview_outer">
+                    	<div class="image-editor">
+                              <div class="browse-profile_image"><input type="file" class="cropit-image-input"></div>
+                              <!-- .cropit-image-preview-container is needed for background image to work -->
+                              <div class="cropit-image-preview-container">
+                                <div class="cropit-image-preview"></div>
+                              </div>
+                              <div class="image_zoom-bar">
+                              	<input type="range" class="cropit-image-zoom-input">
+                              </div>
+                              <div class="upload-img_butns">
+                              	<a href="javascript:void(0);" class="default_butn_red" ng-click="closeCropWindow()">Cancel</a>
+								<div ng-if="aboutmeAjax==1" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+                                <a href="javascript:void(0);"  ng-if="aboutmeAjax==0" class="default_butn_blue" ng-click="cropImage()">Apply</a>
+                              </div>
+                              
+                        </div>
+                    </div>
+                    
+                </div>
+            
+          </div>
+          
+        </div>
+      </div>
+    </div>
+     </div>   
+        <div class="left-interest-fixed" ng-controller="intrestController">
+        	<div class="interest_head-left">
+            	Interested In:
+                <a href="javascript:void(0);" ng-if="myprofile == 1" data-toggle="modal" data-target="#interest_popup" ng-click="loadPopup()">Add / Remove Interests</a>
+                <div class="clear"></div>
+            </div>
+            <div class="profile-category_icons">
+                <img  ng-repeat="items in intrest"   ng-if="items.tag_category_icon!=''" src="{{categoryImagePath}}{{items.tag_category_icon}}" alt="{{items.tag_category_title}}" />
+				<img ng-repeat="items in intrest" ng-if="items.tag_category_icon==''" src="<?php echo $this->basePath(); ?>/public/images/category-icon.png" alt="{{items.tag_category_title}}" />
+            </div>
+            <div class="profile-interest_list">
+			<span ng-repeat="tags in userIntrests" ng-if="myprofile!= 1&&checkCommonIntrests(tags.tag_id)" style="text-transform:capitalize;" class="interest_common"> {{tags.tag_title}} .</span>
+			<span ng-repeat="tags in userIntrests" ng-if="myprofile== 1||!checkCommonIntrests(tags.tag_id)" style="text-transform:capitalize;"> {{tags.tag_title}}. </span>
+               
+            </div>
+            <div class="pop_bg modal fade" id="interest_popup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			  <div class="modal-dialog interest_popup">
+				<div class="modal-content">
+				  <div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+					<div class="clear"></div>
+				  </div>
+				  <div class="modal-body signup_body">
+					<div class="step1_outer">
+						<h3>Add More Interests</h3>
+						<div class="interest_category-outer dropdown_icons-outer" ng-switch on="intrest.switch">
+							<ul class="color-trans dropdown_icons border_radius {{drpClass}}" ng-click="dropdownProcess()"  ng-switch-when="1">
+								<li   ng-repeat="item in tagCategory" ng-show="isVisible==1 || $index==selectedIndex"   ng-class="{active:$index==selectedIndex}" >
+								<a href="javascript:void(0);" ng-click="selectCategory(item.tag_category_id,$index)">
+								<img ng-if="item.tag_category_icon!=''" src="{{categoryImagePath}}{{item.tag_category_icon}}" alt="{{item.tag_category_title}}" />
+								<img ng-if="item.tag_category_icon==''" src="<?php echo $this->basePath(); ?>/public/images/category-icon.png" alt="{{item.tag_category_title}}" /> 
+								{{item.tag_category_title}}</a>
+								</li>								 								 						
+							</ul>	
+							<div ng-switch-when="2" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+						</div>
+						<div class="interest_search-outer" >
+							<div class="fixed-search interest_search">
+								<input type="text" placeholder="Search Interest" name="search" ng-model="tag_search" >
+								<a href="javascript:void(0);"></a>
+							</div>
+						</div>
+						<div class="clear"></div>
+						<div class="popup_interest-lists" ng-show="showtags"  >
+							<a class="interest_add" remove-on-click href="javascript:void(0);"    ng-repeat="items in filtered = (tags | filter:tag_search) | limitTo:tag_limit" ng-click="addToSelected(items.category_id,items.tag_id,items.tag_title);remove()">{{items.tag_title}}<span></span></a>
+							<button ng-show="showmoretags" ng-click="tag_limit = tag_limit + tag_inc_limit" ng-init="tag_limit = tag_inc_limit" ng-hide="filtered.length <= tag_limit">
+								More...
+							</button>
+ 						
+						</div>
+						<h3>Your Interests</h3>
+						<div class="selected_interest">
+						<img  ng-repeat="items in objSelectedCategory"   ng-if="items.category_icon!=''" src="{{categoryImagePath}}{{items.category_icon}}" alt="{{items.category_title}}" />
+						<img ng-repeat="items in objSelectedCategory" ng-if="items.category_icon==''" src="<?php echo $this->basePath(); ?>/public/images/category-icon.png" alt="{{items.category_title}}" /> </div>
+						<div class="popup_interest-lists">
+							<a class="interest_added" href="javascript:void(0);" ng-repeat="items in objSelectedTags" remove-on-click ng-click="remove();removeFromSelected(items.tag_name,items.category)" >{{items.tag_name}}<span></span></a>
+							 
+						</div>
+						
+						<div class="login_button">
+							<a href="javascript:void(0);" class="default_butn_blue" ng-click="AddToIntrest()">Done Editing</a>
+						</div>
+					</div>
+				 </div>
+				  
+				</div>
+			  </div>
+			</div>
+        </div>
+     
+    </div>
+<script type="text/javascript" src="<?php echo $this->basePath(); ?>/public/js/jquery.cropit.js"></script>
+<script type="text/javascript" src='<?php echo $this->basePath(); ?>/public/js/jquery-customSelect.js'></script>
+	<script>
+		//LoadCustomeBox();
+		function LoadCustomeBox(){ 
+			 $('select.styled').customSelect();
+		}
+		var profile = <?php echo json_encode($profile_data); ?>; 
+		var image_paths = <?php echo json_encode($image_folders); ?>;
+		var app = angular.module('myapp',[]);
+		app.config(function ($httpProvider) {
+			$httpProvider.defaults.transformRequest = function(data){
+				if (data === undefined) {
+					return data;
+				}
+				return $.param(data);
+			}
+		});
+		app.controller('profileController',function($scope, $http){	 
+			$scope.user = {};
+			$scope.username=profile.user_given_name;
+			$scope.loading=false;
+			$scope.user.username=profile.user_given_name;
+			$scope.user.country=profile.country_id;
+			$scope.user.city=profile.city_id;
+			$scope.city=profile.city_name;
+			$scope.country=profile.country_code;
+			$scope.about=profile.user_profile_about_me;
+			$scope.user.about=profile.user_profile_about_me;
+			$scope.myprofile= <?php echo $myprofile; ?>;
+			$scope.friendship_status = '<?php echo $friendship_status; ?>';
+			$scope.profileData = {};
+			$scope.profileData.switch  =  1;
+			$scope.request_ajax_loader  = 0;
+			$scope.profile_pic =profile.profile_photo;
+			$scope.user_fbid = profile.user_fbid;
+			$scope.profileuser_id=profile.user_id;
+			
+			$scope.switchForm = function() {
+				$scope.loading=true;
+				$scope.profileData.switch  =  2;
+				url  = baseurl+'/country/ajaxCountryList';
+				$http({
+				  method: 'POST',
+				  url: url
+				}).success(function(data, status, headers, config) {
+				   $scope.countrylist=data.countries;
+					var index = 0;
+				   angular.forEach(data.countries, function(dataset){
+					if(dataset.country_code == $scope.country){ index++;
+						$scope.CitySelect(dataset.country_id);
+						$scope.loading=false;
+					} 
+				   });
+				   if(index==0){$scope.loading=false;}
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			};
+			$scope.CitySelect = function(country_value){
+				$scope.loading=true;
+				url  = baseurl+'/city/ajaxCitiesList';
+				$http.post(url,{country_id:country_value}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}			
+				).success(function(data, status, headers, config) {
+				   $scope.citylist=data.cities;	$scope.loading=false;				   
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				}); 
+			};
+			$scope.cancelForm = function() {
+				$scope.profileData.switch  =  1;
+			};
+			$scope.saveForm = function(user) {  
+				url  = baseurl+'/user/updateProfile/<?php echo $profilename; ?>';
+				$http.post(url,{user_name:user.username,country:user.country,city:user.city,about:user.about}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) {
+					if(data.return_array.process_status == 'success'){
+						$scope.username=user.username;	
+						angular.forEach($scope.citylist,function(dataset){if(dataset.city_id == user.city){$scope.city =dataset.name }});					 
+						angular.forEach($scope.countrylist,function(dataset){if(dataset.country_id == user.country){$scope.country =dataset.country_code }});						 
+						$scope.about=user.about;
+						$scope.profileData.switch  =  1;
+						window.location.reload();
+					}else{
+						alert(data.return_array.process_info);
+					}				     
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			};
+			$scope.sentFriendRequest  = function(){
+				$scope.request_ajax_loader  = 1;
+				url  = baseurl+'/user/sentFriendRequest/<?php echo $profilename; ?>';
+				$http({
+				  method: 'POST',
+				  url: url
+				}).success(function(data, status, headers, config) {
+				    if(data.return_array.process_info==''){
+						$scope.friendship_status ='requested';
+						$scope.request_ajax_loader  = 0;
+					}else{
+						alert(data.return_array.process_info);
+					}
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			}
+			$scope.acceptFriendRequest  = function(){
+				$scope.request_ajax_loader  = 1;
+				url  = baseurl+'/user/acceptFriendRequest/<?php echo $profilename; ?>';
+				$http({
+				  method: 'POST',
+				  url: url
+				}).success(function(data, status, headers, config) {
+				    if(data.return_array.process_info==''){
+						$scope.friendship_status ='friends';
+						$scope.request_ajax_loader  = 0;
+					}else{
+						alert(data.return_array.process_info);
+					}
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			}
+			$scope.rejectFriendRequest  = function(){
+				$scope.request_ajax_loader  = 1;
+				url  = baseurl+'/user/rejectFriendRequest/<?php echo $profilename; ?>';
+				$http({
+				  method: 'POST',
+				  url: url
+				}).success(function(data, status, headers, config) {
+				    if(data.return_array.process_info==''){
+						$scope.friendship_status ='add friend';
+						$scope.request_ajax_loader  = 0;
+					}else{
+						alert(data.return_array.process_info);
+					}
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			}
+			$scope.unFriendRequest  = function(){
+				$scope.request_ajax_loader  = 1;
+				url  = baseurl+'/user/unFriendRequest/<?php echo $profilename; ?>';
+				$http({
+				  method: 'POST',
+				  url: url
+				}).success(function(data, status, headers, config) {
+				    if(data.return_array.process_info==''){
+						$scope.friendship_status ='add friend';
+						$scope.request_ajax_loader  = 0;
+					}else{
+						alert(data.return_array.process_info);
+					}
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			}
+			$scope.aboutmeAjax =0;
+			$scope.cropImage = function(){
+				
+				var imageData = $('.image-editor').cropit('export');				 
+				$scope.aboutmeAjax =1;	
+				url = baseurl + '/user/updatProfilePic';
+				$http.post(url,{imageData:imageData},{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+				).success(function(data, status, headers, config) {
+					 if(data.return_array.process_status == 'success'){
+						  
+						 $scope.aboutmeAjax =0;		
+						window.location.reload();
+					 }else{
+						 alert(data.return_array.process_info);
+						 $scope.aboutmeAjax =0;		
+					 }
+
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				}); 				 
+			}
+			$scope.closeCropWindow = function(){
+				$('#upload_profile-image').modal("hide");
+			}
+		});		 
+		app.controller('intrestController',function($scope, $http){
+			$scope.tag_search='';
+			$scope.tag_limit = 25;
+			$scope.tag_inc_limit = 25;
+			$scope.intrest= <?php echo json_encode($user_tags); ?>;
+			$scope.categoryImagePath=(image_paths.tag_category!='')?baseurl+"/public/"+image_paths.tag_category:baseurl+'/public/images/';
+			$scope.objSelectedCategory =  new Array();
+			$scope.objSelectedTags = new Array();
+			$scope.intrest.switch = 2; 
+			$scope.myprofile= <?php echo $myprofile; ?>;
+			$scope.myIntrest = <?php echo json_encode($myIntrests); ?>;
+			$scope.userIntrests = <?php echo json_encode($userIntrests); ?>;
+			$scope.checkCommonIntrests = function(tag_id){
+				var is_exist = -1;
+				for(i=0;i<$scope.myIntrest.length;i++){
+					if($scope.myIntrest[i].tag_id == tag_id){	
+						is_exist =i;
+					}
+				}
+				if(is_exist!=-1){return true;}else{return false;}
+			}
+			$scope.loadPopup = function(){	
+				$scope.intrest.switch = 2;
+				$scope.tag_limit = 25;
+				url = baseurl+'/tag/getAllActiveCategories';
+				$http({
+				  method: 'POST',
+				  url: url
+				}).success(function(data, status, headers, config) {
+				   $scope.tagCategory=data.tag_category;
+				   
+				   $scope.selectedCategory = data.tag_category[0].tag_category_id;
+				   $scope.getTags(data.tag_category[0].tag_category_id);
+				   $scope.intrest.switch = 1;
+				   $scope.selectedIndex = 0;
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+				url = baseurl+'/user/myintrests/<?php echo $profilename; ?>';
+				$http({
+				  method: 'POST',
+				  url: url
+				}).success(function(data, status, headers, config) {
+				   if(data.return_array.process_info==''){
+					$scope.objSelectedCategory =  new Array();
+					$scope.objSelectedTags = new Array();
+					angular.forEach(data.return_array.tag_category, function(dataset){ 
+					 	$scope.objSelectedCategory.push({
+							category:dataset.tag_category_id,category_title:dataset.tag_category_title,category_icon:dataset.tag_category_icon
+						});										 
+				    });
+					angular.forEach(data.return_array.tags, function(dataset){ 
+					 	$scope.objSelectedTags.push({
+							category:dataset.category_id,tag_id:dataset.tag_id,tag_name:dataset.tag_title
+						});										 
+				    });
+				   }else{alert(data.return_array.process_info);}
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			};
+			$scope.isVisible = 0;
+			$scope.drpClass = "dropdown_close";
+			$scope.selectedIndex = 0;	
+			$scope.tags = {};
+			$scope.showtags = 0;
+			$scope.showmoretags = 0;
+			$scope.selectedCategory = '';
+			$scope.selectCategory = function(category,selected){  
+				if($scope.isVisible){
+					$scope.isVisible = 0;
+					$scope.selectedIndex = selected;
+					$scope.drpClass = "dropdown_close";
+					$scope.selectedCategory = category;
+					$scope.showtags = 0;
+					$scope.showmoretags = 0;
+					$scope.tag_limit = 25;
+					$scope.getTags(category);					 
+				}else{ 
+					$scope.isVisible = 1;
+					$scope.drpClass = "dropdown_open";
+				}
+			};
+			$scope.getTags = function(category){
+				$scope.showtags = 0;
+				$scope.showmoretags = 0;
+				url  = baseurl+'/tag/getAllTagsOfSelectedCategory';				
+				$http.post(url,{category_id:category,search:$scope.tag_search}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) { 
+					if(data.tags.length>0){
+					$scope.tags = data.tags; 	
+					$scope.showtags = 1;
+					}else{$scope.showtags = 0;}
+					if(data.tags.length > $scope.tag_limit) {
+					$scope.showmoretags=1; } else { $scope.showmoretags =0; }
+				}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+				});
+			};
+			$scope.searchTag = function(){
+				$scope.getTags($scope.selectedCategory);
+			}
+			
+			$scope.objSelectedTags = new Array();
+			$scope.addToSelected = function(category,tag_id,tag_name){ 
+				var incexist = 0;
+				angular.forEach($scope.objSelectedTags, function(dataset){ 
+					if(dataset.tag_name == tag_name){incexist++;}
+				});				
+				if(incexist == 0){
+					$scope.objSelectedTags.push({
+						category:category,tag_id:tag_id,tag_name:tag_name
+					});
+				}
+				angular.forEach($scope.tagCategory, function(dataset){ 
+					if(dataset.tag_category_id == category){
+						var incexist = 0;
+						angular.forEach($scope.objSelectedCategory, function(datasets){ 
+							if(datasets.category_icon == dataset.tag_category_icon){incexist++;}
+							 
+						});	
+						if(incexist ==0){
+							$scope.objSelectedCategory.push({
+								category:dataset.tag_category_id,category_title:dataset.tag_category_title,category_icon:dataset.tag_category_icon
+							});	
+						}
+					}
+				   });
+				 
+			};
+			$scope.removeFromSelected = function(tag_name,category){ 			 
+				var array_index = $scope.getArrayIndex($scope.objSelectedTags,'tag_name',tag_name);
+				$scope.objSelectedTags.splice( array_index, 1 );
+				var incexist = 0;
+				angular.forEach($scope.objSelectedTags, function(dataset){ 
+					if(dataset.category == category){incexist++;}
+				});				
+				if(incexist == 0){
+					var array_index = $scope.getArrayIndex($scope.objSelectedCategory,'category',category);
+					$scope.objSelectedCategory.splice( array_index, 1 );
+				}
+			};
+			$scope.getArrayIndex = function(arr_elemnt,key,item){ 
+				var incexist = -1;
+				for(i=0;i<arr_elemnt.length;i++) {
+					if(arr_elemnt[i][key] == item){incexist = i;}
+				}
+				return incexist;
+			};
+			$scope.AddToIntrest = function(){
+				var newtags = new Array();
+				var incexist = 0;
+				angular.forEach($scope.objSelectedTags, function(dataset){ 
+					newtags[incexist] = dataset.tag_id;
+					incexist++;
+				});
+				url  = baseurl+'/user/updateTags/<?php echo $profilename; ?>';
+				$http.post(url,{tags:newtags}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) { 
+					$scope.intrest=data.return_array.user_tags;
+					$scope.userIntrests=data.return_array.userIntrests;
+					$('#interest_popup').modal('hide');
+				}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+				});
+			};
+			
+		});
+		app.controller('topmenuController',function($scope, $http){
+		$scope.frineds_count = 1;
+		});
+		app.directive('removeOnClick', function() {
+			return {
+				link: function(scope, elt, attrs) {
+					scope.remove = function() {
+						elt.remove();
+					};
+				}
+			}
+		});
+		$(function() {
+		if(profile.profile_photo!=''&&profile.profile_photo!=null){
+			$('.image-editor').cropit({
+			  exportZoom: 1.25,
+			  imageBackground: true,
+			  imageBackgroundBorderWidth: 20,
+			  imageState: {
+				src: '<?php echo $this->basePath(); ?>/public/datagd/profile/'+profile.user_id+'/'+profile.profile_photo
+			  }
+			});
+		}else if(profile.user_fbid!=''&&profile.user_fbid!=null){
+			var imageUrl = 'https://graph.facebook.com/'+profile.user_fbid+'/picture?width=450&&height=450';
+			convertImgToBase64(imageUrl, function(base64Img){
+			 $('.image-editor').cropit({
+				  exportZoom: 1.25,
+				  imageBackground: true,
+				  imageBackgroundBorderWidth: 20,
+				  imageState: {
+					src:base64Img
+				  }
+				});
+			});
+			
+		}else{
+			$('.image-editor').cropit({
+			  exportZoom: 1.25,
+			  imageBackground: true,
+			  imageBackgroundBorderWidth: 20,
+			  imageState: {
+				src: '<?php echo $this->basePath(); ?>/public/images/profile-img-3.jpg'
+			  }
+			});
+			}
+        $('.export').click(function() {
+          var imageData = $('.image-editor').cropit('export');
+           window.open(imageData);
+        });
+		
+      });
+	  function convertImgToBase64(url, callback, outputFormat){
+	var canvas = document.createElement('CANVAS');
+	var ctx = canvas.getContext('2d');
+	var img = new Image;
+	img.crossOrigin = 'Anonymous';
+	img.onload = function(){
+		canvas.height = img.height;
+		canvas.width = img.width;
+	  	ctx.drawImage(img,0,0);
+	  	var dataURL = canvas.toDataURL(outputFormat || 'image/png');
+	  	callback.call(this, dataURL);
+        // Clean up
+	  	canvas = null; 
+	};
+	img.src = url;
+}
+	</script>

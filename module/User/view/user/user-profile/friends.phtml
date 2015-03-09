@@ -1,0 +1,570 @@
+<?php //print_r($profile_data); ?>
+     <!-- Left Fixed part -->
+   <?php echo $this->profileWidget; ?>  
+    <!-- Left Fixed part Close -->
+    
+    <div class="right_container" id="friend_right_container" ng-app="frnds_app">
+	<div  ng-controller="topmenuController">
+    	<div class="right-profile_links" >
+        	<div class="right-profile_links_inner"  >
+            	<ul class="color-trans">
+                	<li><a href="<?php echo $this->basePath()."/".$current_Profile ?>" >Posts</a></li>
+                    <li><a href="<?php echo $this->basePath()."/".$current_Profile ?>/groups">Groups ({{group_count}})</a></li>
+                    <li><a href="<?php echo $this->basePath()."/".$current_Profile ?>/friends" class="active">Friends ({{ frineds_count }})</a></li>
+                   <?php if($myprofile==1){ ?>
+                    <li><a href="<?php echo $this->basePath()."/".$current_Profile ?>/activities">My Activity</a></li>
+					<?php } ?>
+                </ul>
+            </div>
+		 
+        </div>
+        <div class="right-content_outer"  ng-switch on="friendsdata.switch">
+        	<div class="friends_sort color-trans">
+            	Show:
+                <a href="javascript:void(0);" ng-class="{'active': tabselected=='all'}" ng-click="AllFriends()">All</a>
+                <a ng-if="myprofile==1" href="javascript:void(0);" ng-click="Allrequested()" ng-class="{'active': tabselected=='requested'}">Received Requests ({{ request_count }})</a>
+                <a ng-if="myprofile==1" href="javascript:void(0);" ng-click="AllSented()" ng-class="{'active': tabselected=='sent'}">Sent Requests ({{sent_count}})</a>
+				 <a ng-if="myprofile!=1" href="javascript:void(0);" ng-click="AllMutual()" ng-class="{'active': tabselected=='mutual'}">Mutual ({{mutual_friends_count}})</a>
+            </div>
+            
+            <div class="friends_list-container" scroller ng-switch-when="1">
+            	<!-- Friends List Starts Here -->
+				<div ng-if="tab_ajax_loader==1" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+                <div ng-if="tab_ajax_loader!=1" class="friends_list-outer border_radius" ng-repeat="item in frineds_list" >
+                	<div class="post_header">
+                    	<span class="vertical_align"></span>
+                        <div class="header-profile_image">
+							<a href="<?php echo $this->basePath(); ?>/{{item.user_profile_name}}"><img alt="" ng-if="item.profile_photo!=null&&item.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/{{ image_paths.profile_path }}/{{ item.user_id }}/{{ item.profile_photo }}">
+							<img alt="" ng-if="item.profile_photo==null||item.profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg"></a>
+						</div>
+                        <div class="post_profile-name">
+                        	<a href="<?php echo $this->basePath(); ?>/{{item.user_profile_name}}"> {{ item.user_given_name }}</a>
+                            <span><i class="group-location"></i>{{ item.city }},{{ item.country_title }}</span>
+                        </div>
+                        <div class="friend-status_butn">
+						<div ng-if="$index == selectedIndex && request_ajax_loader==1" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+						<div ng-if="$index != selectedIndex || request_ajax_loader!=1">
+							<a href="javascript:void(0);" ng-if="item.is_friend == 1" class="default_butn_red" ng-click="unFriendRequest(item.user_profile_name,$index)">Unfriend</a>
+							<a ng-if="myprofile != 1 && item.is_requested == 1" href="javascript:void(0);" class="default_butn_grey">Pending</a>						 
+							<a href="javascript:void(0);" ng-if="myprofile != 1 && item.get_request == 1" class="friend_accept" ng-click="acceptFriendRequest(item.user_profile_name,$index)" title="Accept Request"></a>
+							<a href="javascript:void(0);" ng-if="myprofile != 1 && item.get_request == 1" class="friend_ignore" ng-click="rejectFriendRequest(item.user_profile_name,$index)" title="Ignore Request"></a>
+							<a href="javascript:void(0);" ng-if="item.get_request != 1 && item.is_requested != 1 && item.is_friend != 1 && item.user_profile_name!='<?php echo $profilename; ?>'" class="default_butn_blue" ng-click="sentFriendRequest(item.user_profile_name,$index)">Add Friend</a>
+						</div>
+						</div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="friend_interest">
+                    	<span>Interested In ({{  item.tag_category_count }})</span>
+                    	<div class="friend_interest-icons">
+                        	<img  alt="" ng-repeat="tagitem in item.tag_category" ng-if="tagitem.tag_category_icon!=''&&$index<=3" src="<?php echo $this->basePath(); ?>/public/{{ image_paths.tag_category }}/{{tagitem.tag_category_icon}}" alt="{{tagitem.tag_category_title}}" />
+                            <img ng-repeat="tagitem in item.tag_category" ng-if="tagitem.tag_category_icon==''&&$index<=3" src="<?php echo $this->basePath(); ?>/public/images/category-icon.png" alt="{{tagitem.tag_category_title}}" /> 
+							<span class="interest_more" ng-if="item.tag_category_count>4">+{{ item.tag_category_count- 4 }}</span>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="group_members-friends">
+                        <div class="group_members">groups joined: <span>{{ item.group_count }}</span></div>
+                        <div class="group_friends">groups created: <span>{{ item.created_group_count }}</span></div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <!-- Friends List ends Here --> 
+                <div class="clear"></div>
+            </div>  
+			<div class="friends_list-container"  ng-switch-when="2">
+            	<!-- Friends List Starts Here -->
+				<div ng-if="tab_ajax_loader==1" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif">  </div>
+                 <div ng-if="tab_ajax_loader!=1" class="friends_list-outer border_radius" ng-repeat="item in receivedRequests" >
+                	<div class="post_header">
+                    	<span class="vertical_align"></span>
+                        <div class="header-profile_image">
+							<a href="<?php echo $this->basePath(); ?>/{{item.user_profile_name}}"><img alt="" ng-if="item.profile_photo!=null&&item.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/{{ image_paths.profile_path }}/{{ item.user_id }}/{{ item.profile_photo }}">
+							<img alt="" ng-if="item.profile_photo==null||item.profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg"></a>
+						</div>
+                        <div class="post_profile-name">
+                        	<a href="<?php echo $this->basePath(); ?>/{{item.user_profile_name}}">{{ item.user_given_name }}</a>
+                            <span><i class="group-location"></i>{{ item.city }},{{ item.country_title }}</span>
+                        </div>
+                        <div class="friend-status_butn">
+						<div ng-if="$index == selectedIndex && request_ajax_loader==1" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+						<div ng-if="$index != selectedIndex || request_ajax_loader!=1">
+							 					 
+							<a href="javascript:void(0);" ng-if="myprofile == 1 " class="friend_accept" ng-click="acceptFriendRequestFromRequests(item.user_profile_name,$index)" title="Accept Request"></a>
+							<a href="javascript:void(0);" ng-if="myprofile == 1 " class="friend_ignore" ng-click="rejectFriendRequestFromRequests(item.user_profile_name,$index)" title="Ignore Request"></a>
+							 
+						</div>
+						</div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="friend_interest">
+                    	<span>Interested In ({{  item.tag_category_count }})</span>
+                    	<div class="friend_interest-icons">
+                        	<img  alt="" ng-repeat="tagitem in item.tag_category" ng-if="tagitem.tag_category_icon!=''&&$index<=3" src="<?php echo $this->basePath(); ?>/public/{{ image_paths.tag_category }}/{{tagitem.tag_category_icon}}" alt="{{tagitem.tag_category_title}}" />
+                            <img ng-repeat="tagitem in item.tag_category" ng-if="tagitem.tag_category_icon==''&&$index<=3" src="<?php echo $this->basePath(); ?>/public/images/category-icon.png" alt="{{tagitem.tag_category_title}}" /> 
+							<span class="interest_more" ng-if="item.tag_category_count>4">+{{ item.tag_category_count- 4 }}</span>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="group_members-friends">
+                        <div class="group_members">groups joined: <span>{{ item.group_count }}</span></div>
+                        <div class="group_friends">groups created: <span>{{ item.created_group_count }}</span></div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <!-- Friends List ends Here --> 
+                <div class="clear"></div>
+            </div> 
+			<div class="friends_list-container"  ng-switch-when="3">
+            	<!-- Friends List Starts Here -->
+				<div ng-if="tab_ajax_loader==1" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif">  </div>
+                <div ng-if="tab_ajax_loader!=1" class="friends_list-outer border_radius" ng-repeat="item in SentRequests" >
+                	<div class="post_header">
+                    	<span class="vertical_align"></span>
+                        <div class="header-profile_image">
+							<a href="<?php echo $this->basePath(); ?>/{{item.user_profile_name}}"><img alt="" ng-if="item.profile_photo!=null&&items.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/{{ image_paths.profile_path }}/{{ item.user_id }}/{{ item.profile_photo }}">
+							<img alt="" ng-if="item.profile_photo==null||item.profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg"></a>
+						</div>
+                        <div class="post_profile-name">
+                        	<a href="<?php echo $this->basePath(); ?>/{{item.user_profile_name}}">{{ item.user_given_name }}</a>
+                            <span><i class="group-location"></i>{{ item.city }},{{ item.country_title }}</span>
+                        </div>
+                        <div class="friend-status_butn">
+						<div ng-if="$index == selectedIndex && request_ajax_loader==1" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+						<div ng-if="$index != selectedIndex || request_ajax_loader!=1">
+							<a ng-if="myprofile == 1" href="javascript:void(0);" class="default_butn_grey">Pending</a> 					 
+						</div>
+						</div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="friend_interest">
+                    	<span>Interested In ({{  item.tag_category_count }})</span>
+                    	<div class="friend_interest-icons">
+                        	<img  alt="" ng-repeat="tagitem in item.tag_category" ng-if="tagitem.tag_category_icon!=''&&$index<=3" src="<?php echo $this->basePath(); ?>/public/{{ image_paths.tag_category }}/{{tagitem.tag_category_icon}}" alt="{{tagitem.tag_category_title}}" />
+                            <img ng-repeat="tagitem in item.tag_category" ng-if="tagitem.tag_category_icon==''&&$index<=3" src="<?php echo $this->basePath(); ?>/public/images/category-icon.png" alt="{{tagitem.tag_category_title}}" /> 
+							<span class="interest_more" ng-if="item.tag_category_count>4">+{{ item.tag_category_count- 4 }}</span>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="group_members-friends">
+                        <div class="group_members">groups joined: <span>{{ item.group_count }}</span></div>
+                        <div class="group_friends">groups created: <span>{{ item.created_group_count }}</span></div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <!-- Friends List ends Here --> 
+                <div class="clear"></div>
+            </div> 
+			<div class="friends_list-container"  ng-switch-when="4">
+            	<!-- Friends List Starts Here -->
+				<div ng-if="tab_ajax_loader==1" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif">  </div>
+                <div ng-if="tab_ajax_loader!=1" class="friends_list-outer border_radius" ng-repeat="item in mutual_friends" >
+                	<div class="post_header">
+                    	<span class="vertical_align"></span>
+                        <div class="header-profile_image">
+							<a href="<?php echo $this->basePath(); ?>/{{item.user_profile_name}}"><img alt="" ng-if="item.profile_photo!=null&&item.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/{{ image_paths.profile_path }}/{{ item.user_id }}/{{ item.profile_photo }}">
+							<img alt="" ng-if="item.profile_photo==null||item.profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg"></a>
+						</div>
+                        <div class="post_profile-name">
+                        	<a href="<?php echo $this->basePath(); ?>/{{item.user_profile_name}}">{{ item.user_given_name }}</a>
+                            <span><i class="group-location"></i>{{ item.city }},{{ item.country_title }}</span>
+                        </div>
+                        <div class="friend-status_butn">
+						<div ng-if="$index == selectedIndex && mutual_ajax_loader==1" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+						<div ng-if="$index != selectedIndex || mutual_ajax_loader!=1">
+							<a href="javascript:void(0);"   class="default_butn_red" ng-click="unFriendMutual(item.user_profile_name,$index)">Unfriend</a>					 
+						</div>
+						</div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="friend_interest">
+                    	<span>Interested In ({{  item.tag_category_count }})</span>
+                    	<div class="friend_interest-icons">
+                        	<img  alt="" ng-repeat="tagitem in item.tag_category" ng-if="tagitem.tag_category_icon!=''&&$index<=3" src="<?php echo $this->basePath(); ?>/public/{{ image_paths.tag_category }}/{{tagitem.tag_category_icon}}" alt="{{tagitem.tag_category_title}}" />
+                            <img ng-repeat="tagitem in item.tag_category" ng-if="tagitem.tag_category_icon==''&&$index<=3" src="<?php echo $this->basePath(); ?>/public/images/category-icon.png" alt="{{tagitem.tag_category_title}}" /> 
+							<span class="interest_more" ng-if="item.tag_category_count>4">+{{ item.tag_category_count- 4 }}</span>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="group_members-friends">
+                        <div class="group_members">groups joined: <span>{{ item.group_count }}</span></div>
+                        <div class="group_friends">groups created: <span>{{ item.created_group_count }}</span></div>
+                        <div class="clear"></div>
+                    </div>
+                </div>
+                <!-- Friends List ends Here --> 
+                <div class="clear"></div>
+            </div> 
+            <div class="clear"></div>
+        </div>   
+		</div>
+    </div>
+    
+    <div class="clear"></div>
+	<script type="text/javascript" src="<?php echo $this->basePath(); ?>/public/js/salvattore.min.js"></script>
+	<script type="text/javascript">
+	var page_counter = 1;
+	var requested_counter = 0;
+	var sented_counter = 0;
+	var mutual_counter = 0;
+	var ajax_flag = 0;
+	$( "#show_notification" ).click(function() {
+		$( "#notifications-outer" ).toggle( "fast" );
+	});
+	$(".feed-refresh a").click(function() {
+		$(".feed-refresh a").addClass("refresh-rotate");
+	});
+	$("#edit_profile-butn").click(function() {
+		$("#profile_details-edit").show("fast");
+		$("#profile_details").hide("fast");
+	});
+	 var frondapp = angular.module('frnds_app',[]);
+		frondapp.config(function ($httpProvider) {
+			$httpProvider.defaults.transformRequest = function(data){
+				if (data === undefined) {
+					return data;
+				}
+				return $.param(data);
+			}
+		});
+	frondapp.directive('scroller', function ($window) {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+		  var windowEl = angular.element($window); 		  
+		  var handler = function() { scope.handler();  }
+		  windowEl.on('scroll', scope.$apply.bind(scope, handler));
+		 
+		}
+    };
+});	 
+	frondapp.controller('topmenuController',function($scope, $http){
+		
+		$scope.frineds_count = <?php echo $friends_count; ?>;
+		$scope.frineds_list = <?php echo json_encode($friendslist); ?>;
+		$scope.myprofile= <?php echo $myprofile; ?>;
+		$scope.request_count= <?php echo $request_count; ?>;
+		$scope.group_count = <?php echo $group_count; ?>;
+		$scope.sent_count= <?php echo $sent_count; ?>;
+		$scope.mutual_friends_count= <?php echo $mutual_friends_count; ?>;
+		$scope.image_paths = <?php echo json_encode($image_folders); ?>;
+		$scope.categoryImagePath=(image_paths.tag_category!='')?baseurl+"/public/"+image_paths.tag_category:baseurl+'/public/images/';
+		$scope.selectedIndex = 0;
+		$scope.friendsdata = {};
+		$scope.friendsdata.switch  =  1;
+		$scope.tabselected = 'all';
+		$scope.receivedRequests = [];
+		$scope.SentRequests =[];
+		$scope.mutual_friends =[];
+		$scope.mutual_ajax_loader = 0;
+		$scope.tab_ajax_loader = 0;
+		$scope.handler = function() {			
+				switch($scope.friendsdata.switch){
+				case 1:	
+				$scope.moreFriends();			
+				break;
+				case 2:
+				$scope.loadRequested();
+				break;
+				case 3:
+				$scope.loadSentRequested();
+				break;
+				case 4:
+				$scope.loadMutualFriends();
+				break;
+				}
+				
+		}
+		$scope.moreFriends = function(){  
+			if(!ajax_flag){ ajax_flag = 1;
+				url  = baseurl+'/<?php echo $current_Profile; ?>/moreFriends'; 
+				$http.post(url,{page_counter:page_counter}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+					).success(function(data, status, headers, config) {page_counter++;
+						if(data.return_array.process_status == 'success'){						 
+							$scope.frineds_list =$scope.frineds_list.concat(data.return_array.arrFriends);
+							ajax_flag = 0;
+							$scope.tab_ajax_loader = 0;
+							$scope.frineds_count = data.return_array.friends_count;
+							$scope.request_count= data.return_array.request_count;
+							$scope.sent_count= data.return_array.sent_count;
+							$scope.mutual_friends_count= data.return_array.mutual_friends_count;
+						}else{
+							alert(data.return_array.process_info);
+						}				     
+					}).error(function(data, status, headers, config) {
+						 alert("Error occured. Please try again");
+					});
+			}  
+		}
+		$scope.unFriendRequest  = function(user,array_index){ 
+			$scope.request_ajax_loader  = 1;
+			$scope.selectedIndex = array_index;
+			url  = baseurl+'/user/unFriendRequest/'+user;
+			$http({
+			  method: 'POST',
+			  url: url
+			}).success(function(data, status, headers, config) {
+				if(data.return_array.process_info==''){					 
+					$scope.request_ajax_loader  = 0;
+					if($scope.myprofile){
+						$scope.frineds_list.splice( array_index, 1 );
+						$scope.frineds_count = $scope.frineds_count-1;
+						if($scope.frineds_list.length<10){
+							$scope.moreFriends();
+						}
+					}else{
+						$scope.frineds_list[array_index].is_friend = 0;
+					}
+				}else{
+					alert(data.return_array.process_info);
+				}
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+		$scope.sentFriendRequest  = function(user,array_index){
+			$scope.request_ajax_loader  = 1;
+			$scope.selectedIndex = array_index;
+			url  = baseurl+'/user/sentFriendRequest/'+user;
+			$http({
+			  method: 'POST',
+			  url: url
+			}).success(function(data, status, headers, config) {
+				$scope.request_ajax_loader  = 0;
+				if(data.return_array.process_info==''){
+					$scope.frineds_list[array_index].is_requested = 1;
+				}else{
+					alert(data.return_array.process_info);
+				}
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+		$scope.acceptFriendRequest  = function(user,array_index){
+			$scope.request_ajax_loader  = 1;
+			$scope.selectedIndex = array_index;
+			url  = baseurl+'/user/acceptFriendRequest/'+user;
+			$http({
+			  method: 'POST',
+			  url: url
+			}).success(function(data, status, headers, config) {
+				$scope.request_ajax_loader  = 0;
+				if(data.return_array.process_info==''){
+					$scope.frineds_list[array_index].get_request = 0;
+					$scope.frineds_list[array_index].is_friend = 1;
+					$scope.request_ajax_loader  = 0;
+				}else{
+					alert(data.return_array.process_info);
+				}
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+		$scope.rejectFriendRequest  = function(user,array_index){
+			$scope.request_ajax_loader  = 1;
+			$scope.selectedIndex = array_index;
+			url  = baseurl+'/user/rejectFriendRequest/'+user;
+			$http({
+			  method: 'POST',
+			  url: url
+			}).success(function(data, status, headers, config) {
+				$scope.request_ajax_loader  = 0;
+				if(data.return_array.process_info==''){
+					$scope.frineds_list[array_index].get_request = 0;
+					$scope.request_ajax_loader  = 0;
+				}else{
+					alert(data.return_array.process_info);
+				}
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+		$scope.AllFriends = function(){
+			page_counter = 0;
+			$scope.friendsdata.switch  =  1;
+			$scope.tabselected = 'all';
+			ajax_flag = 0;
+			$scope.frineds_list = [];
+			$scope.tab_ajax_loader = 1;
+			$scope.moreFriends();
+		}
+		$scope.Allrequested = function(){
+			requested_counter = 0;
+			$scope.receivedRequests =[];
+			$scope.friendsdata.switch  =  2;
+			$scope.tabselected = 'requested';
+			ajax_flag = 0;
+			$scope.tab_ajax_loader = 1;
+			$scope.loadRequested();
+			
+		}
+		$scope.AllSented = function(){
+			sented_counter = 0;
+			$scope.SentRequests =[];
+			$scope.friendsdata.switch  =  3;
+			$scope.tabselected = 'sent';
+			ajax_flag = 0;
+			$scope.tab_ajax_loader = 1;
+			$scope.loadSentRequested();
+			
+		}
+		$scope.AllMutual = function(){
+			mutual_counter = 0;
+			$scope.MutualFriends =[];
+			$scope.friendsdata.switch  =  4;
+			$scope.tabselected = 'mutual';
+			ajax_flag = 0;
+			$scope.tab_ajax_loader = 1;
+			$scope.loadMutualFriends();
+			
+		}
+		$scope.loadRequested = function(){	
+			if(!ajax_flag){ ajax_flag = 1;
+			url  = baseurl+'/<?php echo $current_Profile; ?>/receivedRequests'; 
+			$http.post(url,{page_counter:requested_counter}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) {requested_counter++;
+					if(data.return_array.process_status == 'success'){						 
+						$scope.receivedRequests =$scope.receivedRequests.concat(data.return_array.arrFriends);
+						$scope.frineds_count = data.return_array.friends_count;
+						$scope.request_count= data.return_array.request_count;
+						$scope.sent_count= data.return_array.sent_count;
+						$scope.mutual_friends_count= data.return_array.mutual_friends_count;
+					}else{
+						alert(data.return_array.process_info);
+					}
+					ajax_flag = 0;
+					$scope.tab_ajax_loader = 0;
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			}
+		}
+		$scope.acceptFriendRequestFromRequests  = function(user,array_index){
+			$scope.request_ajax_loader  = 1;
+			$scope.selectedIndex = array_index;
+			url  = baseurl+'/user/acceptFriendRequest/'+user;
+			$http({
+			  method: 'POST',
+			  url: url
+			}).success(function(data, status, headers, config) {
+				$scope.request_ajax_loader  = 0;
+				if(data.return_array.process_info==''){
+					$scope.receivedRequests.splice( array_index, 1 );
+					$scope.request_count=$scope.request_count-1;
+					$scope.frineds_count = $scope.frineds_count*1 + 1;
+					$scope.request_ajax_loader  = 0;
+					if($scope.receivedRequests.length<10){
+							$scope.loadRequested();
+						}
+				}else{
+					alert(data.return_array.process_info);
+				}
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+		$scope.rejectFriendRequestFromRequests  = function(user,array_index){
+			 
+			$scope.selectedIndex = array_index;
+			url  = baseurl+'/user/rejectFriendRequest/'+user;
+			$http({
+			  method: 'POST',
+			  url: url
+			}).success(function(data, status, headers, config) {
+				 
+				if(data.return_array.process_info==''){
+					$scope.receivedRequests.splice( array_index, 1 );
+					$scope.request_count=$scope.request_count-1; 
+					if($scope.receivedRequests.length<10){
+							$scope.loadRequested();
+						}
+				}else{
+					alert(data.return_array.process_info);
+				}
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+		$scope.loadSentRequested = function(){	
+			if(!ajax_flag){ ajax_flag = 1;
+			url  = baseurl+'/<?php echo $current_Profile; ?>/sentRequests'; 
+			$http.post(url,{page_counter:sented_counter}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) {sented_counter++;
+					if(data.return_array.process_status == 'success'){						 
+						$scope.SentRequests =$scope.SentRequests.concat(data.return_array.arrFriends);
+						$scope.frineds_count = data.return_array.friends_count;
+						$scope.request_count= data.return_array.request_count;
+						$scope.sent_count= data.return_array.sent_count;
+						$scope.mutual_friends_count= data.return_array.mutual_friends_count;						
+					}else{
+						alert(data.return_array.process_info);
+					}	
+				ajax_flag = 0;
+				$scope.tab_ajax_loader = 0;
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			}
+		}
+		$scope.loadMutualFriends= function(){	
+			if(!ajax_flag){ ajax_flag = 1;
+			url  = baseurl+'/<?php echo $current_Profile; ?>/mutualFriends'; 
+			$http.post(url,{page_counter:mutual_counter}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) {mutual_counter++;
+					if(data.return_array.process_status == 'success'){						 
+						$scope.mutual_friends =$scope.mutual_friends.concat(data.return_array.arrFriends);	
+						$scope.frineds_count = data.return_array.friends_count;
+						$scope.request_count= data.return_array.request_count;
+						$scope.sent_count= data.return_array.sent_count;
+						$scope.mutual_friends_count= data.return_array.mutual_friends_count;						
+					}else{
+						alert(data.return_array.process_info);
+					}	
+				ajax_flag = 0;
+				$scope.tab_ajax_loader = 0;
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			}
+		}
+		$scope.unFriendMutual = function(user,array_index){ 
+			$scope.mutual_ajax_loader  = 1;
+			$scope.selectedIndex = array_index;
+			url  = baseurl+'/user/unFriendRequest/'+user;
+			$http({
+			  method: 'POST',
+			  url: url
+			}).success(function(data, status, headers, config) {
+				if(data.return_array.process_info==''){					 
+					$scope.mutual_ajax_loader  = 0;
+					 
+					$scope.mutual_friends.splice( array_index, 1 );
+					$scope.mutual_friends_count = $scope.mutual_friends_count-1;
+					if($scope.mutual_friends.length<10){
+							$scope.loadMutualFriends();
+						} 
+				}else{
+					alert(data.return_array.process_info);
+				}
+			}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+			});
+		}
+	});
+	angular.module('scroll', []).directive('whenScrolled', function() {
+    return function(scope, elm, attr) {
+        var raw = elm[0];
+        
+        elm.bind('scroll', function() {
+            if (raw.scrollTop + raw.offsetHeight >= raw.scrollHeight) {
+                scope.$apply(attr.whenScrolled);
+            }
+        });
+    };
+}); 
+	angular.element(document).ready(function() {
+    angular.bootstrap(document.getElementById("profile_div"), ["myapp"]);
+    angular.bootstrap(document.getElementById("friend_right_container"), ["frnds_app"]);
+	 
+});
+</script>
+    

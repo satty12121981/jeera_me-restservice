@@ -1,0 +1,74 @@
+<p>Calender</p>
+                <table cellspacing="0" height="40" width="60" class="calendr_table">
+			<thead>
+            	<tr>
+                	<td class="padding" colspan="3" align="left">
+                    	<div class="CAL_L" id="<?php echo $prev_month?>#<?php echo $prev_year?>"><a href="#" style="color:#FFFFFF">Previous</a></div>
+                    	
+                     </td>
+                     <td class="padding" colspan="4" align="right">                    	
+                    	<div class="CAL_R" id="<?php echo $next_month?>#<?php echo $next_year?>"><a href="#" style="color:#FFFFFF">Next</a></div>
+                     </td>
+                </tr>
+                	<tr>
+                    	<td class="padding" colspan="7"><?php echo $monthNames[$cMonth-1].' '.$cYear; ?></td>
+                    </tr>
+				<tr>
+					<th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th>S</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+				<?php
+                    $timestamp = mktime(0,0,0,$cMonth,1,$cYear);
+                    $maxday = date("t",$timestamp);
+                    $thismonth = getdate ($timestamp);
+					 
+                   $startday = $thismonth['wday'];
+                    for ($i=0; $i<($maxday+$startday); $i++) {
+                        if(($i % 7) == 0 ){ 
+					?>                    
+                     <tr> 						
+					 <?php  }
+                        if($i < $startday){ 
+					?>
+						<td></td>
+                  	<?php }else{ // if($i < $startday)
+							
+							$date ="";
+							$date =  ($i - $startday + 1); 	
+							
+							$class="";
+							$event_str ="";
+							#fetch all events for this date
+							if(count($allUpcommingActivity)){	
+								foreach($allUpcommingActivity  as $eventRow){
+									
+									if($eventRow['date']==$date && $eventRow['month']==$thismonth['mon'] && $eventRow['year']==$cYear){						
+										$class="date_has_event";		
+										$event_str .='<li><span class="title">Activity:'.$eventRow['even_data']['group_activity_title'].'</span><span class="desc">at '.$eventRow['even_data']['group_activity_location'].'</span></li>';
+										} //if($eventRow['date']==$date && $eventRow['month']==$thismonth['mon'] && $eventRow['year']==$cYear)
+									} //foreach($allUpcommingActivity  as $eventRow)						
+							} //if(count($allUpcommingActivity))
+							
+
+							
+											
+					?>
+							<td align='center' valign='middle' height='20px' class="<?php echo $class?>">
+									<?php echo $date?>                                    
+                                    <?php if(trim($event_str)!=""){?>                                    
+                                    	<div class="events"><ul><?php echo $event_str?></ul></div>
+                                    <?php } ?>
+                         	</td>
+							
+					 <?php  }//else of  if($i < $startday)
+						} // for ($i=0; $i<($maxday+$startday); $i++)
+                       if(($i % 7) == 6 ){ 
+					   ?>
+                       		</tr>  
+                         <?php 
+                    }
+                ?>				 
+			</tbody>			 
+		</table>

@@ -1,0 +1,1157 @@
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery-ui.js','text/javascript'); ?>
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/planet-view.js','text/javascript'); ?>
+<?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jMonthCalendar.js','text/javascript'); ?>
+ <?php $this->HeadScript()->appendFile($this->basePath().'/public/js/jquery-ui-timepicker-addon.js','text/javascript'); ?>
+<?php  $this->HeadLink()->appendStylesheet($this->basePath().'/public/css/jquery-ui.css'); ?>
+<script>
+	var galexy = '<?php echo $planetdetails->galexy_seo_title; ?>';
+	var planet = '<?php echo  $planetdetails->group_seo_title; ?>';
+</script>
+<script type="text/javascript">
+$(function() {   
+   
+	$("#show_hide_settings").click(function(){
+		$(".accordion").animate({  height:'toggle' });
+	});
+	$("#basic_settings").click(function(){
+		if($(this).hasClass( "head_active" )){
+			$(this).removeClass("head_active");
+		}
+		else{
+			$(this).addClass("head_active");
+		}
+		$("#basic_settings_form").animate({  height:'toggle' });
+		mapselected = 'map1';
+		gmaps_init();
+		autocomplete_init();
+	});
+	$("#other_settings").click(function(){
+		if($(this).hasClass( "head_active" )){
+			$(this).removeClass("head_active");
+		}
+		else{
+			$(this).addClass("head_active");
+		}
+		$("#other_settings_form").animate({  height:'toggle' });		 
+	});
+	$("#members_settings").click(function(){
+		if($(this).hasClass( "head_active_sub" )){
+			$(this).removeClass("head_active_sub");
+		}
+		else{
+			$(this).addClass("head_active_sub");
+		}
+		$("#members_settings_form").animate({  height:'toggle' });		 
+	});
+	$("#tag_settings").click(function(){
+		if($(this).hasClass( "head_active_sub" )){
+			$(this).removeClass("head_active_sub");
+		}
+		else{
+			$(this).addClass("head_active_sub");
+		}
+		$("#tag_settings_form").animate({  height:'toggle' });		 
+	});
+	$("#privacy_settings").click(function(){
+		if($(this).hasClass( "head_active_sub" )){
+			$(this).removeClass("head_active_sub");
+		}
+		else{
+			$(this).addClass("head_active_sub");
+		}
+		$("#privacy_settings_form").animate({  height:'toggle' });		 
+	});
+	$("#visibility_settings").click(function(){
+		if($(this).hasClass( "head_active_sub" )){
+			$(this).removeClass("head_active_sub");
+		}
+		else{
+			$(this).addClass("head_active_sub");
+		}
+		$("#visibility_settings_form").animate({  height:'toggle' });		 
+	});
+	$("#public").click(function(){
+		 
+		$(".private-sub-fields").hide();		 
+	});
+	$("#private").click(function(){
+		 
+		$(".private-sub-fields").show();		 
+	});
+	$("#add_activity").click(function(){
+		
+		$(".new-activity-container").animate({  height:'toggle' });		
+		mapselected = 'map2';
+		gmaps_init();
+		autocomplete_init();
+	});
+	 $('#group_activity_start_timestamp').datetimepicker({   
+ beforeShow: function() {
+        setTimeout(function(){
+            $('.ui-datepicker').css('z-index', 99999);
+        }, 0);
+    } , 
+	dateFormat: 'yy-mm-dd', 
+	timeFormat: 'hh:mm:ss',
+    //minDate: 0
+	
+	}); 
+	$("#tab_upcoming").click(function(){
+		$("#tabs_sub-1").show();
+		$("#tabs_sub-2").hide();
+		$("#tabs_sub-3").hide();
+	});
+	$("#tab_past").click(function(){
+		$("#tabs_sub-1").hide();
+		$("#tabs_sub-2").show();
+		$("#tabs_sub-3").hide();
+	});
+	$("#tab_calendar").click(function(){
+		$("#tabs_sub-1").hide();
+		$("#tabs_sub-2").hide();
+		$("#tabs_sub-3").show();
+	});	
+});
+</script>
+  
+<div class="planet-cover-image">
+<?php   if($planetdetails->data_content){ ?>
+<img src="<?php echo $this->basePath() ?>/public/album/<?php echo $planetdetails->group_id; ?>/cover/<?php echo $planetdetails->data_content; ?>" alt="" />
+<?php }else{ ?>
+	<img src="<?php echo $this->basePath() ?>/public/images/planet-cover-default.jpg" alt="" />
+<?php } ?>
+</div>    
+ <div class="view-header">
+	<div class="planet-heading"><?php echo $planetdetails->group_title; ?></div>
+	<div class="planet-head-right">
+            	<div class="galaxy-name"><?php echo $planetdetails->galexy_title; ?></div>
+                <div class="planet-location"><?php echo $planetdetails->city; ?></div>
+                <div class="planet-members"><?php echo $planetdetails->member_count; ?></div>
+                <div class="clear"></div>
+            </div>
+            <div class="clear"></div>
+            <div class="planet-discreption">
+                <?php if($planetdetails->is_admin){ ?>
+				<div class="planet-settings-menu menu-active"><a href="javascript:void(0)" id="show_hide_settings"><img src="<?php echo $this->basePath() ?>/public/images/settings-icon.png" alt="" /></a></div>
+				<?php } ?>
+				<div class="planet-text"> <?php echo $planetdetails->group_welcome_message_members; ?></div>
+                <div class="planet-text"> <?php echo $planetdetails->group_discription; ?></div>
+                <div class="clear"></div>
+			</div>
+			 <?php if($planetdetails->is_admin){ ?>
+			<div class="accordion">
+			<?php
+				$user_locatioin = unserialize(file_get_contents('http://www.geoplugin.net/php.gp?ip='.$_SERVER['REMOTE_ADDR']));
+			?>
+				<div class="setting-head">Settings</div>
+				<div class="accordion-head"><a href="javascript:void(0);"id="basic_settings">Basic settings</a></div>
+				<div class="accordion-options" id="basic_settings_form" style="display:none">
+					<div id="basic_errors"></div>
+					<div class="settings-field-outer">
+						<div class="settings-label2">Name</div>
+						<div class="settings-input-small" id="basic_title_field"><?php echo $planetdetails->group_title; ?></div>
+						<div class="field-edit"><a href="javascript:void(0)" id="title_edit">Edit</a></div>
+						<div class="clear"></div>
+					</div>
+					<div class="settings-field-outer">
+						<div class="settings-label2">Planet picture</div>
+						<div class="settings-input-small" id="basic_picture_field">
+						<?php   if($planetdetails->data_content){ ?>
+						<img src="<?php echo $this->basePath() ?>/public/album/<?php echo $planetdetails->group_id; ?>/medium/<?php echo $planetdetails->data_content; ?>" alt="" />
+						<?php }else{ ?> Default
+						<?php } ?></div>
+						<div class="field-edit"><a href="javascript:void(0)" id="picture_edit">Edit</a></div>
+						<div class="clear"></div>
+					</div>
+					<div class="settings-field-outer">
+						<div class="settings-label2">Location</div>
+						<div class="settings-input-small" id="basic_location_field"><?php echo $planetdetails->group_location; ?></div>
+						<div class="field-edit"><a href="javascript:void(0)" id="location_edit">Edit</a></div>
+						<div class="clear"></div>
+						<div id="map-canvas"></div>
+						
+						<div class="clear"></div>
+						 					
+						
+					</div>
+					<div class="settings-field-outer">
+						<div class="settings-label2">Web Address</div>
+						<div class="settings-input-small" id="basic_webaddress_field"><?php echo $planetdetails->group_web_address; ?></div>
+						<div class="field-edit"><a href="javascript:void(0)" id="webaddress_edit">Edit</a></div>
+						<div class="clear"></div>
+					</div>
+					<div class="settings-field-outer">
+						<div class="settings-label2">Description</div>
+						<div class="settings-input-small" id="basic_description_field"><?php echo $planetdetails->group_discription; ?></div>
+						<div class="field-edit"><a href="javascript:void(0)" id="description_edit">Edit</a></div>
+						<div class="clear"></div>
+					</div>
+					<div class="settings-field-outer">
+						<div class="settings-label2">Visitor's welcome message</div>
+						<div class="settings-input-small" id="basic_welcome_message_field"><?php echo $planetdetails->group_welcome_message_members; ?></div>
+						<div class="field-edit"><a href="javascript:void(0)" id="welcome_edit">Edit</a></div>
+						<div class="clear"></div>
+					</div>
+					<div class="save-settings" style="display:none" id="basic_button"><a href="javascript:void(0)" class="blue-butn" id="basic_settings_save">Save Settings</a><a href="javascript:void(0)" class="grey-butn" id="basic_settings_cancel" style="color:#333">Cancel</a></div>
+				</div>
+				<div class="accordion-head"><a href="javascript:void(0);" id="other_settings">Other</a></div>
+				<div class="accordion-options" id="other_settings_form" style="display:none">
+						
+					<div class="settings-field-outer">
+						<div class="settings-label2">Membership Roles</div>
+						<div class="settings-input-small" id="rolesEditContainer">
+						<?php foreach($role_data as $key => $users){  ?>
+							<ul class="roles"><li>
+								<?php echo $key; ?>
+								<ul>
+									<?php foreach($users as $row){ ?>
+										<li>
+										<?php if($row['data_content']!=''){ ?>
+										<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" class="settings-profile-img" />
+										<?php }else{ ?>
+										<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" class="settings-profile-img" />
+										<?php } ?>	
+										<?php echo $row['user_given_name']; ?></li>
+									<?php } ?>
+								</ul>
+							</li></ul>
+						<?php } ?>
+						</div>
+						<div class="field-edit"><a href="javascript:void(0)" id="memberroles_edit">Edit</a></div>
+						<div class="clear"></div>
+					</div>
+					<div class="settings-field-outer">
+                	<div class="settings-label2">Roll Permissions</div>
+                    <div class="settings-input-small" id="rollPermissions_fields">
+					<ul><?php foreach($group_role_permissions as $roles){ ?>
+					<li><?php echo $roles->group_roles_name; ?></li>
+						<?php if($roles->functions){ ?>
+							<span>Permissions:</span><ul><?php $arr_functions = explode(",",$roles->functions);
+								foreach($group_functions as $functions){	?>					
+								 <?php if(in_array($functions->group_functions_id,$arr_functions)) { echo "<li>".$functions->functions."</li>";  } ?>
+							<?php	}
+							?></ul>
+						<?php }else{ ?>
+							<span>Permissions:</span> All
+						<?php } ?>
+					<?php } ?>
+					</ul></div>
+                    <div class="field-edit"><a href="javascript:void(0)" id="permissions_edit">Edit</a></div>
+					<div class="save-settings" style="display:none" id="permission_button">
+						<a href="javascript:void(0)" id="permission_save" class="blue-butn">Save Permissions</a>
+						<a style="color:#333" id="permission_cancel" class="grey-butn" href="javascript:void(0)">Cancel</a>
+					</div>
+                    <div class="clear"></div>
+                </div>
+				
+				<div class="settings-field-outer">
+                	<div class="settings-label2">Discussions</div>
+                    <div class="settings-input-small" id="discussion_settings_field">
+						<div class="discussion_first">
+						<?php if(!empty($group_settings)&&$group_settings->group_discussion_settings=='Members'){ ?>Any members can start discussion<?php  }else if(!empty($group_settings)&&$group_settings->group_discussion_settings=='Admin') { ?> <?php $i=0;foreach($role_data as $key => $users){  if($i==0){ echo $key;}else{ echo "/".$key; }$i++; }?> can start the descussion <?php }else{ echo "No one can start the discussions"; } ?>
+						</div>
+						<div class="discussion_hidden" style="display:none">
+							Who can start discussion?
+							<ul>
+								<li><input type="radio" name="radio_discussion_settings" id="members_only" value="Members" <?php if(!empty($group_settings)&&$group_settings->group_discussion_settings=='Members'){ ?> checked="checked" <?php } ?> />Members only </li>
+								<li><input type="radio" name="radio_discussion_settings" id="adminonly" value="Admin" <?php if(!empty($group_settings)&&$group_settings->group_discussion_settings=='Admin'){ ?> checked="checked" <?php } ?> /><?php $i=0; foreach($role_data as $key => $users){ if($i==0){ echo $key;}else{ echo "/".$key; }$i++;}?> </li>
+								<li><input type="radio" name="radio_discussion_settings" id="members_only" value="no_discussion" <?php if(empty($group_settings)||$group_settings->group_discussion_settings=='None' || $group_settings->group_activity_settings==''){ ?> checked="checked" <?php } ?> />No discussions </li>
+							</ul>
+							<div>
+								<a href="javascript:void(0)" id="discussion_save" class="blue-butn">Save Permissions</a>
+								<a style="color:#333" id="discussion_cancel" class="grey-butn" href="javascript:void(0)">Cancel</a>
+							</div>
+						</div>
+					</div>
+                    <div class="field-edit"><a href="javascript:void(0)" id="discussion_edit">Edit</a> </div>
+                    <div class="clear"></div>
+                </div>
+				<div class="settings-field-outer">
+                	<div class="settings-label2">Activity</div>
+                    <div class="settings-input-small">
+						<div class="activity_first">
+						<?php 
+						if(!empty($group_settings)&&$group_settings->group_activity_settings=='Any'){ ?>
+							Any members can start activities
+						<?php  }else if(!empty($group_settings)&&$group_settings->group_activity_settings=='AdminApproval') { ?> 
+						Required approvals from
+						<?php $i=0;
+						foreach($role_data as $key => $users){
+							if($i==0){ 
+								echo $key;
+							}else{ 
+								echo "/".$key; 
+							}
+							$i++; 
+						}?> 
+						<?php }else if(!empty($group_settings)&&$group_settings->group_activity_settings=="OnlyAdmin"){
+							$i=0;
+							foreach($role_data as $key => $users){
+								if($i==0){ 
+									echo $key;
+								}else{ 
+									echo "/".$key; 
+								}
+								$i++; 
+							} ?>
+							can start Activity.
+						<?php }else{ ?> 
+							No more activities are allowed.
+						<?php } ?>
+						</div>
+						<div class="activity_hidden" style="display:none">
+							Who can start Activity?
+							<ul>
+								<li><input type="radio" name="radio_activity_settings" id="members_any" value="Any" <?php if(!empty($group_settings)&&$group_settings->group_activity_settings=='Any'){ ?> checked="checked" <?php } ?> />Any Members </li>
+								<li><input type="radio" name="radio_activity_settings" id="AdminApproval" value="AdminApproval" <?php if(!empty($group_settings)&&$group_settings->group_activity_settings=='AdminApproval'){ ?> checked="checked" <?php } ?> />Any Member(Approval from <?php $i=0; foreach($role_data as $key => $users){ if($i==0){ echo $key;}else{ echo "/".$key; }$i++;}?> )</li>
+								<li><input type="radio" name="radio_activity_settings" id="AdminApproval" value="OnlyAdmin" <?php if(!empty($group_settings)&&$group_settings->group_activity_settings=='OnlyAdmin'){ ?> checked="checked" <?php } ?> /><?php $i=0; foreach($role_data as $key => $users){ if($i==0){ echo $key;}else{ echo "/".$key; }$i++;}?> </li>
+								<li><input type="radio" name="radio_activity_settings" id="no_activity" value="None" <?php if(empty($group_settings)||$group_settings->group_activity_settings=='None' || $group_settings->group_activity_settings==''){ ?> checked="checked" <?php } ?> />No Activity </li>
+							</ul>
+							<div>
+								<a href="javascript:void(0)" id="activity_save" class="blue-butn">Save Permissions</a>
+								<a style="color:#333" id="activity_cancel" class="grey-butn" href="javascript:void(0)">Cancel</a>
+							</div>
+						</div>
+					</div>
+                    <div class="field-edit"><a href="javascript:void(0)" id="activity_edit">Edit</a></div>
+                    <div class="clear"></div>
+                </div>
+				<div class="accordion-head_sub"><a href="javascript:void(0);" id="members_settings">How members can join this planet</a></div>
+				<div class="accordion-options_sub" id="members_settings_form" style="display:none">
+                    <div class="settings-label-3">Who can join this planet</div>
+                    <div class="settings-field-3"><input name="planet_members" type="radio" value="Any" id="anyone" <?php if(!empty($group_settings)&&$group_settings->group_member_join_type=='Any'){ ?> checked="checked" <?php } ?> /> <label for="anyone">Anyone can join the group, there are no restrictions</label></div>
+                    <div class="settings-field-3"><input name="planet_members" type="radio" value="AdminApproval" id="approvel" <?php if(!empty($group_settings)&&$group_settings->group_member_join_type=='AdminApproval'){ ?> checked="checked" <?php } ?> /> <label for="approvel">Anyone can try to join, but they must be approved by a group Organizer</label></div>
+                    <div class="settings-field-3"><input name="planet_members" type="radio" value="NoOne" id="closed" <?php if(empty($group_settings)||$group_settings->group_member_join_type=='NoOne' || $group_settings->group_member_join_type==''){ ?> checked="checked" <?php } ?>  /> <label for="closed">No one, the group is closed to all new members</label></div>
+                    <div class="settings-label-3">New member emails</div>
+                    <div class="settings-field-3">
+                    	<p>Welcome message to new members</p>
+                        <p>New members receive an automatic email confirmation when they join this Meetup. You can add your own message to introduce yourself and <br /> encourage new members to RSVP for your next Meetup or fill out their profile.</p>
+                    </div>
+                    <div class="settings-field-3">
+                    	<textarea name="welcome_email" id="welcome_email"><?php if(isset($group_settings->group_welcome_email)){ echo $group_settings->group_welcome_email; } ?></textarea>
+                    </div>
+                    <div class="save-settings" style="padding-left:0; padding-top:10px;"><a href="javascript:void(0)" id="members_join_settings" class="blue-butn">Submit</a></div>
+                    
+                    
+                </div>
+				<div class="accordion-head_sub"><a href="javascript:void(0);" id="tag_settings">About (tags)</a></div>
+				 <div class="accordion-options_sub" id="tag_settings_form" style="display:none">
+                	<div class="create-fields">
+                        	<div class="create-label-2">Tags:"Explain what is intrest tags?"</div>
+                        </div>
+                        <div class="create-fields">
+                        	<div class="create-label-2"><span>Whats your planet about?</span></div>
+                        </div>
+                        <div class="create-fields">
+                        	<div class="create-label-2">Tags <span>categorize</span> and <span>describe</span> what your Planet is about in a word or two.</div>
+                        </div>
+                        <div class="create-fields">
+                        	<div class="create-label-2"><span>Why are Tags important? </span></div>
+                        </div>
+                        <div class="create-fields">
+                        	<div class="create-label-2">Well-picked  topics help the right members find your Group. Your Group will be listed in our directory under each Tag you choose.</div>
+                        </div>
+                        <div class="interest-tags planet-tags">
+                            Your Planet Tags:
+							<div id="group_tags">
+							<?php foreach($groupTag as $tags){ ?>
+                            <a id="<?php echo $tags->tag_id; ?>" class="add-option" href="javascript:void(0)"><?php echo $tags->tag_title; ?> </a> 
+							<?php } ?>
+                            </div>
+                            <a href="javascript:void(0)" id="clear_all_tags" class="grey-butn">Clear tags</a>
+                             
+                        </div>
+                        <div class="clear"></div>
+                        <div class="tag-search">
+                        	<input name="tag_search" id="tag_search" type="text" placeholder="Search tag" />
+                            <input name="" id="btn_search_tag" type="image" src="<?php echo $this->basePath() ?>/public/images/search-butn.png" />
+                        </div>
+                        <div class="interest-tags planet-tags" id="interest-tags">
+							<?php foreach($popularTags as $tags){ ?>
+								<a id="<?php echo $tags->tag_id; ?>" class="add-option" href="javascript:void(0)"><?php echo $tags->tag_title; ?> </a> 
+							<?php } ?>
+                             
+                        </div>
+                        <div class="clear"></div>
+                        <div class="load-more-butn" style="text-align:left; padding-top:0;">
+                    		<a href="javascript:void(0)" class="blue-butn" id="tag_submit">Submit</a>
+                    	</div>
+                </div>
+				<div class="accordion-head_sub"><a href="javascript:void(0);" id="privacy_settings">Privacy</a></div>
+				<div class="accordion-options_sub" id="privacy_settings_form" style="display:none">
+                	<div class="settings-label-3"><input name="privacy" type="radio" value="Public" id="public" <?php if(!empty($group_settings)&&$group_settings-> group_privacy_settings=='Public'){ ?> checked="checked" <?php } ?> <?php if(empty($group_settings)||$group_settings->group_privacy_settings==''){ ?>checked="checked" <?php } ?>/> <label for="public">Public</label></div>
+                    <div class="settings-field-3" style="padding-left:25px; padding-top:0;">Show all information to members and non-members. Get more members who are better fit!</div>
+                    <div class="settings-label-3"><input name="privacy" type="radio" value="Private" id="private" <?php if(!empty($group_settings)&&($group_settings-> group_privacy_settings=='Limited'||$group_settings->group_privacy_settings=='NoInfo')){ ?> checked="checked" <?php } ?>   /> <label for="private">Private</label></div>
+                    <div class="settings-field-3" style="padding-left:25px; padding-top:0;">Show non-members limeted Planet information and</div>
+                    <div class="private-sub-fields" <?php if(empty($group_settings)||$group_settings->group_privacy_settings=='Public'||$group_settings->group_privacy_settings==''){ ?> style="display:none" <?php } ?>  >
+						 
+                    	<div class="settings-label-3"><input name="privacy_sub" type="radio" value="Limited" <?php if(!empty($group_settings)&&$group_settings-> group_privacy_settings=='Limited'){ ?> checked="checked" <?php } ?>   id="event_info" /> <label for="event_info">Show limited Meetup Event information</label></div>
+                        <div class="settings-field-3" style="padding-top:0; padding-left:25px;">Shown: Activity name, date, time and atendee count.<br />Hidden: Activity location, description, member information and photos</div>
+                        <div class="settings-label-3"><input name="privacy_sub" type="radio" value="NoInfo" id="acti_info" <?php if(!empty($group_settings)&&$group_settings-> group_privacy_settings=='NoInfo'){ ?>   checked="checked" <?php } ?>  /> <label for="acti_info">Show no Activity information</label></div>
+                        <div class="settings-field-3" style="padding-top:0; padding-left:25px;">Keep you Activity as hidden as possible</div>
+						 
+                   </div>
+                   <div class="load-more-butn" style="text-align:left; padding-top:0;">
+                        <a href="javascript:void(0)" class="blue-butn" id="privacy_settings_save">Submit</a>
+                   </div>
+                </div>
+				<div class="accordion-head_sub"><a href="javascript:void(0);" id="visibility_settings">Group Status</a></div>
+				<div class="accordion-options_sub" id="visibility_settings_form" style="display:none">
+                	 <div class="create-fields">
+						<div class="settings-label2">Group Status :</div>
+						<div class="settings-input-small" id="visiblity_status"><?php if($planetdetails->group_status){ echo "Active"; }else{ echo "Deactive"; } ?></div>
+                        	 
+							 <div class="field-edit"><a href="javascript:void(0)" id="visibility_edit">Edit</a></div>
+                        </div>
+                   <div class="load-more-butn" style="text-align:left; padding-top:0;display:none" id="visibility_button">
+                        <a href="javascript:void(0)" class="blue-butn" id="visibility_settings_save">Submit</a>
+                   </div>
+                </div>
+				</div>
+			</div>
+			<?php } ?>
+ </div>
+ <div class="profile-tabs2">
+	<div id="tabs">
+		<div class="tabs-outer tabs">
+			<ul> 
+				<li class="active"><a href="<?php echo $this->url('groups/planethome',array('group_id'=>$planetdetails->galexy_seo_title,'planet_id'=>$planetdetails->group_seo_title));?>" class="activity_tab">Activities</a></li>
+				<?php if($planetdetails->is_member){ ?> <li><a href="<?php echo $this->url('groups/group-discussion', array('action' => 'subgroupdetailwithdiscussion', 'group_id'=>$planetdetails->galexy_seo_title, 'sub_group_id'=>$planetdetails->group_seo_title)) ?>" class="discuss_tab">Discussion</a></li>
+				<li><a href="#tabs-3" class="media_tab">Media</a></li> <?php } ?>
+				<li><a href="#tabs-4" class="member_tab">Members</a></li>
+			</ul>
+            <div class="clear"></div>
+         </div>
+		 <div id="tabs-1">
+			<div class="tab-sub">
+				<div class="sub_tabs-outer">
+					<ul>
+						<li class="active"><a href="javascript:void(0)" id="tab_upcoming">Upcoming</a></li>
+				<?php if($planetdetails->is_member){ ?>		<li><a href="javascript:void(0)" id="tab_past">Past</a></li>
+						<li><a href="javascript:void(0)" id="tab_calendar">Calendar</a></li> <?php } ?>
+					</ul>
+				</div>
+                <div class="add-activity-butn"><?php if($planetdetails->is_member&&$activity_permission){ ?><a href="javascript:void(0);" class="blue-butn" id="add_activity">Add new activity</a><?php }else{ 
+				if(isset($group_settings)&&!empty($group_settings)&&$group_settings->group_member_join_type!='NoOne'&&!$is_request){
+				?><a href="javascript:void(0);" class="blue-butn" id="join_group">Join this group</a> <?php } } ?></div>
+				<div class="clear"></div>
+				<?php if($planetdetails->is_member&&$activity_permission){ ?>
+				 <div class="new-activity-container" style="display:none">
+                      		<div class="activity-left">
+                            	<div class="settings-label-3">Event Name</div>
+                              <div class="settings-field-4"><input name="activity_title" id="activity_title" type="text" placeholder="Name" /></div>
+                                <div class="settings-label-3">Description</div>
+                                <div class="settings-field-4">
+                                  <textarea name="activity_description" id="activity_description" placeholder="Name" placeholder="Description"></textarea>
+                                </div>
+                                <div class="interest-tags planet-tags">
+                                    Tags:
+									<div id="activty_tags">
+                                    
+									</div>
+                                    <a href="javascript:void(0)" id="clear_all_tags_addactivity" class="grey-butn">Clear tags</a>
+                                    
+                                </div>
+                                <div class="clear"></div>
+                                <div class="tag-search">
+                                    <input name="tag_search_for_activity" id="tag_search_for_activity" type="text" placeholder="Search tag" />
+                                    <input name="" type="image" id="btn_search_tag_for_activity" src="<?php echo $this->basePath(); ?>/public/images/search-butn.png" />
+                                </div>
+                                <div class="interest-tags planet-tags" id="group_tags_for_activity">
+									<?php foreach($LimitedgroupTag as $tags){ ?>
+                                   <a href="javascript:void(0)" class="add-option" id="<?php echo $tags->tag_id; ?>"><?php echo $tags->tag_title; ?> </a>   
+								   <?php } ?>
+                                </div>
+                            </div>
+                            <div class="activity-right">
+                            	<div class="place-field"><input name="" id="address" type="text" placeholder="Place" /></div>
+								<div id="activity_map"  style="width:430px; height:300px"></div>
+                                <div class="time-and-date">
+                                	 
+                                    <div class="date-activity"><input name="group_activity_start_timestamp" id="group_activity_start_timestamp" type="text" /></div>
+                                    <div class="clear"></div>
+                                </div>
+                                <div class="activity-friends-outer">
+									<div id="place-field"><input type="radio" name="user_invite" id="public" value="public" checked="checked" />Public <input type="radio" name="user_invite" id="invited_users" value="invited" />Invited users only </div>
+									<div class="clear"></div>
+									<div id="membersZone"></div>
+                                	<div class="friend-list" style="display:none">
+                                    	 
+                                        
+                                        <div class="clear"></div>
+                                    </div>
+                                    <div class="clear"></div>
+                                </div>
+                               <div class="clear"></div>
+                            </div>
+                            <div class="add-activity-actions">
+                            	<a href="javascript:void(0)" id="save_activity" class="blue-butn">Add new</a>
+                                <a href="javascript:void(0);" class="grey-butn" id="cancel_activity" style="color:#888888;">Cancel</a>
+                            </div>
+                            <div class="clear"></div>
+                      </div> <?php } ?>
+				<div id="tabs_sub-1"> 
+						<div id="activity_list">
+							<?php foreach($upcoming_activities as $activities){?>
+                        	<div class="activity-outer">
+                            	<div class="activity-profileimg profile-image-comn">
+								<?php  if($activities['data_content']!=''){ ?>
+								<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+								<?php }else{ ?>
+								<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+								<?php } ?>
+								</div>
+                                <div class="activity-main-outer">
+                                	<div class="activity-author"><a href="#"><?php echo $activities['user_given_name']; ?></a></div>
+                                    <div class="activity-text"><?php echo $activities['group_activity_title']; ?> on <a href="#"><?php echo date("F d,g A",strtotime($activities['group_activity_start_timestamp'])) ?> .</a></div>
+                                    <div class="activity-details_planet">
+                                        <div class="like-comment-outer">
+                                            <div class="likes" id="likes_<?php echo $activities['group_activity_id']; ?>">
+											<?php if($activities['activity_like']->is_liked){  ?>
+												<?php if($planetdetails->is_member){ ?>
+													<a href="javascript:void(0)"  class="activity-unlikes" id="<?php echo $activities['group_activity_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>
+												<?php }else{  ?>
+													<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /> 
+												<?php }
+											}else{ ?> 
+												<?php if($planetdetails->is_member){ ?>	
+													<a href="javascript:void(0)" id="<?php echo $activities['group_activity_id']; ?>" class="activity-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>
+												<?php }else{ ?>
+													<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+												<?php } ?>
+											<?php } ?>
+											<?php if($activities['activity_like']->likes_counts){echo $activities['activity_like']->likes_counts;} ?>
+											</div>
+                                            <div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($activities['comment_count']){echo $activities['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+                                            <div class="clear"></div>
+                                        </div>
+                                        <div class="activity-location"><?php echo $activities['group_activity_location']; ?></div>
+                                         
+                                        <div class="clear"></div>
+                                    </div>
+                                </div>
+                                <div class="join-activity-outer">
+                                	<div class="activity-rocket<?php if($activities['is_member']){ echo "-member"; } ?>" id="joinactivity_rocket_<?php echo $activities['group_activity_id']; ?>"></div>
+                    				<div class="join-ride-butn" id="joinactivity_outer_<?php echo $activities['group_activity_id']; ?>">
+									<?php if($activities['is_member']){ ; ?>
+									<?php }else{ ?>
+									<a href="javascript:void(0)" class="blue-butn joinactivity" id="joinactivity_<?php echo $activities['group_activity_id']; ?>">Join the ride</a>
+									<?php } ?>
+									</div>
+                                </div>
+                                <div class="activity-members-outer">
+                                	<div class="members-head">Members on board  <a href="javascript:void(0)" class="membersonboard" id="<?php echo $activities['group_activity_id']; ?>"><?php echo $activities['member_count']; ?></a></div>
+									
+                                    <div class="members-list">
+									<?php foreach($activities['members'] as $members){ ?>
+                                    	<div class="activity-member profile-image-comn">
+											<?php  if($members->data_content!=''){ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php } ?>
+                                            <a href="#"><?php echo $members->user_given_name; ?></a>
+                                        </div>
+										<?php } ?>
+                                        
+                                        <div class="clear"></div>
+                                    </div>
+                                </div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="activity-comments">
+								<div id="loadmore_<?php echo $activities['group_activity_id']; ?>"><?php if($activities['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $activities['group_activity_id']; ?>" class="loadmore_comments">View <span id="comment_count_<?php echo $activities['group_activity_id']; ?>"><?php echo $activities['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+								<div id="comment_area<?php echo $activities['group_activity_id']; ?>">
+								<?php  
+								$arr_comments = array();
+								foreach($activities['comments'] as $comments){
+									$arr_comments[] = $comments;
+								}
+								$newcommnt =  array_reverse($arr_comments);
+								foreach($newcommnt as $comments){  
+								?>
+                            	<div class="comments-outer">
+                                    <div class="comment-profil-img">
+										<?php  if($comments->data_content!=''){ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php } ?>
+										</div>
+                                    <div class="comment-text comment-text2" >
+                                        <span><a href="#"><?php echo $comments->user_given_name; ?></a></span>
+                                         <?php echo $comments->comment_content; ?>
+                                        <div class="activity-comment-like" id="comments_likes<?php echo $comments->comment_id; ?>">
+										<?php if($comments->islike){ ?>
+											<?php if($planetdetails->is_member){ ?>
+												<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+											<?php }else{ ?>
+												<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />
+											<?php } ?>
+										<?php }else{ ?>
+											<?php if($planetdetails->is_member){ ?>
+												<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+											<?php }else{ ?>
+												<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+											<?php } ?>
+										<?php }?>
+										<?php echo $comments->likes_count; ?>
+										</div>
+                                    </div>
+                                    <div class="clear"></div>
+                                </div>
+								<?php } ?>
+								</div>
+                                 <?php if($planetdetails->is_member){ ?>
+                                <div class="activity-add-comment">
+                                	<textarea name="comment" id="comment_<?php echo $activities['group_activity_id']; ?>" class="activity_comments" placeholder="Comment"></textarea>
+                                </div>
+								<?php } ?>
+                            </div>
+							<?php } ?>
+						 </div>
+							<div id="activity_loadmore_container">
+								<a href="javascript:void(0)" id="activity_loadmore">Loadmore</a>
+							</div>
+						
+                      </div>
+					  <div id="tabs_sub-2" style="display:none">
+						<div id="past_activity_list">
+							<?php foreach($past_activities as $activities){?>
+                        	<div class="activity-outer">
+                            	<div class="activity-profileimg profile-image-comn">
+								<?php  if($activities['data_content']!=''){ ?>
+								<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+								<?php }else{ ?>
+								<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+								<?php } ?>
+								</div>
+                                <div class="activity-main-outer">
+                                	<div class="activity-author"><a href="#"><?php echo $activities['user_given_name']; ?></a></div>
+                                    <div class="activity-text"><?php echo $activities['group_activity_title']; ?> on <a href="#"><?php echo date("F d,g A",strtotime($activities['group_activity_start_timestamp'])) ?> .</a></div>
+                                    <div class="activity-details_planet">
+                                        <div class="like-comment-outer">
+                                            <div class="likes" id="likes_<?php echo $activities['group_activity_id']; ?>">
+											<?php if($activities['activity_like']->is_liked){  ?>
+												<?php if($planetdetails->is_member){ ?>
+													<a href="javascript:void(0)"  class="activity-unlikes" id="<?php echo $activities['group_activity_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>
+												<?php }else{  ?>
+													<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /> 
+												<?php }
+											}else{ ?> 
+												<?php if($planetdetails->is_member){ ?>	
+													<a href="javascript:void(0)" id="<?php echo $activities['group_activity_id']; ?>" class="activity-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>
+												<?php }else{ ?>
+													<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+												<?php } ?>
+											<?php } ?>
+											<?php if($activities['activity_like']->likes_counts){echo $activities['activity_like']->likes_counts;} ?>
+											</div>
+                                            <div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($activities['comment_count']){echo $activities['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+                                            <div class="clear"></div>
+                                        </div>
+                                        <div class="activity-location"><?php echo $activities['group_activity_location']; ?></div>
+                                         
+                                        <div class="clear"></div>
+                                    </div>
+                                </div>
+                                <div class="join-activity-outer">
+                                	<div class="activity-rocket<?php if($activities['is_member']){ echo "-member"; } ?>" id="joinactivity_rocket_<?php echo $activities['group_activity_id']; ?>"></div>
+                    				<div class="join-ride-butn" id="joinactivity_outer_<?php echo $activities['group_activity_id']; ?>">
+									<?php if($activities['is_member']){ ; ?>
+									<?php }else{ ?>
+									 
+									<?php } ?>
+									</div>
+                                </div>
+                                <div class="activity-members-outer">
+                                	<div class="members-head">Members on board  <a href="javascript:void(0)" class="membersonboard" id="<?php echo $activities['group_activity_id']; ?>"><?php echo $activities['member_count']; ?></a></div>
+									
+                                    <div class="members-list">
+									<?php foreach($activities['members'] as $members){ ?>
+                                    	<div class="activity-member profile-image-comn">
+											<?php  if($members->data_content!=''){ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php } ?>
+                                            <a href="#"><?php echo $members->user_given_name; ?></a>
+                                        </div>
+										<?php } ?>
+                                        
+                                        <div class="clear"></div>
+                                    </div>
+                                </div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="activity-comments">
+								<div id="loadmore_<?php echo $activities['group_activity_id']; ?>"><?php if($activities['comment_count']>2){ ?><a href="javascript:void(0)" id="<?php echo $activities['group_activity_id']; ?>" class="loadmore_comments">View <span id="comment_count_<?php echo $activities['group_activity_id']; ?>"><?php echo $activities['comment_count']-2 ;?></span> more comments</a> <?php } ?></div>
+								<div id="comment_area<?php echo $activities['group_activity_id']; ?>">
+								<?php  
+								$arr_comments = array();
+								foreach($activities['comments'] as $comments){
+									$arr_comments[] = $comments;
+								}
+								$newcommnt =  array_reverse($arr_comments);
+								foreach($newcommnt as $comments){  
+								?>
+                            	<div class="comments-outer">
+                                    <div class="comment-profil-img">
+										<?php  if($comments->data_content!=''){ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php } ?>
+										</div>
+                                    <div class="comment-text comment-text2" >
+                                        <span><a href="#"><?php echo $comments->user_given_name; ?></a></span>
+                                         <?php echo $comments->comment_content; ?>
+                                        <div class="activity-comment-like" id="comments_likes<?php echo $comments->comment_id; ?>">
+										<?php if($comments->islike){ ?>
+											<?php if($planetdetails->is_member){ ?>
+												<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-unlikes"><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /></a>
+											<?php }else{ ?>
+												<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />
+											<?php } ?>
+										<?php }else{ ?>
+											<?php if($planetdetails->is_member){ ?>
+												<a href="javascript:void(0)" id="<?php echo $comments->comment_id ?>" class="comments-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" /></a>
+											<?php }else{ ?>
+												<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+											<?php } ?>
+										<?php }?>
+										<?php echo $comments->likes_count; ?>
+										</div>
+                                    </div>
+                                    <div class="clear"></div>
+                                </div>
+								<?php } ?>
+								</div>
+                                 <?php if($planetdetails->is_member){ ?>
+                                <div class="activity-add-comment">
+                                	<textarea name="comment" id="comment_<?php echo $activities['group_activity_id']; ?>" class="activity_comments" placeholder="Comment"></textarea>
+                                </div>
+								<?php } ?>
+                            </div>
+							<?php } ?>
+						 </div>
+							<div id="past_activity_loadmore_container">
+								<a href="javascript:void(0)" id="past_activity_loadmore">Loadmore</a>
+							</div>
+					  
+					  </div>
+					  <div id="tabs_sub-3" style="display:none">
+						<div class="activity-calender">
+						<center>
+							<div id="jMonthCalendar"></div>
+						</center>
+					<!--	<div class="date-selected">
+							<?php echo date("j"); ?> <?php echo date("F"); ?>  
+						</div> -->
+						<?php //print_r($today_activities); ?>
+						</div>
+						<div id="calendar_event">
+						<?php foreach($today_activities as $activities){?>
+                        	<div class="activity-outer">
+                            	<div class="activity-profileimg profile-image-comn">
+								<?php  if($activities['data_content']!=''){ ?>
+								<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+								<?php }else{ ?>
+								<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+								<?php } ?>
+								</div>
+                                <div class="activity-main-outer">
+                                	<div class="activity-author"><a href="#"><?php echo $activities['user_given_name']; ?></a></div>
+                                    <div class="activity-text"><?php echo $activities['group_activity_title']; ?> on <a href="#"><?php echo date("F d,g A",strtotime($activities['group_activity_start_timestamp'])) ?> .</a></div>
+                                    <div class="activity-details_planet">
+                                        <div class="like-comment-outer">
+                                            <div class="likes" id="likes_<?php echo $activities['group_activity_id']; ?>">
+											<?php if($activities['activity_like']->is_liked){  ?>
+												<?php if($planetdetails->is_member){ ?>
+													<a href="javascript:void(0)"  class="activity-unlikes" id="<?php echo $activities['group_activity_id']; ?>"  ><img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" />  </a>
+												<?php }else{  ?>
+													<img src="<?php echo $this->basePath(); ?>/public/images/likes-icon.png" alt="" /> 
+												<?php }
+											}else{ ?> 
+												<?php if($planetdetails->is_member){ ?>	
+													<a href="javascript:void(0)" id="<?php echo $activities['group_activity_id']; ?>" class="activity-likes"><img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />  </a>
+												<?php }else{ ?>
+													<img src="<?php echo $this->basePath(); ?>/public/images/nolike-icon.png" alt="" />
+												<?php } ?>
+											<?php } ?>
+											<?php if($activities['activity_like']->likes_counts){echo $activities['activity_like']->likes_counts;} ?>
+											</div>
+                                            <div class="likes"><a href="javascript:void(0)"><img src="<?php echo $this->basePath(); ?>/public/images/comments-icon.png" alt="" /></a> <?php if($activities['comment_count']){echo $activities['comment_count'];} ?> <span><a href="javascript:void(0)">Comment</a></span></div>
+                                            <div class="clear"></div>
+                                        </div>
+                                        <div class="activity-location"><?php echo $activities['group_activity_location']; ?></div>
+                                         
+                                        <div class="clear"></div>
+                                    </div>
+                                </div>
+                                <div class="join-activity-outer">
+                                	<div class="activity-rocket<?php if($activities['is_member']){ echo "-member"; } ?>" id="joinactivity_rocket_<?php echo $activities['group_activity_id']; ?>"></div>
+                    				<div class="join-ride-butn" id="joinactivity_outer_<?php echo $activities['group_activity_id']; ?>">
+									<?php if($activities['is_member']){ ; ?>
+									<?php }else{ ?>
+									 
+									<?php } ?>
+									</div>
+                                </div>
+                                <div class="activity-members-outer">
+                                	<div class="members-head">Members on board  <a href="javascript:void(0)" class="membersonboard" id="<?php echo $activities['group_activity_id']; ?>"><?php echo $activities['member_count']; ?></a></div>
+									
+                                    <div class="members-list">
+									<?php foreach($activities['members'] as $members){ ?>
+                                    	<div class="activity-member profile-image-comn">
+											<?php  if($members->data_content!=''){ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php }else{ ?>
+											<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+											<?php } ?>
+                                            <a href="#"><?php echo $members->user_given_name; ?></a>
+                                        </div>
+										<?php } ?>
+                                        
+                                        <div class="clear"></div>
+                                    </div>
+                                </div>
+                                <div class="clear"></div>
+                            </div>
+                             
+							<?php } ?>
+						</div>
+					  </div>
+			</div>
+		 </div>
+	</div>
+ </div>
+ <div id="all-members-dialog" style="display:none"></div>
+   <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+ <style>
+	#map-canvas, #activity_map{
+  height: 400px;
+
+  border: 1px solid #999;
+  -moz-box-shadow:    0px 0px 5px #ccc;
+  -webkit-box-shadow: 0px 0px 5px #ccc;
+  box-shadow:         0px 0px 5px #ccc;
+}
+ </style>
+ <script>
+  <?php if($planetdetails->y2m_group_location_lat!=''&&$planetdetails->y2m_group_location_lng!=''){ ?>
+		var current_lat = <?php echo $planetdetails->y2m_group_location_lat; ?>;
+		var current_lng = <?php echo $planetdetails->y2m_group_location_lng; ?>;
+	 <?php }else{  ?>
+		var current_lat = 25.271139000000000000;
+		var current_lng =55.307485000000040000;
+	 <?php } ?>
+var geocoder;
+var map;
+var marker;
+var mapselected = 'map1';
+// initialise the google maps objects, and add listeners
+function gmaps_init(){
+
+  // center of the universe
+  var latlng = new google.maps.LatLng(current_lat,current_lng);
+
+  var options = {
+    zoom: 7,
+    center: latlng,
+    mapTypeId: google.maps.MapTypeId.ROADMAP,
+
+  };
+
+  // create our map object
+  if(mapselected=='map1')
+  map = new google.maps.Map(document.getElementById("map-canvas"), options);
+  else
+   map = new google.maps.Map(document.getElementById("activity_map"), options);
+
+  // the geocoder object allows us to do latlng lookup based on address
+  geocoder = new google.maps.Geocoder();
+	 
+
+  // the marker shows us the position of the latest address
+  marker = new google.maps.Marker({
+    map: map,
+	icon: "<?php echo $this->basepath(); ?>/public/images/rocket2-icon.png",
+    draggable: true
+  });
+marker.setPosition(latlng);
+  // event triggered when marker is dragged and dropped
+  google.maps.event.addListener(marker, 'dragend', function() {
+    geocode_lookup( 'latLng', marker.getPosition() );
+  });
+
+  // event triggered when map is clicked
+  google.maps.event.addListener(map, 'click', function(event) {
+    marker.setPosition(event.latLng)
+    geocode_lookup( 'latLng', event.latLng  );
+  });
+
+  $('#gmaps-error').hide();
+}
+
+// move the marker to a new position, and center the map on it
+function update_map( geometry ) {
+  map.fitBounds( geometry.viewport )
+  marker.setPosition( geometry.location )
+}
+
+// fill in the UI elements with new position data
+function update_ui( address, latLng ) {
+if(mapselected=='map1'){
+  $('#location').autocomplete("close");
+  $('#location').val(address);
+  }else{
+   $('#address').autocomplete("close");
+  $('#address').val(address);
+  }
+  geo_latitude = latLng.lat(); 
+  geo_longitude = latLng.lng(); 
+  //$('#gmaps-output-latitude').html(latLng.lat());
+  //$('#gmaps-output-longitude').html(latLng.lng());
+}
+
+// Query the Google geocode object
+//
+// type: 'address' for search by address
+//       'latLng'  for search by latLng (reverse lookup)
+//
+// value: search query
+//
+// update: should we update the map (center map and position marker)?
+function geocode_lookup( type, value, update ) {
+  // default value: update = false
+  update = typeof update !== 'undefined' ? update : false;
+
+  request = {};
+  request[type] = value;
+
+  geocoder.geocode(request, function(results, status) {
+    $('#gmaps-error').html('');
+    $('#gmaps-error').hide();
+    if (status == google.maps.GeocoderStatus.OK) {
+      // Google geocoding has succeeded!
+      if (results[0]) {
+        // Always update the UI elements with new location data
+        update_ui( results[0].formatted_address,
+                   results[0].geometry.location )
+
+        // Only update the map (position marker and center map) if requested
+        if( update ) { update_map( results[0].geometry ) }
+      } else {
+        // Geocoder status ok but no results!?
+        $('#gmaps-error').html("Sorry, something went wrong. Try again!");
+        $('#gmaps-error').show();
+      }
+    } else {
+      // Google Geocoding has failed. Two common reasons:
+      //   * Address not recognised (e.g. search for 'zxxzcxczxcx')
+      //   * Location doesn't map to address (e.g. click in middle of Atlantic)
+
+      if( type == 'address' ) {
+        // User has typed in an address which we can't geocode to a location
+        $('#gmaps-error').html("Sorry! We couldn't find " + value + ". Try a different search term, or click the map." );
+        $('#gmaps-error').show();
+      } else {
+        // User has clicked or dragged marker to somewhere that Google can't do a reverse lookup for
+        // In this case we display a warning, clear the address box, but fill in LatLng
+        $('#gmaps-error').html("Woah... that's pretty remote! You're going to have to manually enter a place name." );
+        $('#gmaps-error').show();
+        update_ui('', value)
+      }
+    };
+  });
+};
+
+// initialise the jqueryUI autocomplete element
+function autocomplete_init() {
+	if(mapselected=='map1'){
+  $("#location").autocomplete({
+
+    // source is the list of input options shown in the autocomplete dropdown.
+    // see documentation: http://jqueryui.com/demos/autocomplete/
+    source: function(request,response) {
+
+      // the geocode method takes an address or LatLng to search for
+      // and a callback function which should process the results into
+      // a format accepted by jqueryUI autocomplete
+      geocoder.geocode( {'address': request.term }, function(results, status) {
+        response($.map(results, function(item) {
+          return {
+            label: item.formatted_address, // appears in dropdown box
+            value: item.formatted_address, // inserted into input element when selected
+            geocode: item                  // all geocode data: used in select callback event
+          }
+        }));
+      })
+    },
+
+    // event triggered when drop-down option selected
+    select: function(event,ui){
+      update_ui(  ui.item.value, ui.item.geocode.geometry.location )
+      update_map( ui.item.geocode.geometry )
+    }
+  });
+  }else{
+	  $("#address").autocomplete({
+
+    // source is the list of input options shown in the autocomplete dropdown.
+    // see documentation: http://jqueryui.com/demos/autocomplete/
+    source: function(request,response) {
+
+      // the geocode method takes an address or LatLng to search for
+      // and a callback function which should process the results into
+      // a format accepted by jqueryUI autocomplete
+      geocoder.geocode( {'address': request.term }, function(results, status) {
+        response($.map(results, function(item) {
+          return {
+            label: item.formatted_address, // appears in dropdown box
+            value: item.formatted_address, // inserted into input element when selected
+            geocode: item                  // all geocode data: used in select callback event
+          }
+        }));
+      })
+    },
+
+    // event triggered when drop-down option selected
+    select: function(event,ui){
+      update_ui(  ui.item.value, ui.item.geocode.geometry.location )
+      update_map( ui.item.geocode.geometry )
+    }
+  });
+  }
+if(mapselected=='map1'){
+  // triggered when user presses a key in the address box
+  $("#location").bind('keydown', function(event) {
+    if(event.keyCode == 13) {
+      geocode_lookup( 'address', $('#location').val(), true );
+
+      // ensures dropdown disappears when enter is pressed
+      $('#location').autocomplete("disable")
+    } else {
+      // re-enable if previously disabled above
+      $('#location').autocomplete("enable")
+    }
+  });
+  }
+  else{
+	$("#address").bind('keydown', function(event) {
+    if(event.keyCode == 13) {
+      geocode_lookup( 'address', $('#address').val(), true );
+
+      // ensures dropdown disappears when enter is pressed
+      $('#address').autocomplete("disable")
+    } else {
+      // re-enable if previously disabled above
+      $('#address').autocomplete("enable")
+    }
+  });
+  }
+}; // autocomplete_init
+
+
+$(document).ready(function() {
+			var options = {
+				height: 150,
+				width: 980,
+				navHeight: 25,
+				labelHeight: 25,
+				onMonthChanging: function(dateIn) {
+					//this could be an Ajax call to the backend to get this months events
+					//var events = [ 	{ "EventID": 7, "StartDate": new Date(2009, 1, 1), "Title": "10:00 pm - EventTitle1", "URL": "#", "Description": "This is a sample event description", "CssClass": "Birthday" },
+					//				{ "EventID": 8, "StartDate": new Date(2009, 1, 2), "Title": "9:30 pm - this is a much longer title", "URL": "#", "Description": "This is a sample event description", "CssClass": "Meeting" }
+					//];
+					//$.jMonthCalendar.ReplaceEventCollection(events);
+					return true;
+				},
+				onEventLinkClick: function(event) { 
+					alert("event link click");
+					return true; 
+				},
+				onEventBlockClick: function(event) { 
+					alert("block clicked");
+					return true; 
+				},
+				onEventBlockOver: function(event) {
+					//alert(event.Title + " - " + event.Description);
+					return true;
+				},
+				onEventBlockOut: function(event) {
+					return true;
+				},
+				onDayLinkClick: function(date) { 
+					//var selected_date = date.toLocaleDateString();
+					//var arr_selected_date = selected_date.split(" ");
+					//$(".date-selected").html(arr_selected_date[0]+" "+arr_selected_date[1]);
+					 
+					options = { year: "numeric", month: "numeric",
+					day: "numeric" };
+					//alert(date.toLocaleDateString());
+					var url = baseurl + "/activity/OneDayOnly";
+					var callback = $.ajax({
+						type: "post",
+						url: url,
+						data:{
+							'group': galexy,
+							'planet': planet,
+							'selected_date':date.toLocaleDateString(),							 
+						}, // serializes the form's elements.
+						success: function(data)
+						{
+						$("#calendar_event").html(data);
+						past_activity_page++; 
+							
+						}
+					});	
+					return false; 
+				},
+				onDayCellClick: function(date) { 
+				 
+					//	var selected_date = date.toLocaleDateString();
+				///	var arr_selected_date = selected_date.split(" ");
+				//	$(".date-selected").html(arr_selected_date[0]+" "+arr_selected_date[1]);
+					var url = baseurl + "/activity/OneDayOnly";					 
+					var callback = $.ajax({
+						type: "post",
+						url: url,
+						data:{
+							'group': galexy,
+							'planet': planet,
+							'selected_date':date.toLocaleDateString(),							 
+						}, // serializes the form's elements.
+						success: function(data)
+						{
+						$("#calendar_event").html(data);
+						past_activity_page++; 	
+						}
+					});	
+					return false;
+					return true; 
+				}
+			};
+			
+			
+			var events = [ 
+			];
+			
+			var newoptions = { };
+			var newevents = [ ];
+			//$.jMonthCalendar.Initialize(newoptions, newevents);
+
+			
+			$.jMonthCalendar.Initialize(options, events);
+			
+			
+			
+			
+			var extraEvents = [
+			];
+			 		
+			 
+        });
+		
+</script>

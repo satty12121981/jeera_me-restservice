@@ -1,0 +1,36 @@
+<?php
+// module/User/view/user/user/add.phtml:
+$this->headTitle($this->translate('Step 3'));
+?>
+<h1><?php //echo $this->escapeHtml($this->translate('Register Yourself:Step 3')); ?></h1>
+<!--flash Messages.Stored in session-->
+<?php if(isset($flashMessages) && count($flashMessages)) : ?>
+<ul class="session">
+    <?php foreach ($flashMessages as $msg) : ?>
+    <li><?php echo $msg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+
+<!--error Message-->
+<?php if(isset($error) && count($error)) : ?>
+<ul class="error">
+    <?php foreach ($error as $errormsg) : ?>
+    <li><?php echo $errormsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+
+<!--success message-->
+<?php if(isset($success) && count($success)) : ?>
+<ul class="success">
+    <?php foreach ($success as $successmsg) : ?>
+    <li><?php echo $successmsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<div class="signup-form-outer">
+<p>A Confirmation Emaill will be Sent you Your Email, Kindly Click on the link in the mail to activate your account</p>
+
+<a href="<?php echo $this->url('user') ?>">Go to Your Account</a>
+</div>

@@ -1,0 +1,1415 @@
+
+<?php //print_r($profile_data); ?>
+     <!-- Left Fixed part -->
+   <?php echo $this->profileWidget; ?>
+    <!-- Left Fixed part Close -->
+<div id="group_right_container" ng-app="groupapp" ng-controller="groupController" ng-switch on="profileData.switch">
+    <div class="right_container">
+    	<div class="right-profile_links">
+        	<div class="right-profile_links_inner">
+            	<ul class="color-trans">
+                	<li><a href="<?php echo $this->basePath()."/".$current_Profile ?>">Posts</a></li>
+                    <li><a href="<?php echo $this->basePath()."/".$current_Profile ?>/groups" class="active" >Groups ({{group_count}})</a></li>
+                    <li><a href="<?php echo $this->basePath()."/".$current_Profile ?>/friends">Friends ({{frineds_count}})</a></li>
+					<?php if($myprofile==1){ ?>
+                    <li><a href="<?php echo $this->basePath()."/".$current_Profile ?>/activities">My Activity</a></li>
+					<?php } ?>
+                </ul>
+            </div>
+        </div>
+        <div class="right-content_outer">
+        	<div class="friends_sort">
+            	<div class="group_sort color-trans">
+                    Show:
+                    <a href="javascript:void(0);" ng-class="{'active':selectedType == 'All'}" ng-click="showAll()" >All</a>
+                    <a href="javascript:void(0);" ng-class="{'active':selectedType == 'created'}" ng-click="showCreated()">Created ({{created_group_count}})</a>
+					<a ng-if="myprofile!=1" href="javascript:void(0);" ng-class="{'active':selectedType == 'mutual'}" ng-click="showMutual()">Mutual({{mutual_group_count}})</a>
+                    <a href="javascript:void(0);" ng-class="{'active':selectedType == 'joined'}" ng-click="showJoined()">Joined ({{joined_group_count}})</a>
+                    <a ng-if="myprofile==1" href="javascript:void(0);" ng-class="{'active':selectedType == 'pending'}" ng-click="showPending()">Pending Requests ({{pending_group_count}})</a>
+                </div>
+             <div class="create_group">
+                <a data-target="#create_group" data-toggle="modal" class="default_butn_violet" href="javascript:void(0);" >Create New Group</a>
+             </div>
+                <div class="clear"></div>
+            </div>
+
+            <div class="row" scroller ng-init="showGroups(false);">
+				<div ng-if="ajaxFlag==1&&page==1"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"></div>
+                <div ng-if="ajaxFlag==0||page>1" class="col-lg-4 col-md-4 col-sm-6 col-xs-12" ng-repeat="items in group_list">
+                    <div class="group-list-outer">
+                        <div class="group-img_head">
+							 <div class="own_group-label" ng-if="items.is_admin==1" >
+                            	<div class="owner_profile">
+                                	<img alt="" ng-if="profile.profile_photo!=null&&profile.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{profile.user_id}}/{{ profile.profile_photo }}">
+									<img alt="" ng-if="profile.profile_photo==null||profile.profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">
+                                    <span class="owner-badge"></span>
+                                </div>
+                            </div>
+                            <img ng-if="items.group_photo_photo!=''&&items.group_photo_photo!=null" src="{{groupImagePath}}{{items.group_id}}/medium/{{items.group_photo_photo}}" alt="" />
+							<img ng-if="items.group_photo_photo==''||items.group_photo_photo==null" src="<?php echo $this->basePath(); ?>/public/images/group-img_def.jpg" alt="" />
+                            <div class="group-shadow"><a href="<?php echo $this->basePath(); ?>/groups/{{items.group_seo_title}}"></a></div>
+                            <div class="join-group-butn">
+								<a class="button_corner_grey" href="javascript:void(0);" ng-if="items.group_status =='pending'">Pending Approval</a>
+								<a class="button_corner_red" href="javascript:void(0);" ng-if="items.group_status !='pending' && items.is_admin!=1&&items.is_member==1" data-toggle="modal" data-target="#confirm_popup" ng-click="selectLeavingGroup(items.group_id,items.group_title)">Leave This Group</a>
+								<a class="button_corner_yellow" href="<?php echo $this->basePath(); ?>/groups/{{items.group_seo_title}}" ng-if="items.group_status !='pending' && items.is_admin==1">Edit Group</a>
+								<a class="button_corner_blue" href="javascript:void(0);" ng-if="items.group_status !='pending' && items.is_admin!=1&&items.is_member!=1&&items.group_type !='private'&&is_requested!=1" data-toggle="modal" data-target="#join_group" ng-click="selectJoiningGroup(items.group_id,items.group_title)">Join This Group</a>
+								<a class="button_corner_grey" href="javascript:void(0);" ng-if="items.group_status !='pending' && items.is_admin!=1&&items.is_member!=1&&items.group_type !='private'&&is_requested==1"   >You are already requested</a>
+							</div>
+                            <div class="group-titles">
+                               <a href="<?php echo $this->basePath(); ?>/groups/{{items.group_seo_title}}"> {{items.group_title}}</a>
+                                <span ng-if="items.group_type =='open'">
+                                <i class="group-open"></i><!-- Change the <i> class when chenge the group privacy -->
+                                Open Group
+								</span>
+								<span ng-if="items.group_type =='private'">
+									<i class="group-private"></i><!-- Change the <i> class when chenge the group privacy -->
+									Private Group
+								</span>
+								<span ng-if="items.group_type =='public'">
+									<i class="group-public"></i><!-- Change the <i> class when chenge the group privacy -->
+									Public Group
+								</span>
+                            </div>
+                        </div>
+                        <div class="group-body">
+                            <div class="group-interest_location">
+                                <div class="group_interest">Group Interests</div>
+                                <div class="group_location"><i class="group-location"></i>{{items.city}}, {{items.country_code}}</div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="group-category_icons">                  	 
+								<img  alt="" ng-repeat="tagitem in items.tag_category" ng-if="tagitem.tag_category_icon!=''&&$index<=3" src="{{categoryImagePath}}{{tagitem.tag_category_icon}}" alt="{{tagitem.tag_category_title}}" />
+								<img ng-repeat="tagitem in items.tag_category" ng-if="tagitem.tag_category_icon==''&&$index<=3" src="<?php echo $this->basePath(); ?>/public/images/category-icon.png" alt="{{tagitem.tag_category_title}}" /> 
+								<span class="interest_more" ng-if="items.tag_category_count>4">+{{ items.tag_category_count- 4 }}</span>                        
+							</div>
+                            <div class="group-interest_list">
+								<span ng-repeat="tags in items.tags"> {{tags.tag_title}} </span>
+							</div>
+							<div class="group_members-friends">
+								<div class="group_members">members: <span>{{items.member_count}}</span></div>
+								<div class="group_friends"  ng-if="items.is_admin!=1" >friends: <span>{{items.friend_count}}</span></div>
+								<div class="group_friends"  ng-if="items.is_admin==1" >new Requests: <span>{{items.request_count}}</span></div>
+								<div class="clear"></div>
+							</div>
+                        </div>
+
+                    </div>
+                </div>
+			</div>
+            <div class="clear"></div>
+        </div>
+
+    </div>
+
+    <div class="clear"></div>
+    <div class="pop_bg modal fade" id="create_group" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog group_popup" ng-init="loadFirstFrom()">
+        <div class="modal-content create_group_outer">
+          <div class="modal-header create_group-head">
+            <div class="create_group-header">
+            	<div class="level-1" ng-class="{active:selectedFrom == 'level1'}">
+                	1<i></i>Group Info
+                </div>
+                <div class="level-2" ng-class="{active:selectedFrom == 'level2'}">
+                	2<i></i>Interests
+                </div>
+                <div class="level-3" ng-class="{active:selectedFrom == 'level3'}">
+                	3<i></i>INVITE &amp; ASK
+                </div>
+            </div>
+            <button type="button" class="close" data-dismiss="modal" ng-click="removeData();"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <div class="clear"></div>
+          </div>
+          <div class="modal-body signup_body">
+			<div id="signup_step1">                 
+                <div class="step1_outer" ng-if="selectedFrom == 'level1'">
+                        <div class="create_group-label">Name Your Group*</div>
+                        <div class="login-field">
+							<input name="name" type="text" placeholder="e.g. Arsenal Lovers" ng-model="mygroup.groupTitle" />
+							<span ng-show="groupTitileError" style="color:red">Group name is required.</span>
+                        </div>
+                        <div ng-show="Locationloading" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+                        <div class="group_select_col-left" id="CountryDropDown">
+							<div class="create_group-label">Choose Group Country</div>
+							<select id="country" class="styled" required ng-model="mygroup.country" ng-change="CitySelect(mygroup.country)">
+								<option  ng-repeat="item in country"  ng-selected="{{item.country_id == mygroup.country}}" value="{{item.country_id}}">{{item.country_title}}</option>
+							</select>
+						</div>
+						<div class="group_select_col-right" id="CityDropDown">
+							<div class="create_group-label">Choose Group City</div>
+							<select id="city" class="styled" required ng-model="mygroup.city">
+								 <option  ng-repeat="item in city" ng-selected="{{item.city_id == mygroup.city}}" value="{{item.city_id}}">{{item.name}}</option>
+							</select>
+						</div>
+                        <div class="clear"></div>
+                         <!-- The file input-button span is used to style the file input field as button -->
+                        <div class="create_group-label" >Upload Banner Photo</div>
+                        <div class="drag_drop-media group_drag-drop">
+                            <div class="drag-caption" onClick="getFile()" id="uplodbtn">
+                                <center><div id="ImageUploadStatus"></div></center>
+                                <img src="<?php echo $this->basePath();?>/public/images/drag_drop-img.png" alt="" id="imgUserImage" /><br />Choose a photo to upload
+
+                                 <div class="uploadfilbtn">
+                                    <input type="file" name="btnUploadImage" id="btnUploadImage" style="display: none;">
+                                  </div>
+                            </div>
+
+                        </div>
+						<div id="uploadPreview"></div>
+                        <div class="create_group-label">Choose Group Type</div>
+                        <div class="select_group-type">
+                            <input type="radio" name="group_type" id="open-group" value="1" ng-model="mygroup.grouptype">
+                            <label for="open-group">
+                                    <i class="radio-styled"></i>
+                                    <i class="group-open_black"></i>Open Group
+                            </label>
+                            <div class="group-type_details">
+                                This group will be visible to everyone and can be joined immediately <br />
+                                (without group owner approval).
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="select_group-type">
+                            <input type="radio" name="group_type" id="Public-group"  value="2" ng-model="mygroup.grouptype">
+                            <label for="Public-group">
+                                    <i class="radio-styled"></i>
+                                    <i class="group-public_black"></i>Public Group
+                            </label>
+                            <div class="group-type_details">
+                                This group will be visible to everyone, but the group owner receives <br />
+                                requests for the group joining which he can accept or decline.
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="select_group-type">
+                            <input type="radio" name="group_type" id="closed-group"  value="0" ng-model="mygroup.grouptype">
+                            <label for="closed-group">
+                                    <i class="radio-styled"></i>
+                                    <i class="group-private_black"></i>Private Group
+                            </label>
+                            <div class="group-type_details">
+                                This group will not be visible to anyone in regular search. It is invite <br />
+                                based and users can not join the group unless you invite them.
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="create_group-label">Describe Your Group*</div>
+                        <div class="login-field">
+							<textarea name="discribe_group" placeholder="Tell us what is your group about"  ng-model="mygroup.description"></textarea>
+							<span ng-show="groupDescriptionError" style="color:red">Group Description is required.</span>
+						</div>
+                        <div class="signup_button">                        
+							<div class="signup-link"><a href="javascript:void(0);" class="default_butn_normal" ng-click="clearForms()">Cancel</a> <a href="javascript:void(0);" class="default_butn_blue" id="go_step-2" ng-click="LoadSecondFrom()">Continue</a></div>
+							<div class="clear"></div>
+						</div>
+                    </div>
+                    
+            </div>              
+            <div id="signup_step2"  ng-if="selectedFrom == 'level2'">
+               <div class="group_select_col-left">
+                    <div class="create_group-label">Choose Category</div>
+                    <div class="interest_category-outer dropdown_icons-outer group_dd-category" ng-switch on="groupintrest.switch" >
+						<ul class="color-trans dropdown_icons border_radius {{gruopdrpClass}}"   ng-switch-when="1" >
+							<li   ng-repeat="item in groupCategory"  ng-show="gruopisVisible==1 || $index==groupselectedIndex"   ng-class="{active:$index==groupselectedIndex}"  >
+							<a href="javascript:void(0);" ng-click="selectGroupIntrestCategory(item.tag_category_id,$index)">
+							<img ng-if="item.tag_category_icon!=''" src="{{categoryImagePath}}{{item.tag_category_icon}}" alt="{{item.tag_category_title}}" />
+							<img ng-if="item.tag_category_icon==''" src="<?php echo $this->basePath(); ?>/public/images/category-icon.png" alt="{{item.tag_category_title}}" />
+							{{item.tag_category_title}}</a>
+							</li>
+						</ul>
+						<div ng-switch-when="2" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+					</div>
+                </div>
+                 <div class="group_select_col-right">
+                    <div class="create_group-label">&nbsp;</div>
+                    <div class="fixed-search interest_search">
+                       <input type="text" placeholder="Search Interest" name="search" ng-model="grouptag_search" >
+                        <a href="javascript:void(0);"></a>
+                    </div>
+                </div>
+                <div class="clear"></div>
+                <div class="popup_interest-lists" ng-show="showgrouptags"  >
+					<a class="interest_add" remove-on-click href="javascript:void(0);"    ng-repeat="items in filtered = (grouptags | filter:grouptag_search) | limitTo:group_tag_limit" ng-click="addToSelectedGroupIntrest(items.category_id,items.tag_id,items.tag_title);remove()">{{items.tag_title}}<span></span></a>	
+                    <button ng-show="showgroupmoretags" ng-click="increaseLimit(group_tag_limit)" ng-hide="filtered.length <= group_tag_limit">
+                              More...
+                    </button>
+				</div>
+                <div class="create_group-label">Chosen Group Interests</div>
+                <div class="selected_interest">
+					<img  ng-repeat="items in objSelectedGroupCategory"   ng-if="items.category_icon!=''" src="{{categoryImagePath}}{{items.category_icon}}" alt="{{items.category_title}}" />
+					<img ng-repeat="items in objSelectedgroupCategory" ng-if="items.category_icon==''" src="<?php echo $this->basePath(); ?>/public/images/category-icon.png" alt="{{items.category_title}}" /> </div>
+					<div class="popup_interest-lists">
+					<a class="interest_added" href="javascript:void(0);" ng-repeat="items in objSelectedGroupTags" remove-on-click ng-click="remove();removeFromSelectedGroupIntrest(items.tag_name,items.category)" >{{items.tag_name}}<span></span></a>
+					 
+					</div>
+                <div style="color:red" ng-if="groupIntresetError">Select some intrests to proceed</div>
+                <div class="signup_button">
+                    <div class="signup-link"><a href="javascript:void(0);" class="default_butn_normal" id="go_step-1" ng-click="goback('level1')">Back</a> <a href="javascript:void(0);" class="default_butn_blue" id="go_step-3" ng-click="LoadThirdFrom()">Continue</a></div>
+                    <div class="clear"></div>
+                </div>
+            </div>             
+
+            <div id="signup_step3" ng-if="selectedFrom == 'level3'">
+                <div class="create_group-label">Invite People to Your Group (Optional)</div>
+                <div style="position:relative">
+					<div class="login-field">
+						<input name="name"   type="text" ng-model="friend_search" placeholder="+ Add more people" ng-focus="enablelist=1" ng-blur="enablelist=0"  />
+					</div>
+					<div class="listed_members_container" ng-mouseover="onlist=1;OnListHover();" ng-mouseleave="OnListOut();"    ng-if="enablelist||onlist" >
+						<div ng-repeat="item in friends|filter:friend_search" class="invite_user_container" remove-on-click ng-click="AddToInvitedUsers(item.user_id,item.user_given_name,item.profile_photo);remove();">
+							<div class="profile_imaage comn_profile_img">
+								<img alt="" ng-if="item.profile_photo!=null&&item.profile_photo!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{item.user_id}}/{{ item.profile_photo }}">
+								<img alt="" ng-if="item.profile_photo==null||item.profile_photo==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">
+							</div>
+							<div class="invite_user_name">{{item.user_given_name}}</div>
+						</div>
+					 </div>
+				 </div>
+                <div class="invited_friends">
+                	<div class="invited_names comn_profile_img" ng-repeat="item in objSelectedUsers" ng-click="RemoveFromInvitedUsers(item.user_id)">
+                    	<img alt="" ng-if="item.user_image!=null&&item.user_image!=''" src="<?php echo $this->basePath(); ?>/public/datagd/profile/{{item.user_id}}/{{ item.user_image }}">
+						<img alt="" ng-if="item.user_image==null||item.user_image==''" src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg">{{item.user_name}}<span></span>
+                    </div>                    
+                </div>
+                <div class="create_group-label">Add Questionary (Optional)</div>
+                <div class="create_group_info">Once people start sending their requests to join your group, the questionnaire can be helpful. By asking few questions, you can learn about your potential group members and make better choices about who should be able to join your group.</div>
+
+                 <div ng-repeat="a in range(qn) track by $index">
+                    <div class="create_group-label">Question {{$index+1}}</div>
+                    <div class="group_select_col-left">
+                        <select name="slQuestionType1" class="styled borderslct" ng-model="question_type[$index]" ng-change="selectType($index)" >
+                           <option  ng-repeat="item in QuestionType" value="{{item}}" ng-selected="{{item == TextType}}">{{item}}</option>
+                        </select>
+                     </div>
+                      <div class="clear"></div>
+                        <div class="login-field">
+                            <textarea ng-model="question[$index]"  placeholder="Type Your Question"></textarea>
+                        </div>
+                        <div ng-if="selectedIndexQue[$index] == $index && (selected_type[$index]=='CheckBox'||selected_type[$index]=='Radiobutton')">
+                            <div class="clear"></div>
+                            <div class="group_select_col-left"  >
+                                <input name="" type="text" placeholder="Type the Right Answer"  ng-model="option1[$index]" />
+                            </div>
+                            <div class="clear"></div>
+                            <div class="group_select_col-left">
+                                <input name="" type="text" placeholder="Type the Wrong Answer" ng-model="option2[$index]" />
+                            </div>
+                            <div class="clear"></div>
+                            <div class="group_select_col-left">
+                                <input name="" type="text" placeholder="Type the Wrong Answer" ng-model="option3[$index]" />
+                            </div>
+                        </div>
+
+                     <div class="clear"></div>
+                </div>
+
+                <div class="login-field" ng-if="addmoreQuestion==1">
+                	<span class="group_questionary create_group_questionary">
+                       <a href="javascript:void(0);" ng-click="qn=3;hideContainer()" ><i></i>Click to add question (1 questions left)</a>
+                    </span>
+                </div>
+                <div class="signup_button">
+                    <div class="signup-link"><a href="javascript:void(0);" class="default_butn_normal" id="" ng-click="goback('level2')">Back</a> <a href="javascript:void(0);" class="default_butn_blue" id="" ng-click="SaveGroup()">Finish</a></div>
+                    <div class="clear"></div>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+	<div class="pop_bg modal fade" id="confirm_popup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog login_popup">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <div class="clear"></div>
+          </div>
+          <div class="modal-body signup_body">
+			<div id="signup_step1">
+				<div class="step1_outer">
+					<h3>Please Confirm</h3>
+					 <div class="already_member"> You are about to leave the group {{selectedGroupRemoved}}.Are you sure?
+					<a href="javascript:void(0);" class="default_butn_grey" id="cancel_reply" ng-click="showReply=0;removeLeaveBox()" data-dismiss="modal">No</a><a href="javascript:void(0);" class="default_butn_violet" ng-click="leaveGroup()">Yes I'm sure</a>
+					</div>
+				</div>
+			</div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+	 <div class="pop_bg modal fade" id="join_group" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog join_group_popup">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <div class="clear"></div>
+          </div>
+          <div class="modal-body signup_body">
+            <div class="step1_join" id="step_1" ng-if="(profile.user_profile_about_me==''||profile.user_profile_about_me==null||profile.user_profile_about_me=='null')&&joingroupStep==1">
+                <h3>Introduce Yourself</h3>
+                <div class="already_member signup_po-link">Looks like you haven’t written your bio, why don’t you introduce yourself to the group? *You can edit this later on your profile page<br />&nbsp;</div>
+                <div class="login-field introduce_textarea">
+                    <textarea name="Introduction" placeholder="Tell something interesting about yourself" ng-model="aboutme"></textarea>
+                </div>
+                
+                <div class="login_button">
+                    <a href="javascript:void(0);" class="default_butn_normal" ng-click="profile.user_profile_about_me='';">Cancel</a>
+					<div ng-if="aboutmeAjax==1" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+                    <a ng-if="aboutmeAjax==0" href="javascript:void(0);" class="default_butn_blue" id="step_2_join" ng-click="SaveAboutMe(aboutme)">Continue</a>
+                </div>
+            </div>
+            <div class="step1_join" id="step_2" ng-if="joingroupStep==2">
+            	<h3>Upload Your Photo</h3>
+                <div class="upload_photo-outer">
+                	<div class="browse_photo profile_img-edit">
+                    	<a href="javascript:void(0);"  data-toggle="modal" data-target="#upload_profile-image" ng-click="loadProfileUpload()">
+                            <span>
+                                <i class="change_cover"></i><br>
+                                Upload
+                            </span>
+                        </a>
+                    </div>
+                    <div class="photo_details">Looks like you haven’t uploaded your profile photo. You can do it now (this improves your credibility on Jeera). <br />*You can change this later on your profile page.</div>
+                    <div class="clear"></div>
+                </div>
+                <div class="login_button">                    
+                    <a href="javascript:void(0);" class="default_butn_blue" id="step_3_join">Continue</a>
+                    <div class="clear"></div>
+                </div>
+            </div>
+            <div class="step1_join" id="step_3"  ng-if="joingroupStep==3">
+				<span ng-repeat="items in  joingingquestionnaire">
+			   <h3>{{items.question}}</h3>
+                <div class="login-field introduce_textarea" ng-if="items.answer_type == 'Textarea'">
+                    <textarea name="answer" placeholder="Your Answer" ng-model="md_questionnaire[$index]"></textarea>
+                </div>				                 
+                <div class="login-field introduce_textarea" ng-if="items.answer_type == 'radio'">
+                    <div class="select_group-type join_radio" ng-repeat="option in items.options">
+                    	<input type="radio" value="{{option.option_id}}"  name="group_type" id="Public-group-{{$parent.$index}}{{$index}}" ng-click="selectedOptionRadio(items.questionnaire_id,option.option_id)">
+                        <label for="Public-group-{{$parent.$index}}{{$index}}"><i class="radio-styled"></i> {{option.option}}</label>
+                        <div class="clear"></div>
+                    </div>
+                     
+                </div>
+				
+				<div class="login-field introduce_textarea" ng-if="items.answer_type == 'checkbox'">
+                  <div class="checkbox_outer"  ng-repeat="option in items.options" >
+                        <div class="squaredThree">
+                            <input type="checkbox" value="{{option.option_id}}" id="check_{{$parent.$index}}{{$index}}" name="check" ng-model="md_option[$parent.$index][$index]" ng-click="selectedOptionCheckbox(items.questionnaire_id,option.option_id,$index)"/>
+                            <label for="check_{{$parent.$index}}{{$index}}" class="check"></label>
+                        </div>
+                        <label for="check_{{$parent.$index}}{{$index}}">{{option.option}}</label>
+                        <div class="clear"></div>
+                    </div>
+                     
+                </div>				
+			</span>				
+                <div class="login_button">
+					<div ng-if="aboutmeAjax==1" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+                    <a href="javascript:void(0);" ng-if="aboutmeAjax!=1" class="default_butn_blue" id="step_4_join" ng-click="saveQuestionnaireAnswers()">Continue</a>
+                    <div class="clear"></div>
+                </div>
+            </div>
+            
+            <div class="step1_join" id="step_4"  ng-if="joingroupStep==4">
+                <h3>Your Request has been sent, and Is Being Considered by <br />The Group Owners.</h3>
+                <div class="already_member signup_po-link">Some relatively short text about Jeera rules should go here. Mostly speaking about the type of content and behaviour that is encouraged and the one that is not. <br />Its a good place to make sure that the user knows that bad behaviour on the network will not be tolerated.<br />&nbsp;</div>
+                
+                
+                <div class="login_button">
+                    <a href="<?php echo $this->basePath(); ?>/explore" class="default_butn_yellow">Show Me Some More Similar Groups</a>
+                    <a href="javascript:void(0);" class="default_butn_blue" id="" ng-click="reloadPage()">Continue</a>
+                </div>
+            </div>
+            
+            
+         </div>
+          
+        </div>
+      </div>
+    </div>
+	<div class="pop_bg modal fade" id="upload_profile-image" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog upload-img_popup">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <div class="clear"></div>
+          </div>
+          <div class="modal-body signup_body">
+                <div class="step1_outer">
+                    <h3>Position and Size Your Photo</h3>
+                    <div class="profile-pic_preview_outer">
+                    	<div class="image-editor">
+                              <div class="browse-profile_image"><input type="file" class="cropit-image-input"></div>
+                              <!-- .cropit-image-preview-container is needed for background image to work -->
+                              <div class="cropit-image-preview-container">
+                                <div class="cropit-image-preview"></div>
+                              </div>
+                              <div class="image_zoom-bar">
+                              	<input type="range" class="cropit-image-zoom-input">
+                              </div>
+                              <div class="upload-img_butns">
+                              	<a href="javascript:void(0);" class="default_butn_red">Cancel</a>
+								<div ng-if="aboutmeAjax==1" class="loading"><img src="<?php echo $this->basePath(); ?>/public/images/ajax_loader.gif"> </div>
+                                <a href="javascript:void(0);"  ng-if="aboutmeAjax==0" class="default_butn_blue" ng-click="cropImage()">Apply</a>
+                              </div>
+                              
+                        </div>
+                    </div>
+                    
+                </div>
+            
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    </div>
+ <script type="text/javascript" src="<?php echo $this->basePath(); ?>/public/js/jquery.cropit.js"></script>
+<script>
+
+    var arrInviteFriends    = new Array();
+    var profileImgpath      = baseurl+'/public/datagd/profile/';
+	var page = 1;
+     $.widget("custom.catcomplete", $.ui.autocomplete, {
+          _renderMenu: function (ul, items) {
+              var that = this;
+              $.each(items, function (index, item) {
+                 // that._renderItemData(ul, item);
+                 var fnc     = 'selectMatch('+item.userid+','+item.fid+',"'+item.label+'","'+item.profilePhoto+'")';
+				 if(item.profilePhoto==''||item.profilePhoto=='null'||item.profilePhoto==null){
+					$( "<li>" )
+					.append( $( '<a onclick='+fnc+'>').text( item.label ).prepend('<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" />') )
+					.appendTo( ul ).data( "ui-autocomplete-item", item );
+				 }else{
+					$( "<li>" )
+					.append( $( '<a onclick='+fnc+'>').text( item.label ).prepend('<img src="'+profileImgpath+item.userid+'/'+item.profilePhoto+'" />') )
+					.appendTo( ul ).data( "ui-autocomplete-item", item );
+				}
+              });
+          }
+      });
+
+     // fucntion to remoce friends
+     function removeAddedFriends(fid){
+        for(var i=0; i<arrInviteFriends.length; i++){
+            if(arrInviteFriends[i].fid == fid){
+                  arrInviteFriends.splice(i,1);
+             }
+        }// for
+        displayAddedFriends(arrInviteFriends);          // display
+     }
+
+    // fucntion to display added friends
+    function selectMatch(uid ,fid, name, p_photo){
+        var errorFlag   = 0;
+        for(var i=0; i<arrInviteFriends.length; i++){ // check duplicate id
+              if(arrInviteFriends[i].fid == fid){
+                  errorFlag   = 1;
+                  break;
+              }
+        }// for
+
+        if(errorFlag == 1){
+            alert('This friend is alreay added.');
+        }else{
+             arrInviteFriends.push({ userid:uid, fid: fid, fname: name, profilePhoto: p_photo}); // add into the array
+             displayAddedFriends(arrInviteFriends);          // display
+        }// else
+    }// function
+
+    // function to display added friends list
+    function displayAddedFriends(arrInviteFriends){
+        $('#addInviteFriend').empty();                   // make div empty
+        for(var i=0; i<arrInviteFriends.length; i++){    // display added friends
+            var remFnc     = 'removeAddedFriends('+arrInviteFriends[i].fid+')'; // fucntion to remove friends
+			if(arrInviteFriends[i].profilePhoto == ''||arrInviteFriends[i].profilePhoto == null||arrInviteFriends[i].profilePhoto == 'null'){
+				$('#addInviteFriend').append('<div class="invited_names comn_profile_img"><img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />'+arrInviteFriends[i].fname+'<span onclick='+remFnc+'></span></div>&nbsp');
+			}else{
+				$('#addInviteFriend').append('<div class="invited_names comn_profile_img"><img src="'+profileImgpath+arrInviteFriends[i].profilePhoto+'" alt="" />'+arrInviteFriends[i].fname+'<span onclick='+remFnc+'></span></div>&nbsp');
+			}
+            }// for
+    }// function
+
+	var image_paths = <?php echo json_encode($image_folders); ?>;
+	var uploadFIle = '';
+     var groupapp = angular.module('groupapp',[]);
+     groupapp.config(function ($httpProvider) {
+			$httpProvider.defaults.transformRequest = function(data){
+				if (data === undefined) {
+					return data;
+				}
+				return $.param(data);
+			}
+		});
+
+
+        groupapp.directive('autoComplete', function ($timeout) {
+            return function (scope, iElement, iAttrs) {
+                iElement.autocomplete({
+                    source: scope[iAttrs.uiItems],
+                    select: function () {
+                        $timeout(function () {
+                            iElement.trigger('input');
+                        }, 0);
+                    }
+                });
+            };
+         });
+	groupapp.directive('scroller', function ($window) {
+		return {
+			restrict: 'A',
+			link: function(scope, element, attrs) {
+			  var windowEl = angular.element($window); 		  
+			  var handler = function() { scope.handler();  }
+			  windowEl.on('scroll', scope.$apply.bind(scope, handler));
+			 
+			}
+		};
+	});
+
+     groupapp.controller('groupController',function($scope, $http){
+            $scope.group_tag_limit = 25;
+            $scope.group_tag_inc_limit = 25;
+            $scope.Searchcompany = [];
+            $scope.CompanyContactAutocompleteBind = function () {
+                $("#usersearch").catcomplete({
+                    delay: 0,
+                    source: $scope.Searchcompany
+                });
+            };
+		   $scope.profile ={};
+		   $scope.USERprofile = <?php echo json_encode($profile_data); ?>;
+		   $scope.frineds_count = <?php echo $friends_count; ?>;
+		   $scope.group_count = <?php echo $group_count; ?>;
+		   $scope.created_group_count = <?php echo $created_group_count; ?>;
+		   $scope.joined_group_count = <?php echo $joined_group_count; ?>;
+		   $scope.pending_group_count = <?php echo $pending_group_count; ?>;
+		   $scope.mutual_group_count = <?php echo $mutual_count; ?>;
+		   $scope.profile.profile_photo = '<?php echo $profile_data->profile_photo; ?>';
+		   $scope.profile.user_id = '<?php echo $profile_data->user_id; ?>';
+		   $scope.myprofile = '<?php echo $myprofile; ?>';
+		   $scope.profile.user_profile_about_me = $scope.USERprofile.user_profile_about_me;
+           $scope.user = {};
+           $scope.item = {};
+		   $scope.categoryImagePath=(image_paths.tag_category!='')?baseurl+"/public/"+image_paths.tag_category:baseurl+'/public/images/';
+		   $scope.groupImagePath =  (image_paths.group!='')?baseurl+"/public/"+image_paths.group:baseurl+'/public/images/';
+           $scope.loading=false;
+           $scope.profileData = {};
+           $scope.country = '';
+           $scope.user.country = '';
+           $scope.city = '';
+           $scope.profileData.switch  =  1;
+           $scope.user.cityId   = '';
+           $scope.user.grouptype = 1;
+           $scope.master = {};
+           $scope.addedtags = [];
+		   $scope.intrest = {};
+		   $scope.intrest.switch = 2;
+		   $scope.drpClass = "dropdown_close";
+		   $scope.isVisible = 0;
+		   $scope.selectedIndex = 0;
+		   $scope.tag_search='';
+           $scope.TextType  = '';
+		   $scope.objSelectedCategory =  new Array();
+		   $scope.addmoreQuestion = 1;
+		   $scope.sendtosave = 0;
+           $scope.selectedIndex = [];
+           $scope.name = [];
+           $scope.question = [];
+           $scope.question_type = [];
+           $scope.selected_type= [];
+           $scope.option1 = [];
+           $scope.option2 = [];
+           $scope.option3 = [];
+           $scope.QuestionDetails = [];
+           $scope.qn = 2;
+           $scope.selectedIndexQue = [];
+           $scope.friendsName = [];
+           $scope.addedFriendsName = [];
+		   $scope.selectedFrom = 'level1';
+		   $scope.mygroup= {};
+			$scope.mygroup.groupTitle='';
+			$scope.mygroup.country='';
+			$scope.mygroup.city='';
+			$scope.mygroup.description='';
+			$scope.Locationloading = true;
+			$scope.groupCategory = [];
+			$scope.groupintrest = {};
+			$scope.groupintrest.switch = 2; 
+			$scope.grouptags = {};
+			$scope.showgrouptags = 0;
+            $scope.showgroupmoretags = 0;
+			$scope.gruopdrpClass = "dropdown_close";
+			$scope.gruopisVisible = 0;			 
+			$scope.groupselectedIndex = 0;	
+			$scope.selectedGroupCategory = '';
+			$scope.loadFirstFrom = function(){	
+				$scope.selectedFrom = 'level1';
+				url  = baseurl+'/country/ajaxCountryList';				 
+				$http({
+				  method: 'POST',
+				  url: url
+				}).success(function(data, status, headers, config) {                    
+					$scope.country   = data.countries;
+				    angular.forEach(data.countries, function(dataset){
+						$scope.Locationloading = false;
+						if($scope.selectedCountry!=''){
+							if(dataset.country_id == $scope.selectedCountry){
+								$scope.CitySelect(dataset.country_id);								 
+							}
+						}else{							 
+								$scope.CitySelect(dataset.country_id);
+								return true;
+						}
+				    });
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+					 $scope.Locationloading = false;
+				});
+			}
+			$scope.CitySelect = function(country_value){
+				$scope.Locationloading=true;
+				url  = baseurl+'/city/ajaxCitiesList';
+				$http.post(url,{country_id:country_value}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+				).success(function(data, status, headers, config) {				     
+                    $scope.Locationloading=false;
+                    $scope.city  = data.cities;                     
+				}).error(function(data, status, headers, config) {
+					$scope.Locationloading=false;
+					 alert("Error occured. Please try again");
+				});
+			};
+			$scope.clearForms = function(){
+				$scope.mygroup= {};
+				uploadFIle = '';
+			}
+			$scope.LoadSecondFrom = function(){  
+				var error_count = 0;
+				if($scope.mygroup.groupTitle==''){  
+					$scope.groupTitileError = 1;
+					error_count++;
+				}
+				if($scope.mygroup.country==''){  
+					$scope.groupCountryError = 1;
+					error_count++;
+				}
+				if($scope.mygroup.city==''){	 
+					$scope.groupCountryError = 1;
+					error_count++;
+				}
+				if($scope.mygroup.description==''){   
+					$scope.groupDescriptionError = 1;
+					error_count++;
+				}
+				if(error_count==0){  
+					$scope.selectedFrom = 'level2';
+					$scope.groupintrest.switch = 2; 
+					url = baseurl+'/tag/getAllActiveCategories';
+					$http({
+					  method: 'POST',
+					  url: url
+					}).success(function(data, status, headers, config) {
+					   $scope.groupCategory=data.tag_category;	
+					   $scope.getgroupTags(data.tag_category[0].tag_category_id);				   
+					   $scope.groupintrest.switch = 1; 
+					}).error(function(data, status, headers, config) {
+						 alert("Error occured. Please try again");
+					});
+				}
+			}
+			$scope.selectGroupIntrestCategory = function(category,selected){  
+				if($scope.gruopisVisible){
+					$scope.gruopisVisible = 0;
+					$scope.groupselectedIndex = selected;
+					$scope.gruopdrpClass = "dropdown_close";
+					$scope.selectedGroupCategory = category;
+					$scope.showgrouptags = 0;
+                    $scope.showgroupmoretags = 0;	
+					$scope.getgroupTags(category);					 
+				}else{ 
+					$scope.gruopisVisible = 1;
+					$scope.gruopdrpClass = "dropdown_open";
+				}
+			};
+			$scope.getgroupTags = function(category){
+				$scope.showgrouptags = 0;
+				url  = baseurl+'/tag/getAllTagsOfSelectedCategory';				
+				$http.post(url,{category_id:category,search:$scope.grouptag_search}, {headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}	
+				).success(function(data, status, headers, config) { 
+					if(data.tags.length>0){
+					$scope.grouptags = data.tags; 	
+					$scope.showgrouptags = 1;
+                    $scope.group_tag_limit = 25; 
+					}else{$scope.showgrouptags = 0;}
+                    if(data.tags.length > $scope.group_tag_limit){
+                    $scope.showgroupmoretags = 1;
+                    }else{$scope.showgroupmoretags = 0;}
+				}).error(function(data, status, headers, config) {
+				 alert("Error occured. Please try again");
+				});
+			};
+            $scope.increaseLimit = function (group_tag_limit){
+                $scope.group_tag_limit = group_tag_limit+$scope.group_tag_inc_limit;  
+            };
+			$scope.objSelectedGroupTags = new Array();
+			$scope.objSelectedGroupCategory = new Array()
+			$scope.addToSelectedGroupIntrest = function(category,tag_id,tag_name){  
+				var incexist = 0;
+				angular.forEach($scope.objSelectedGroupTags, function(dataset){ 
+					if(dataset.tag_name == tag_name){incexist++;}
+				});				
+				if(incexist == 0){
+					$scope.objSelectedGroupTags.push({
+						category:category,tag_id:tag_id,tag_name:tag_name
+					});
+				}
+				angular.forEach($scope.groupCategory, function(dataset){ 
+					if(dataset.tag_category_id == category){
+						var incexist = 0;
+						angular.forEach($scope.objSelectedGroupCategory, function(datasets){ 
+							if(datasets.category_icon == dataset.tag_category_icon){incexist++;}
+							 
+						});	
+						if(incexist ==0){
+							$scope.objSelectedGroupCategory.push({
+								category:dataset.tag_category_id,category_title:dataset.tag_category_title,category_icon:dataset.tag_category_icon
+							});	
+						}
+					}
+				   });
+				 
+			};
+			$scope.removeFromSelectedGroupIntrest = function(tag_name,category){ 			 
+				var array_index = $scope.getArrayIndex($scope.objSelectedGroupTags,'tag_name',tag_name);
+				$scope.objSelectedGroupTags.splice( array_index, 1 );
+				var incexist = 0;
+				angular.forEach($scope.objSelectedGroupTags, function(dataset){ 
+					if(dataset.category == category){incexist++;}
+				});				
+				if(incexist == 0){
+					var array_index = $scope.getArrayIndex($scope.objSelectedGroupCategory,'category',category);
+					$scope.objSelectedGroupCategory.splice( array_index, 1 );
+				}
+			};
+           $scope.savethis = function(){
+			angular.forEach($scope.name, function(dataset){
+				 alert(dataset)
+				});
+            }
+
+           $scope.range = function(n) {
+			return new Array(n);
+           }
+		   $scope.hideContainer=function(){
+			$scope.addmoreQuestion = 0;
+			  $scope.qn = 3;
+		   }
+           $scope.selectType = function(id){
+                $scope.selectedIndexQue[id] = id;
+                $scope.selected_type[id]= $scope.question_type[id];
+
+                if($scope.question_type[id] == 'Select Question Type'){
+                    $scope.question[id]     = '';
+                    $scope.option1[id]      = '';
+                    $scope.option2[id]      = '';
+                    $scope.option3[id]      = '';
+                }
+           }
+
+           // saving the group
+            $scope.SaveGroup = function(){
+			$scope.QuestionDetails = [];
+               var index = 0;
+               var flag  = 0;
+                angular.forEach($scope.question_type, function(dataset){
+
+                var q_type      = '';
+                var que         = '';
+                var opt1        = '';
+                var opt2        = '';
+                var opt3        = '';
+
+
+                // check undefined
+                if(dataset == undefined){ q_type = '';} else { q_type = dataset;}
+                if($scope.question[index] == undefined){ que = '';} else { que = $scope.question[index];}
+                if($scope.option1[index] == undefined){ opt1 = '';} else { opt1 = $scope.option1[index];}
+                if($scope.option2[index] == undefined){ opt2 = '';} else { opt2 = $scope.option2[index];}
+                if($scope.option3[index] == undefined){ opt3 = '';} else { opt3 = $scope.option3[index];}
+
+                //validation for option in case of check box and radio button
+                var que_no      = Number(index) + Number(1);
+
+
+                if(q_type != 'Select Question Type'){
+                     if(que == ''){ alert('Please enter question '+que_no+''); flag = 1; return false;}
+                     //validation for options
+                    if(q_type != 'Textarea'){
+                        if(opt1 == '' && opt2 == '' && opt3 != ''){ alert('Please enter atleast two options for question '+que_no+''); flag = 1; return false;}
+                        if(opt1 != '' && opt2 == '' && opt3 == ''){ alert('Please enter atleast two options for question '+que_no+''); flag = 1; return false;}
+                        if(opt1 == '' && opt2 != '' && opt3 == ''){ alert('Please enter atleast two options for question '+que_no+''); flag = 1; return false;}
+                        if(opt1 == '' && opt2 == '' && opt3 == ''){ alert('Please enter atleast two options for question '+que_no+''); flag = 1; return false;}
+                    }
+                }
+                // store into the array
+                $scope.QuestionDetails.push({
+						QuestionType    :q_type,
+                        QuestionDecp    :que,
+                        option1         :opt1,
+                        option2         :opt2,
+                        option3         :opt3
+				});
+				 index++;
+				});
+                //alert($scope.QuestionDetails.length);
+                //console.log($scope.QuestionDetails);
+               //alert(flag);
+                if(flag == 0){
+					 $scope.sendtosave = 1;
+								var formData    = new FormData();
+                                var addedTags   = [];
+                                var increment   = 0;
+                                var addedQue    = [];
+                                var addedFriends = [];
+                               // $scope.addedFriendsName = arrInviteFriends;
+
+
+                                angular.forEach($scope.objSelectedGroupTags, function(dataset){
+                                    addedTags[increment] = dataset.tag_id;
+                                    increment++;
+                                });
+                                // concate the questions
+                                increment   = 0;
+                                angular.forEach($scope.QuestionDetails, function(dataset){
+                                    if(dataset.QuestionType != 'Select Question Type'){
+                                    addedQue[increment] = dataset.QuestionType+'##'+dataset.QuestionDecp+'##'+dataset.option1+'##'+dataset.option2+'##'+dataset.option3;
+                                    increment++;
+                                    }
+                                });
+
+                                // concate friends
+                                increment   = 0;
+                                angular.forEach($scope.objSelectedUsers, function(dataset){
+                                    addedFriends[increment] = dataset.user_id;
+                                    increment++;
+                                });
+
+                                formData.append("groupImage",uploadFIle);
+                                formData.append("strGroupName", $scope.mygroup.groupTitle);
+                                formData.append("intCountryId", $scope.mygroup.country);
+                                formData.append("intCityId", $scope.mygroup.city);
+                                formData.append("strDesp", $scope.mygroup.description);
+                                formData.append("intGroupType", $scope.mygroup.grouptype);
+                                formData.append("addedtags",addedTags);
+                                formData.append("addedFriends",addedFriends);
+                                formData.append("QuestionDetails",addedQue);
+
+                                url = baseurl + '/groups/creategroup';
+                                    $http.post(url,formData,{withCredentials: true, headers: {'Content-Type': undefined }, transformRequest: angular.identity})
+                                    .success(function(data, status, headers, config) {
+                                                        if(data.return_array.process_status == 'success'){
+                                                           // alert('success');
+                                                         window.location.reload();
+                                                        }else{
+                                                            alert(data.return_array.process_info);
+															$scope.sendtosave = 0;
+                                                        }
+                                    })
+                                    .error(function(data, status, headers, config) {
+                                     alert("Error occured. Please try again");
+                                    });
+				}			 
+		   }  
+			$scope.goback = function(level){	
+				$scope.selectedFrom = level;
+			}
+			$scope.friends = [];			
+			$scope.objSelectedUsers = [];
+			$scope.LoadThirdFrom = function(){
+				if($scope.objSelectedGroupTags.length>0){
+					$scope.selectedFrom = 'level3';
+					url  = baseurl+'/groups/getuserfriends';
+					$http({
+					  method: 'POST',
+					  url: url
+					}).success(function(data, status, headers, config) {
+					   $scope.friends   = data.friendsList;				    
+					}).error(function(data, status, headers, config) {
+						 alert("Error occured. Please try again");
+					});
+					$scope.QuestionType        = new Array("Select Question Type","Textarea","CheckBox","Radiobutton");
+					$scope.TextType            = 'Select Question Type';
+				}else{
+					$scope.selectedFrom = 'level2';
+					$scope.groupIntresetError = 1;
+				}
+			}
+			$scope.AddToInvitedUsers = function(user_id,user_name,user_image){ 
+				var incexist = 0;
+				angular.forEach($scope.objSelectedUsers, function(dataset){ 
+					if(dataset.user_id == user_id){incexist++;}
+				});				
+				if(incexist == 0){
+					$scope.objSelectedUsers.push({
+						user_id:user_id,user_name:user_name,user_image:user_image
+					});
+				}				
+			}
+			$scope.RemoveFromInvitedUsers = function(user_id){
+				var array_index = $scope.getArrayIndex($scope.objSelectedUsers,'user_id',user_id);
+				$scope.objSelectedUsers.splice( array_index, 1 );			 
+			}
+			$scope.hideList = function(){  
+				if(!$scope.onlist)$scope.enablelist = 0;
+				 
+			}
+			$scope.OnListHover = function() { 
+				$scope.onlist = 1;
+				$scope.enablelist = 1;
+			}
+			$scope.OnListOut =  function(){ 
+				$scope.onlist = 0;
+				$scope.enablelist = 0;
+			}
+            $scope.getCityId = function(cityId){
+                $scope.user.cityId = cityId;
+            }
+            $scope.removeData = function(){
+                $scope.user = angular.copy($scope.master);
+                $scope.user.grouptype = 1;
+				uploadFIle = '';
+				$('#uploadPreview').html('');
+                $scope.objSelectedTags  = [];
+                var index = 0;
+                angular.forEach($scope.question_type, function(dataset){
+                        $scope.question[index]  = ''
+                        $scope.option1[index]   = '';
+                        $scope.option2[index]   = '';
+                        $scope.option3[index]   = '';
+                index++;
+                });
+
+
+
+            }
+			$scope.selectedType = 'All';
+			$scope.page = 1;
+			$scope.group_list =[];
+			$scope.ajaxFlag = 0;
+			$scope.selectedGroupRemoved = '';
+			$scope.selectedGroupIdRemoved = '';
+			
+			$scope.showGroups = function(page_scroller){
+				
+				if($scope.ajaxFlag == 0){
+					if(page_scroller){page++;}else{page=1;}
+					$scope.page = page;
+					$scope.ajaxFlag = 1;
+					url = baseurl + '/groups/grouplist';
+					$http.post(url,
+					{
+						profilename:'<?php echo $current_Profile;?>',
+						page:page,					 
+						type:$scope.selectedType,
+					},{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+					 ).success(function(data, status, headers, config) {
+						  if($scope.page>1){
+							if(data.return_array.groups.length>0)
+							$scope.group_list = $scope.group_list.concat(data.return_array.groups);						
+						}else{ $scope.group_list = data.return_array.groups;}  
+						$scope.ajaxFlag = 0;
+					}).error(function(data, status, headers, config) {
+						 alert("Error occured. Please try again");
+						 $scope.ajaxFlag = 0;
+					});
+				}
+			}
+			$scope.handler = function() {		 
+				$scope.showGroups(true);
+			}
+			$scope.showAll= function(){
+				$scope.selectedType = 'All';
+				$scope.showGroups(false);
+			}
+			$scope.showCreated= function(){
+				$scope.selectedType = 'created';
+				$scope.showGroups(false);
+			}
+			$scope.showJoined= function(){
+				$scope.selectedType = 'joined';
+				$scope.showGroups(false);
+			}
+			$scope.showPending= function(){
+				$scope.selectedType = 'pending';
+				$scope.showGroups(false);
+			}
+			$scope.showMutual= function(){
+				$scope.selectedType = 'mutual';
+				$scope.showGroups(false);
+			}
+			$scope.selectLeavingGroup = function(item_id,item_title){
+				$scope.selectedGroupRemoved = item_title;
+				$scope.selectedGroupIdRemoved = item_id;
+			}
+			$scope.removeLeaveBox= function(){
+				$scope.selectedGroupRemoved = '';
+				$scope.selectedGroupIdRemoved = '';
+			}
+			$scope.leaveGroup = function(){
+				url = baseurl + '/groups/leavegroup';
+				$http.post(url,{groupId:$scope.selectedGroupIdRemoved},{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+				).success(function(data, status, headers, config) {
+                     if(data.return_array.process_status == 'success'){
+						$('#confirm_popup').modal('hide');						
+						var array_index = $scope.getArrayIndex($scope.group_list,'group_id',$scope.selectedGroupIdRemoved); 
+						$scope.group_list.splice( array_index, 1 );
+						$scope.selectedGroupRemoved = '';
+						$scope.selectedGroupIdRemoved = '';		
+						$scope.group_count=$scope.group_count*1-1;			
+						$scope.joined_group_count=$scope.joined_group_count*1-1;						
+					 }else{
+						 alert(data.return_array.process_info);
+					 }
+
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			}
+			$scope.getArrayIndex = function(arr_elemnt,key,item){ 
+				var incexist = -1;
+				for(i=0;i<arr_elemnt.length;i++) {
+					if(arr_elemnt[i][key] == item){incexist = i;}
+				}
+				return incexist;
+			};
+			if($scope.profile.user_profile_about_me!=''&&$scope.profile.user_profile_about_me!=null&&$scope.profile.user_profile_about_me!='null'&&$scope.profile.user_profile_about_me!=undefined){
+				if($scope.profile.profile_photo!=''&&$scope.profile.profile_photo!=null&&$scope.profile.profile_photo!='null'&&$scope.profile.profile_photo!=undefined){
+					$scope.joingroupStep =3;
+				}else{
+					$scope.joingroupStep =2;
+				}
+			}else{
+				$scope.joingroupStep =1;				
+			}
+			$scope.aboutmeAjax = 0;
+			$scope.aboutme = '';
+			$scope.JoiningItem = '';
+			$scope.JoiningItemTitle = '';
+			$scope.joingingquestionnaire = [];
+			$scope.md_questionnaire = [];
+			$scope.md_option = [];
+			$scope.md_checkbox0 = [];
+			$scope.md_checkbox1 = [];
+			$scope.md_checkbox2 = []
+			$scope.selectJoiningGroup= function(item_id,item_title){
+				$scope.JoiningItem =item_id;
+				$scope.JoiningItemTitle = item_title;
+				url = baseurl + '/groups/getQuestionnaire';
+				$http.post(url,{group_id:$scope.JoiningItem},{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+				).success(function(data, status, headers, config) {
+					 if(data.return_array.process_status == 'success'){
+						 $scope.joingingquestionnaire = data.return_array.questionnaire;
+						 if($scope.profile.user_profile_about_me!=''&&$scope.profile.user_profile_about_me!=null&&$scope.profile.user_profile_about_me!='null'&&$scope.profile.user_profile_about_me!=undefined){
+							if($scope.profile.profile_photo!=''&&$scope.profile.profile_photo!=null&&$scope.profile.profile_photo!='null'&&$scope.profile.profile_photo!=undefined){
+									if($scope.joingingquestionnaire.length>0){
+										$scope.joingroupStep =3;
+									}else{
+									url = baseurl + '/groups/joinGroup';
+									$http.post(url,
+									{										 
+										group_id:$scope.JoiningItem,
+									},{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+									).success(function(data, status, headers, config) {
+										 if(data.return_array.process_status == 'success'){
+											 						 
+										 }else{
+											 alert(data.return_array.process_info);
+											 		
+										 }
+
+									}).error(function(data, status, headers, config) {
+										 alert("Error occured. Please try again");
+									});	
+									$scope.joingroupStep =4;}									 
+							}else{
+								$scope.joingroupStep =2;
+							}
+						}else{
+							$scope.joingroupStep =1;				
+						}
+					 }else{
+						 alert(data.return_array.process_info);						 
+					 }
+				}).error(function(data, status, headers, config) {
+					 alert("Error occured. Please try again");
+				});
+			}
+			$scope.SaveAboutMe = function(content){
+				$scope.aboutme = content;
+				if($scope.aboutme!=''&&$scope.aboutme!=null&&$scope.aboutme!='null'&&$scope.aboutme!=undefined){
+					$scope.aboutmeAjax =1;
+					url = baseurl + '/user/updateBio';
+					$http.post(url,{bio:$scope.aboutme},{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+					).success(function(data, status, headers, config) {
+						 if(data.return_array.process_status == 'success'){
+							 $scope.joingroupStep = 2;	
+							 $scope.aboutmeAjax =0;							 
+						 }else{
+							 alert(data.return_array.process_info);
+							 $scope.aboutmeAjax =0;		
+						 }
+
+					}).error(function(data, status, headers, config) {
+						 alert("Error occured. Please try again");
+					});
+				}else{
+					$scope.joingroupStep = 2;
+				}
+			}
+			$scope.loadProfileUpload = function(){
+				$('#join_group').modal('hide');
+			}
+			 $scope.aboutmeAjax =0;
+			$scope.cropImage = function(){
+				
+				var imageData = $('.image-editor').cropit('export');
+				if(imageData!=''){
+					$scope.aboutmeAjax =1;	
+					url = baseurl + '/user/updatProfilePic';
+					$http.post(url,{imageData:imageData},{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+					).success(function(data, status, headers, config) {
+						 if(data.return_array.process_status == 'success'){
+							 $scope.joingroupStep = 3;	
+							 $scope.aboutmeAjax =0;	
+							$('#upload_profile-image').modal('hide');								 
+							$('#join_group').modal('show');									 
+						 }else{
+							 alert(data.return_array.process_info);
+							 $scope.aboutmeAjax =0;		
+						 }
+
+					}).error(function(data, status, headers, config) {
+						 alert("Error occured. Please try again");
+					}); 
+				}else{
+					$scope.joingroupStep = 3;
+				}
+			}
+			$scope.selectedOptionRadio = function(question_id,option_id){ 
+				$selectedOption = option_id;
+				$scope.md_option[question_id] =  option_id
+			}
+			$scope.selectedOptionCheckbox = function(question_id,option_id,index){ 
+				if(index==0){
+					if($scope.md_checkbox0[question_id]&&$scope.md_checkbox0[question_id]!='') {$scope.md_checkbox0[question_id]='';}
+					else{$scope.md_checkbox0[question_id] = option_id;}
+				}
+				if(index==1){
+					if($scope.md_checkbox1[question_id]&&$scope.md_checkbox1[question_id]!='') {$scope.md_checkbox1[question_id]='';}
+					else{$scope.md_checkbox1[question_id] = option_id;}
+				}
+				if(index==2){
+					if($scope.md_checkbox2[question_id]&&$scope.md_checkbox2[question_id]!='') {$scope.md_checkbox2[question_id]='';}
+					else{$scope.md_checkbox2[question_id] = option_id;}
+				}				  
+			}
+			$scope.saveQuestionnaireAnswers = function(){
+				ince = 0;
+				var questionanswers = [];
+				angular.forEach($scope.joingingquestionnaire, function(dataset){					
+					 if(dataset.answer_type == 'Textarea'){
+						questionanswers.push({'question_id':dataset.questionnaire_id,'answer':$scope.md_questionnaire[ince]});						
+					 }
+					 if(dataset.answer_type == 'checkbox'){
+						 var chked_option = [];
+						 if($scope.md_checkbox0[dataset.questionnaire_id])chked_option.push($scope.md_checkbox0[dataset.questionnaire_id]);
+						 if($scope.md_checkbox1[dataset.questionnaire_id])chked_option.push($scope.md_checkbox1[dataset.questionnaire_id]);
+						 if($scope.md_checkbox2[dataset.questionnaire_id])chked_option.push($scope.md_checkbox2[dataset.questionnaire_id]);
+						questionanswers.push({'question_id':dataset.questionnaire_id,'answer':chked_option.join()});	
+					 }
+					  if(dataset.answer_type == 'radio'){
+						questionanswers.push({'question_id':dataset.questionnaire_id,'answer':$scope.md_option[dataset.questionnaire_id]});							  
+					 }
+					 ince++;
+				});
+				url = baseurl + '/groups/saveUserQuestionnaire';
+					$http.post(url,
+					{
+						questionanswers:questionanswers,
+						group_id:$scope.JoiningItem,
+					},{headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}	}
+					).success(function(data, status, headers, config) {
+						 if(data.return_array.process_status == 'success'){
+							 $scope.joingroupStep = 4;	
+							 $scope.aboutmeAjax =0;							 
+						 }else{
+							 alert(data.return_array.process_info);
+							 $scope.aboutmeAjax =0;		
+						 }
+
+					}).error(function(data, status, headers, config) {
+						 alert("Error occured. Please try again");
+					});
+					
+			}
+			$scope.reloadPage = function(){	
+				window.location.reload();
+			}
+     });
+groupapp.directive('removeOnClick', function() {
+			return {
+				link: function(scope, elt, attrs) {
+					scope.remove = function() {
+						elt.remove();
+					};
+				}
+			}
+		});
+
+
+
+	$( "#show_notification" ).click(function() {
+		$( "#notifications-outer" ).toggle( "fast" );
+	});
+	$(".feed-refresh a").click(function() {
+		$(".feed-refresh a").addClass("refresh-rotate");
+	});
+    $("#go_step-2").click(function() {
+		$("#signup_step1").hide("fast");
+		$("#signup_step2").show("fast");
+	});
+	$("#go_step-3").click(function() {
+		$("#signup_step2").hide("fast");
+		$("#signup_step3").show("fast");
+	});
+
+    function getFile(){
+        document.getElementById("btnUploadImage").click();
+    }
+    function fncResetForm(){
+        $('#txtGroupName').val('');
+        $('#CountryDropDown').find('.customSelectInner').html('');
+        $('#CityDropDown').find('.customSelectInner').html('');
+        $('#categoryDropDown').find('.customSelectInner').html('');
+        $("input:radio[name=group_type][disabled=false]:first").attr('checked', true);
+        $('#hdnoldimage').val('');
+        $('#hdnTagId').val('');
+        $('#txtDescription').val('');
+        $('#imgUserImage').attr('src','');
+		uploadFIle = '';
+		$('#uploadPreview').html('');
+    }
+
+    $(function () {
+        // code for implementing simple file upload as well as drag and drop upload functionality
+        'use strict';
+        $('#btnUploadImage').fileupload({
+        url:'/upload',
+        dataType: 'json',
+		drop: function(e,data){
+			uploadFIle = data.files[0];
+			var reader = new FileReader();
+			var image  = new Image();
+			reader.readAsDataURL(data.files[0]);
+			reader.onload = function(_file) {
+				image.src    = _file.target.result;              // url.createObjectURL(file);
+				image.onload = function() {
+					var w = this.width,
+						h = this.height,
+						t = data.files[0].type,                           // ext only: // file.type.split('/')[1],
+						n = data.files[0].name,
+						s = ~~(data.files[0].size/1024) +'KB';
+						if(w<200 || h<100) {
+							alert("Please upload files with width more than 200 and height more than 100");
+						}else{
+							$('#uploadPreview').html('<img src="'+ this.src +'"> ');
+						}
+					//$('#uploadPreview').append('<img src="'+ this.src +'"> ');
+				};
+				image.onerror= function() {
+					alert('Invalid file type: '+ data.files[0].type);
+				};
+			};
+		},
+		change:function(e, data){
+			uploadFIle = data.files[0];
+			var reader = new FileReader();
+			var image  = new Image();
+			reader.readAsDataURL(data.files[0]);
+			reader.onload = function(_file) {
+				image.src    = _file.target.result;              // url.createObjectURL(file);
+				image.onload = function() {
+					var w = this.width,
+						h = this.height,
+						t = data.files[0].type,                           // ext only: // file.type.split('/')[1],
+						n = data.files[0].name,
+						s = ~~(data.files[0].size/1024) +'KB';
+						if(w<200 || h<100) {
+							alert("Please upload files with width more than 200 and height more than 100");
+						}else{
+							$('#uploadPreview').html('<img src="'+ this.src +'"> ');
+						}
+					//$('#uploadPreview').append('<img src="'+ this.src +'"> ');
+				};
+				image.onerror= function() {
+					alert('Invalid file type: '+ data.files[0].type);
+				};
+			};
+		},
+        done: function (e, data) {
+
+        }
+
+        }).prop('disabled', !$.support.fileInput)
+        .parent().addClass($.support.fileInput ? undefined : 'disabled');
+    });
+		angular.element(document).ready(function() {
+    angular.bootstrap(document.getElementById("profile_div"), ["myapp"]);
+    angular.bootstrap(document.getElementById("group_right_container"), ["groupapp"]);
+
+
+});
+		$(document).on('change','#btnUploadImage',function(e){			  
+			fileInput = e.target.files;
+			uploadFIle = fileInput[0];
+			var reader = new FileReader();
+			var image  = new Image();
+			reader.readAsDataURL(fileInput[0]);  
+			reader.onload = function(_file) {
+				image.src    = _file.target.result;              // url.createObjectURL(file);
+				image.onload = function() {
+					var w = this.width,
+						h = this.height,
+						t = fileInput[0].type,                           // ext only: // file.type.split('/')[1],
+						n = fileInput[0].name,
+						s = ~~(fileInput[0].size/1024) +'KB';
+						if(w<200 || h<100) {
+							alert("Please upload files with width more than 200 and height more than 100");
+						}else{
+							$('#uploadPreview').html('<img src="'+ this.src +'"> ');
+						}
+					//$('#uploadPreview').append('<img src="'+ this.src +'"> ');
+				};
+				image.onerror= function() {
+					alert('Invalid file type: '+ fileInput[0].type);
+				};
+			};
+		});
+	 	$(function() {
+        $('.image-editor').cropit({
+          exportZoom: 1.25,
+          imageBackground: true,
+          imageBackgroundBorderWidth: 20,
+          imageState: {
+            src: '<?php echo $this->basePath(); ?>/public/images/profile-img-3.jpg'
+          }
+        });
+
+        $('.export').click(function() {
+          var imageData = $('.image-editor').cropit('export');
+           window.open(imageData);
+        });
+      });
+</script>

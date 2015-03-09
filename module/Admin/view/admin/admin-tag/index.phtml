@@ -1,0 +1,107 @@
+<?php 
+$title = 'Tags';
+$this->headTitle($title); 
+?>
+<section id="secondary_bar">
+    <div class="breadcrumbs_container">
+        <article class="breadcrumbs"><a href="<?php echo $this->url('jadmin') ?>">Admin Dashboard </a><div class="breadcrumb_divider"></div>  <a class="current" href="<?php echo $this->url('jadmin/admin-tags') ?>">Manage Tags</a></article>
+    </div>
+</section><!-- end of secondary bar -->
+<section id="main" class="column">
+    <article class="module width_3_quarter">
+        <header><h3 class="tabs_involved"><?php echo $this->escapeHtml($title); ?></h3>
+            <ul class="tabs">
+				<li><a href="<?php echo $this->url('jadmin/admin-tags-add');?>">Add New Tag</a></li>
+            </ul>
+        </header>
+		<div class="tag_quick_search">
+			<select name="tag_category" id="tag_category">
+				<option value="all">All</option>
+				<?php foreach($all_categories as $rows){ ?>
+					<option value="<?php echo $rows->tag_category_id; ?>" <?php echo ($rows->tag_category_id == $category)?'selected="selected"':'';?>><?php echo $rows->tag_category_title; ?></option>
+				<?php } ?>
+			</select>
+			<form  method="post" action="<?php echo $this->url('jadmin/admin-tags',array('category'=> $category));?>">
+				<input type="text" id="tag_search" name="tag_search" value="<?php echo $search; ?>" />
+				<input type="submit" value="Search" />
+			</form>
+		</div>
+		<div>Page <?php echo $page  ?> out of <?php echo $total_pages; ?> page</div>
+        <div class="tab_container">
+            <div id="tab1" class="tab_content">
+                <table class="tablesorter" cellspacing="0"> 
+                    <thead> 
+                        <tr>                            
+                            <th>Id </th>
+							<th>
+							<?php if($search!=''){ ?>
+							<a href="<?php echo $this->url('jadmin/admin-tags',    array('category'=> $category,'page'=> $page,'sort'=>'title','order'=>($field=='title'&&$order=='ASC')?'desc':'asc','search'=>$search));?>">
+							<?php }else{ ?>
+							<a href="<?php echo $this->url('jadmin/admin-tags',    array('category'=> $category,'page'=> $page,'sort'=>'title','order'=>($field=='title'&&$order=='ASC')?'desc':'asc'));?>">
+							<?php } ?>
+							Tag Name</a></th>
+							<th>
+							<?php if($search!=''){ ?>
+							<a href="<?php echo $this->url('jadmin/admin-tags',    array('category'=> $category,'page'=> $page,'sort'=>'category','order'=>($field=='category'&&$order=='ASC')?'desc':'asc','search'=>$search));?>">
+							<?php }else{ ?>
+							<a href="<?php echo $this->url('jadmin/admin-tags',    array('category'=> $category,'page'=> $page,'sort'=>'category','order'=>($field=='category'&&$order=='ASC')?'desc':'asc'));?>">
+							<?php } ?>
+							Tag Category</a></th>
+							<th>Actions</th>
+                        </tr> 
+                    </thead> 
+                    <tbody> 
+                        <?php 
+						$i=($page==1)?0:$page-1;
+						$i = $i*20;
+						foreach($allTagData as $tag) :
+							$i++;
+							?>
+                            <tr>                                
+                                <td><?php echo $i;?></td>
+								<td><?php echo $this->escapeHtml($tag->tag_title);?>
+								<?php if($tag->group_count){ ?><a href="<?php echo $this->url('jadmin/admin-planet-tags',    array('page'=> 1,'sort'=>'group','order'=>'asc','search'=>$tag->tag_title));?>">
+								(<?php echo $tag->group_count; ?> groups)
+								</a><?php } ?>
+								<?php if($tag->user_count){ ?>
+								<a href="<?php echo $this->url('jadmin/admin-user-tags',    array('page'=> 1,'sort'=>'group','order'=>'asc','search'=>$tag->tag_title));?>">
+								(<?php echo $tag->user_count; ?> users)
+								<?php } ?>								 
+								</a></td>
+								<td><?php echo $this->escapeHtml($tag->tag_category_title);?></td>
+                                <td><a href="<?php echo $this->url('jadmin/admin-tags-edit',    array('action'=>'edit', 'id' => $tag->tag_id));?>"><img src="<?php echo $this->basePath(); ?>/public/images/edit.png" title="Edit"></a>&nbsp;&nbsp;&nbsp;&nbsp; <a href="<?php echo $this->url('jadmin/admin-tags-delete',    array('action'=>'delete', 'id' => $tag->tag_id));?>"><img src="<?php echo $this->basePath(); ?>/public/images/trash.png" title="Trash"></a></td> 
+                            </tr> 
+                        <?php endforeach; ?> 
+                    </tbody> 
+					<tr>
+						<td colspan="3">
+							<?php if($search!=''){ ?>
+							<a href="<?php echo $this->url('jadmin/admin-tags',    array('category'=> $category,'page'=>(($page-1)>0)?$page-1:1,'sort'=>$field,'order'=>strtolower($order),'search'=>$search));?>">&laquo; Prev</a>
+							<a href="<?php echo $this->url('jadmin/admin-tags',    array('category'=> $category,'page'=>1,'sort'=>$field,'order'=>strtolower($order),'search'=>$search));?>">Frist</a>
+							<span> <?php echo $page; ?> </span>
+							<a href="<?php echo $this->url('jadmin/admin-tags',    array('category'=> $category,'page'=>$total_pages,'sort'=>$field,'order'=>strtolower($order),'search'=>$search));?>">Last</a>
+							<a href="<?php echo $this->url('jadmin/admin-tags',    array('category'=> $category,'page'=>(($page+1)<=$total_pages)?$page+1:$total_pages,'sort'=>$field,'order'=>strtolower($order),'search'=>$search));?>">Next &raquo;</a>
+							<?php }else{ ?>
+							<a href="<?php echo $this->url('jadmin/admin-tags',    array('category'=> $category,'page'=>(($page-1)>0)?$page-1:1,'sort'=>$field,'order'=>strtolower($order)));?>">&laquo; Prev</a>
+							<a href="<?php echo $this->url('jadmin/admin-tags',    array('category'=> $category,'page'=>1,'sort'=>$field,'order'=>strtolower($order)));?>">Frist</a>
+							<span> <?php echo $page; ?> </span>
+							<a href="<?php echo $this->url('jadmin/admin-tags',    array('category'=> $category,'page'=>$total_pages,'sort'=>$field,'order'=>strtolower($order)));?>">Last</a>
+							<a href="<?php echo $this->url('jadmin/admin-tags',    array('category'=> $category,'page'=>(($page+1)<=$total_pages)?$page+1:$total_pages,'sort'=>$field,'order'=>strtolower($order)));?>">Next &raquo;</a>
+							<?php } ?>
+						</td>
+					</tr>
+                </table>
+            </div><!-- end of #tab1 -->
+        </div><!-- end of .tab_container -->
+    </article><!-- end of content manager article -->
+    <div class="clear"></div>
+    <div class="spacer"></div>
+</section>
+<script>
+	$(document).ready(function(){
+		$(document).on("change","#tag_category",function(){ 
+			 var url = base_url+'/jadmin/tags/'+$("#tag_category").val(); 
+			 window.location.href= url;
+		});
+	});
+</script>

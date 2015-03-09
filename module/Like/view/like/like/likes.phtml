@@ -1,0 +1,33 @@
+	<?php if(isset($flashMessages) && count($flashMessages)) : ?>
+	<ul class="session">
+		<?php foreach ($flashMessages as $msg) : ?>
+		<li><?php echo $msg; ?></li>
+		<?php endforeach; ?>
+	</ul>
+	<?php endif; ?>
+
+	<!--error Message-->
+	 
+
+	<!--success message-->
+	<?php if(isset($success) && count($success)) : ?>
+	<ul class="success">
+		<?php foreach ($success as $successmsg) : ?>
+		<li><?php echo $successmsg; ?></li>
+		<?php endforeach; ?>
+	</ul>
+	<?php endif; ?>
+<?php print_r($likes);
+if (isset($likes) && !empty($likes)) {
+	if ( $likes_exist_check_for_user->like_by_user_id && $likes > 1 ) {
+		echo "<a href=\"#\" class=\"unlikes\" id=\"$Group_Refer_Id\"><img src=\"".$this->basePath()."/images/unlike.png\" title=\"UnLike\" /></a>&nbsp;&nbsp;You&nbsp;+&nbsp;";
+		echo "<a href=\"javascript:iBox.showURL('/group/".$groupData->group_seo_title."/".$SubGroupData->group_seo_title."/".$System_Type_Id."/likes/userslist/$Group_Refer_Id')\">".($likes-1)."</a>";
+	} else if ( $likes_exist_check_for_user->like_by_user_id && $likes == 1 ) {
+		echo "<a href=\"#\" class=\"unlikes\" id=\"$Group_Refer_Id\"><img src=\"".$this->basePath()."/images/unlike.png\" title=\"UnLike\" /></a>&nbsp;&nbsp;You&nbsp;";
+	} else{
+		echo "<a href=\"javascript:iBox.showURL('/group/".$groupData->group_seo_title."/".$SubGroupData->group_seo_title."/".$System_Type_Id."/likes/userslist/$Group_Refer_Id')\">".$likes."</a>";
+	}
+}
+?>
+
+

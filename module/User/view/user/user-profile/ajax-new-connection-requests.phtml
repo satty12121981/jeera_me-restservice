@@ -1,0 +1,29 @@
+<?php if(!empty($error)){ ?>
+	<ul class="error">
+    <?php foreach ($error as $errormsg) : ?>
+    <li><?php echo $errormsg; ?></li>
+    <?php endforeach; ?>
+</ul>
+<?php }else{ 
+$i=0;
+foreach($friendRequests as $requests){$i++;
+?>
+<div class="connection-notification">
+	<div class="connect-profile">
+	<a href="<?php echo $this->url('memberprofile',array('member_profile'=>$requests->user_profile_name)) ?>">
+	<?php  if($requests->profile_photo!=''){ ?>
+		<img src="<?php echo $this->basePath(); ?>/public/datagd/profile/<?php echo $requests->user_id ?>/66x66/<?php echo $requests->profile_photo; ?>" alt="" />
+		<?php }else if($requests->user_register_type == 'facebook' && $requests->user_fbid!=''){ ?>
+		<img src="https://graph.facebook.com/<?php echo $requests->user_fbid; ?>/picture?width=66&&height=66" />
+		<?php }else{ ?>
+		<img src="<?php echo $this->basePath(); ?>/public/images/noimg.jpg" alt="" />
+		<?php } ?>
+	</a></div>
+	<div class="connection-name"><a href="<?php echo $this->url('memberprofile',array('member_profile'=>$requests->user_profile_name)) ?>"><?php echo $requests->user_given_name; ?></a></div>	 
+	<div class="connection-action" id="connection-action-<?php echo $requests->user_friend_request_sender_user_id; ?>">
+		<a href="javascript:void(0)" class="add_friend" id="accept_<?php echo $requests->user_friend_request_sender_user_id; ?>">Add friend</a>
+		<a href="javascript:void(0)" class="decline" id="decline_<?php echo $requests->user_friend_request_sender_user_id; ?>">Decline</a>
+	</div>
+	<div class="clear"></div>
+</div> 
+<?php } if($i==0){ echo "<div>No more requests available now</div>";}} ?>

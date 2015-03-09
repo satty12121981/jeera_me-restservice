@@ -1,0 +1,99 @@
+ 
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8"/>
+        <title>Dashboard I Admin Panel</title>
+		 <?php echo $this->headLink(array('rel' => 'shortcut icon', 'type' => 'image/favicon.icon', 'href' => $this->basePath() . '/img/favicon.ico'))
+                        ->prependStylesheet($this->basePath() . '/public/css/layout-admin.css')
+						->prependStylesheet($this->basePath() . '/public/css/perfect-scrollbar.css');                        
+		?>
+        
+        <!--[if lt IE 9]>
+        <link rel="stylesheet" href="css/ie.css" type="text/css" media="screen" />
+        <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+      <?php $this->HeadScript()->prependFile($this->basePath().'/public/js/jquery-1.11.1.min.js','text/javascript'); ?>       
+	  <?php echo $this->headScript(); ?>
+	  <script>
+		var base_url = '<?php echo $this->basePath(); ?>';
+	  </script>
+    </head>
+	<body>
+		 <header id="header">
+            <hgroup>
+                <h1 class="site_title"><a href="<?php echo $this->basePath();?>/jadmin">1625(Jeera) Admin</a></h1>
+                <h2 class="section_title">Dashboard</h2><div class="btn_view_site"><a href="<?php echo $this->basePath();?>">View Site</a></div>
+            </hgroup>
+        </header> 
+		 <aside id="sidebar" class="column">
+            <section id="secondary_bar">
+            <div class="user">
+                <p><?php if(isset($this->layout()->identity) && $this->layout()->identity!=NULL) { echo $this->layout()->identity->admin_firstname." ".$this->layout()->identity->admin_lastname; } ?></p>
+                <!-- <a class="logout_user" href="#" title="Logout">Logout</a> -->
+            </div>
+                </section>
+            <form class="quick_search">
+                <input type="text" value="Quick Search" onfocus="if (!this._haschanged) {
+                    this.value = ''
+                }
+                ;
+                this._haschanged = true;">
+            </form>
+            <hr/>
+            <h3>Interests(Tags)</h3>
+            <ul class="toggle">
+				<li class="icn_tags"><a href="<?php echo $this->url('jadmin/admin-tags-category') ?>">Interest(Tags) Category </a></li>
+                <li class="icn_tags"><a href="<?php echo $this->url('jadmin/admin-tags') ?>">Manage Interest(Tags)</a></li>
+                <li class="icn_tags"><a href="<?php echo $this->url('jadmin/admin-user-tags') ?>">Manage User Interest(Tags)</a></li>
+                <li class="icn_tags"><a href="<?php echo $this->url('jadmin/admin-planet-tags') ?>">Manage Planet Interest(Tags)</a></li>
+				<li class="icn_tags"><a href="<?php echo $this->url('jadmin/admin-activity-tags') ?>">Manage Activity Interest(Tags)</a></li>
+            </ul>
+            
+            <h3>Groups</h3>
+            <ul class="toggle">
+                <li class="icn_folder"><a href="<?php echo $this->url('jadmin/admin-galaxy') ?>">Manage Galaxy</a></li>
+                <li class="icn_photo"><a href="<?php echo $this->url('jadmin/admin-planet') ?>">Manage Planets</a></li>				 
+                <!--<li class="icn_audio"><a href="#">Audio</a></li>
+                <li class="icn_video"><a href="#">Video</a></li>-->
+            </ul>
+			<h3>Activity</h3>
+            <ul class="toggle">
+                <li class="icn_folder"><a href="<?php echo $this->url('jadmin/admin-activity') ?>">Planet Activity</a></li>
+                
+            </ul>			
+			<h3>Users</h3>
+            <ul class="toggle">
+                <li class="icn_add_user"><a href="<?php echo $this->url('jadmin/admin-users') ?>">Users</a></li>
+            
+            </ul>
+			<h3>Spams</h3>
+            <ul class="toggle">
+                <li class="icn_world"><a href="<?php echo $this->url('jadmin/admin-spamreasons') ?>">Spam Reasons</a></li>                
+            </ul>
+			<h3>Notification</h3>
+            <ul class="toggle">
+                <li class="icn_folder"><a href="<?php echo $this->url('jadmin/admin-notification') ?>">Notification Types</a></li>                
+            </ul>
+			<h3>Other</h3>
+            <ul class="toggle">
+                <li class="icn_world"><a href="<?php echo $this->url('jadmin/admin-country') ?>">Country List</a></li>
+                <li class="icn_world"><a href="<?php echo $this->url('jadmin/admin-city') ?>">City List</a></li>
+            </ul>
+            <h3>Admin</h3>
+            <ul class="toggle">
+                <li class="icn_settings"><a href="#">Options</a></li>
+                <li class="icn_jump_back"><a href="<?php echo $this->url('jadmin/logout') ?>">Logout</a></li>
+            </ul>
+
+            <footer>
+                <hr />
+                <p><strong>Copyright &copy; 2011 Website Admin</strong></p>
+                <p>Theme by <a href="<?php echo $this->basePath();?>">Y2M</a></p>
+            </footer>
+        </aside>
+	<?php echo $this->content; ?>
+	</body>
+
+</html>

@@ -1,0 +1,197 @@
+<!-- Code for navigation start -->
+<style>
+
+/* root element for tabs  */
+ul.tabs {
+    list-style:none;
+    margin:0 !important;
+    padding:0;
+    border-bottom:1px solid #666;
+    height:30px;
+}
+
+/* single tab */
+ul.tabs li {
+    float:left;
+    text-indent:0;
+    padding:0;
+    margin:0 !important;
+    list-style-image:none !important;
+}
+
+/* link inside the tab. uses a background image */
+ul.tabs a {
+    background: url(<?php echo $this->basePath()?>/images/blue.png) no-repeat -420px 0;
+    font-size:11px;
+    display:block;
+    height: 30px;
+    line-height:30px;
+    width: 134px;
+    text-align:center;
+    text-decoration:none;
+    color:#333;
+    padding:0px;
+    margin:0px;
+    position:relative;
+    top:1px;
+}
+
+ul.tabs a:active {
+    outline:none;
+}
+
+/* when mouse enters the tab move the background image */
+ul.tabs a:hover {
+    background-position: -420px -31px;
+    color:#fff;
+}
+
+/* active tab uses a class name "current". its highlight is also done by moving the background image. */
+ul.tabs a.current, ul.tabs a.current:hover, ul.tabs li.current a {
+    background-position: -420px -62px;
+    cursor:default !important;
+    color:#000 !important;
+}
+
+/* Different widths for tabs: use a class name: w1, w2, w3 or w2 */
+
+
+/* width 1 */
+ul.tabs a.s { background-position: -553px 0; width:81px; }
+ul.tabs a.s:hover { background-position: -553px -31px; }
+ul.tabs a.s.current  { background-position: -553px -62px; }
+
+/* width 2 */
+ul.tabs a.l { background-position: -248px -0px; width:174px; }
+ul.tabs a.l:hover { background-position: -248px -31px; }
+ul.tabs a.l.current { background-position: -248px -62px; }
+
+
+/* width 3 */
+ul.tabs a.xl { background-position: 0 -0px; width:248px; }
+ul.tabs a.xl:hover { background-position: 0 -31px; }
+ul.tabs a.xl.current { background-position: 0 -62px; }
+
+
+/* initially all panes are hidden */
+.panes .pane {
+    display:none;
+}
+
+/* tab pane styling */
+.panes .tab_content {
+    display:none;
+    padding:15px 10px;
+    border:1px solid #999;
+    border-top:0;
+    height:100px;
+    font-size:14px;
+    background-color:#fff;
+}
+</style>
+<script src="http://cdn.jquerytools.org/1.2.7/full/jquery.tools.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    // setup ul.tabs to work as tabs for each div directly under div.panes
+   $("ul.tabs").tabs("div.panes > .tab_content");    
+});
+</script>
+ 
+<!-- Code for navigation stop -->
+<?php 
+$title = 'Welcome User';
+$this->headTitle($title);
+ 
+  if(isset($flashMessages) && count($flashMessages)) : ?>
+<ul>
+  <?php foreach ($flashMessages as $msg) : ?>
+  <li><?php echo $msg; ?></li>
+  <?php endforeach; ?>
+</ul>
+<?php endif; ?>
+<table border="2" width="100%">
+  <tr>
+    <td width="15%" align="center" valign="top"><!-- left Column -->
+      <div>
+        <?php	if(isset($userProfilePhotoData->photo_name) && !empty($userProfilePhotoData->photo_name)) : ?>
+        <img  src="<?php echo $this->basePath()?>/datagd/profile/<?php echo $userProfilePhotoData->photo_name?>" height="150" width="100" />
+        <?php	else : ?>
+        <img  src="<?php echo $this->basePath()?>/datagd/profile/no-image.jpg" height="150" width="100" />
+        <?php endif; ?>
+      </div>
+      <div>
+        <?php echo $userData->user_given_name?>
+      </div>
+      <div><a href="#">Setting</a></div>
+      <br />
+      <div style="border:1px solid #FF0000;"> BIO: <?php echo (strlen($userProfileData->user_profile_about_me) > 100) ? substr($userProfileData->user_profile_about_me,0,180).'...' : $userProfileData->user_profile_about_me; ?> <a href="#">Add</a> </div>
+      <div style=" border:1px solid #FF0000;"> <b>Interest <a href="#">Add Interest</a></b>
+        <!--- Display All User Interest -->
+        <?php if(isset($userTag) && count($userTag)) : ?>
+        <ul>
+          <?php foreach ($userTag as $tag) : ?>
+          <li><?php echo $tag->tag_title; ?></li>
+          <?php endforeach; ?>
+        </ul>
+        <?php endif; ?>
+        <!-- Display All user Interest -->
+      </div>
+      <!-- left Column -->
+    </td>
+    <td width="60%" valign="top"><!-- Middle Column -->
+      <?php	if(isset($userTimelinePhotoData->photo_name) && !empty($userTimelinePhotoData->photo_name)) : ?>
+      <img  src="<?php echo $this->basePath()?>/datagd/timeline/<?php echo $userTimelinePhotoData->photo_name?>" style="height:100px; width:100%" />
+      <?php	else : ?>
+      No Timeline Image .
+      <?php endif; ?>
+      <!-- Middle Column -->
+      <br />
+      <table width="100%">
+        <tr>
+          <td align="left">Profession:
+            <?php echo $userProfileData->user_profile_profession?></td>
+          <td align="right">Company/Univ/School:
+            <?php echo $userProfileData->user_profile_dob?></td>
+        </tr>
+        <tr>
+          <td align="left">Company/Univ/School:
+            <?php echo $userProfileData->user_profile_profession_at?></td>
+          <td align="right">Age:
+            <?php echo $userAge?></td>
+        </tr>
+      </table>
+      <br />
+      <br />
+      <ul class="tabs">
+        <li><a href="#">Connections</a></li>
+        <li><a href="#">Overview</a></li>
+        <li><a href="#">Favorite</a></li>
+        <li><a href="#">Photo</a></li>
+      </ul>
+      <!-- tab "panes" -->
+      <div class="panes">
+        <!-- Connections  Start -->
+        <div class="tab_content">
+          <h3>My Connections</h3>
+          <p>No Connection Found</p>
+        </div>
+        <!-- Connections  Ends -->
+        <!-- Overview  Start -->
+        <div class="tab_content" id="overview">
+          <div id='loadingDiv'> Please wait... </div>
+          <?php echo $userGroupWidget ?> </div>
+        <!-- Overview  Ends -->
+        <!-- Favorite  Start -->
+        <div class="tab_content">Favorite</div>
+        <!-- Favorite  Ends -->
+        <!-- Photo  Start -->
+        <div class="tab_content">Photo</div>
+        <!-- Photo  Ends -->
+      </div></td>
+    <td width="25%" valign="top"><!-- Right Column -->
+      <div> <b>Planet Feeds</b> </div>
+      <!-- Right Column -->
+    </td>
+  </tr>
+</table>

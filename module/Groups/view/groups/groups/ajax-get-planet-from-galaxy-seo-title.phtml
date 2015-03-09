@@ -1,0 +1,18 @@
+<?php 
+if(!empty($error)){
+?>
+<ul>
+<?php foreach($error as $list){ ?>
+<li><?php echo $list; ?></li>
+<?php } ?>
+</ul>
+<?php 
+}else{
+ ?> 
+<select id="planet" name="planet" >
+<?php 
+	foreach($planets as $list){ ?>
+		<option value="<?php echo $list->group_seo_title; ?>"><?php echo $list->group_title; ?></option>
+<?php 	}
+?></select>
+ <?php } ?>

@@ -1,0 +1,47 @@
+<?php 
+$this->HeadLink()->appendStylesheet($this->basePath().'/public/css/jquery-ui.css');
+$this->HeadScript()->appendFile($this->basePath().'/public/js/jquery-ui.js','text/javascript');
+$this->HeadScript()->appendFile($this->basePath().'/public/js/admin_planet_tag.js','text/javascript');
+$title = $groupData->group_title.'\'s Tags';
+$this->headTitle($title); 
+?>
+
+<section id="secondary_bar">
+    <div class="breadcrumbs_container">
+        <article class="breadcrumbs">
+		<a href="<?php echo $this->url('jadmin') ?>">Admin Dashboard </a>
+		<div class="breadcrumb_divider"></div>
+		<a href="<?php echo $this->url('jadmin/admin-planet-tags') ?>">Manage planet Tags</a>
+		<div class="breadcrumb_divider"></div>
+		<a href="">View planet Tags</a>
+		</article>
+    </div>
+</section>
+<section id="main" class="column">
+    <article class="module width_3_quarter">
+        <header><h3 class="tabs_involved"><?php echo $this->escapeHtml($title); ?></h3>
+            <ul class="tabs">
+				<li><a href="javascript:void(0)" id="add-tag-to-group" class="tags_loadmore">Add New Tag</a></li>
+            </ul>
+			<div id="select_tags"></div>
+        </header>		 
+        <div class="tab_container">
+            <div id="tab1" class="tab_content">
+				<ul id="group_selected_tags">
+                <?php 
+				$i = 0;
+				foreach($grouptags as $tags){ $i++; ?>
+					<li><a href="javascript:void(0)" id="group_taggs_<?php echo $tags->tag_id; ?>"><?php echo $tags->tag_title; ?></a> <a href="javascript:void(0)" id="remove_tag_<?php echo $tags->tag_id ?>" class="remove_tag"><img src="<?php echo $this->basePath(); ?>/public/images/trash.png" title="Trash"></a></li>
+				<?php }
+					if($i==0){
+						echo "Tags are not defined in this group";
+					}
+				?>
+				</ul>
+				<input type="hidden" id="group_id" value="<?php echo $groupData->group_id ?>" />
+            </div>
+        </div>
+    </article>
+    <div class="clear"></div>
+    <div class="spacer"></div>
+</section>
