@@ -454,7 +454,7 @@ class GroupsTable extends AbstractTableGateway
         $row = $rowset->current();
         return $row;
     }
-	 public function fetchAllGroups(){ 
+	public function fetchAllGroups(){
 		$select = new Select;
 		$select->from('y2m_group')    			
 			->where(array('y2m_group.group_parent_group_id' => "0"))

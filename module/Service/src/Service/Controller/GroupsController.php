@@ -61,7 +61,7 @@ class GroupsController extends AbstractActionController
 				echo json_encode($dataArr);
 				exit;
 			} 
-			if(!empty($city) &&!is_numeric($city)){
+			if(!empty($city) && !is_numeric($city)){
 				$dataArr[0]['flag'] = "Failure";
 				$dataArr[0]['message'] = "Enter a valid city id.";
 				echo json_encode($dataArr);
@@ -80,7 +80,10 @@ class GroupsController extends AbstractActionController
 				exit;
 			}
 			$arr_group_list = '';
-			$groups = $this->getUserGroupTable()->getMatchGroupsByUserTagsForRestApi($user_id,$city,$country,$myfriends,$category,(int) $limit,(int) $offset);
+            $user_tag_available_status = '';
+            $user_tag_status = $this->getUserTagTable()->checkTagExistForUser($user_id);
+            if ($user_tag_status[0]['tag_exists']) $user_tag_available_status = 1;
+			$groups = $this->getUserGroupTable()->getMatchGroupsByUserTagsForRestApi($user_id,$user_tag_available_status,$city,$country,$myfriends,$category,(int) $limit,(int) $offset);
 			if(!empty($groups)){
 				foreach($groups as $list){
 					if (!empty($list['group_photo_photo']))
@@ -100,12 +103,11 @@ class GroupsController extends AbstractActionController
 						$tag_category_list['tag_category_icon'] = $config['pathInfo']['absolute_img_path'].$config['image_folders']['tag_category'].$tag_category_list['tag_category_icon'];
 						else
 						$tag_category_list['tag_category_icon'] = $config['pathInfo']['absolute_img_path'].'/images/category-icon.png';
-					
 						$tag_category_temp[] = array('tag_category_id'=>$tag_category_list['tag_category_id'],
 													'tag_category_title'=>$tag_category_list['tag_category_title'],
 													'tag_category_icon'=>$tag_category_list['tag_category_icon']
 												);
-					}					 
+					}
 					$arr_group_list[] = array(
 						'group_id' =>$list['group_id'],
 						'group_title' =>$list['group_title'],
@@ -123,6 +125,10 @@ class GroupsController extends AbstractActionController
 						);
 				}
 				$dataArr[0]['flag'] = "Success";
+                if (!empty($user_tag_available_status))
+                    $dataArr[0]['usertagsexist'] = 'Yes';
+                else
+                    $dataArr[0]['usertagsexist'] = 'No';
 				$dataArr[0]['groups'] = $arr_group_list;
 				echo json_encode($dataArr);
 				exit;
@@ -652,7 +658,7 @@ class GroupsController extends AbstractActionController
 			}
 		}
 	}
-	public function  get_youtube_id_from_url($url){
+	public function get_youtube_id_from_url($url){
 		if (stristr($url,'youtu.be/'))
 			{preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return $final_ID[4]; }
 		else 

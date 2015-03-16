@@ -14,9 +14,9 @@
 return array(
     'db' => array(
         'driver'         => 'Pdo',
-        'dsn'            => 'mysql:dbname=y2m_jeera_v12;host=localhost',
+        'dsn'            => 'mysql:dbname=y2m_jeerav1.2;host=localhost',
 		'username'       => 'root',
-        'password'       => 'chandra789',
+        'password'       => '',
         'driver_options' => array(
             PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES \'UTF8\''
         ),

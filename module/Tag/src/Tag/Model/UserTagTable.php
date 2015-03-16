@@ -54,41 +54,24 @@ class UserTagTable extends AbstractTableGateway
 		$resultSet->initialize($statement->execute());	
 		return $resultSet->toArray(); 
 	}
-	public function getAllUserTagsForAPI($user_id){
-		$select = new Select;
-		$select->from('y2m_user_tag')
-    		->join('y2m_tag', 'y2m_tag.tag_id = y2m_user_tag.user_tag_tag_id',  array('tag_title'=>new Expression( "GROUP_CONCAT(tag_id,'|',tag_title)"),'category_id'=>'category_id'))
-			->join('y2m_tag_category', 'y2m_tag_category.tag_category_id = y2m_tag.category_id', array('tag_category_title', 'tag_category_icon',  'tag_category_desc'))
-			->where(array('y2m_user_tag.user_tag_user_id' => $user_id))
-			->where(array('y2m_tag_category.tag_category_status' => 1))			 
-			->order(array('y2m_tag.tag_title ASC'));	
-
-		$select->group('y2m_tag.category_id');			
-		$statement = $this->adapter->createStatement();
-		$select->prepareStatement($this->adapter, $statement);
-		//echo $select->getSqlString();exit;
-		$resultSet = new ResultSet();
-		$resultSet->initialize($statement->execute());	
-		return $resultSet->toArray(); 
-	}
 	public function saveUserTag(UserTag $tag){
-       $data = array(
-            'user_tag_user_id' => $tag->user_tag_user_id,
-            'user_tag_tag_id'  => $tag->user_tag_tag_id,			 
-			'user_tag_added_ip_address'  => $tag->user_tag_added_ip_address				
-        );
-        $user_tag_id = (int)$tag->user_tag_id;
-        if ($user_tag_id == 0) {
-            $this->insert($data);
-			return $this->adapter->getDriver()->getConnection()->getLastGeneratedValue();
-        } else {
-            if ($this->getUserTag($user_tag_id)) {
-                $this->update($data, array('user_tag_id' => $user_tag_id));
-            } else {
-                throw new \Exception('Form id does not exist');
-            }
-        }
-    }
+	        $data = array(
+	            'user_tag_user_id' => $tag->user_tag_user_id,
+	            'user_tag_tag_id'  => $tag->user_tag_tag_id,			 
+				'user_tag_added_ip_address'  => $tag->user_tag_added_ip_address				
+	        );
+	        $user_tag_id = (int)$tag->user_tag_id;
+	        if ($user_tag_id == 0) {
+	            $this->insert($data);
+				return $this->adapter->getDriver()->getConnection()->getLastGeneratedValue();
+	        } else {
+	            if ($this->getUserTag($user_tag_id)) {
+	                $this->update($data, array('user_tag_id' => $user_tag_id));
+	            } else {
+	                throw new \Exception('Form id does not exist');
+	            }
+	        }
+    	}
 	public function getUserTag($user_tag_id){
         $select = new Select;
 		$select->from('y2m_user_tag')
@@ -102,11 +85,11 @@ class UserTagTable extends AbstractTableGateway
 		return $resultSet;	 
     }
 	public function checkUserTag($user_id, $tag_id){
-        $user_id  = (int) $user_id;
-		$tag_id  = (int) $tag_id;
-        $rowset = $this->select(array('user_tag_user_id' => $user_id, 'user_tag_tag_id' => $tag_id));
-        return $rowset->current();        
-    }
+	        $user_id  = (int) $user_id;
+			$tag_id  = (int) $tag_id;
+	        $rowset = $this->select(array('user_tag_user_id' => $user_id, 'user_tag_tag_id' => $tag_id));
+	        return $rowset->current();        
+    	}
 	public function getAllUserTagCategiry($user_id){
 		$select = new Select;
 		$select->from('y2m_user_tag')
@@ -145,8 +128,8 @@ class UserTagTable extends AbstractTableGateway
 		return $resultSet;	   
 	}
 	public function fetchAllTagsOfUser($user_id)
-    {
-      	$select = new Select;
+        {
+      		$select = new Select;
 		$select->from('y2m_user_tag')
     		->join('y2m_tag', 'y2m_tag.tag_id = y2m_user_tag.user_tag_tag_id', array('tag_title','tag_id'))			 
 			->where(array('y2m_user_tag.user_tag_user_id' => $user_id))
@@ -156,7 +139,7 @@ class UserTagTable extends AbstractTableGateway
 		$resultSet = new ResultSet();
 		$resultSet->initialize($statement->execute());	
 		return $resultSet->buffer();
-    }
+        }
 	public function getAllUserTags($user_id){
 		$select = new Select;
 		$select->from('y2m_user_tag')
@@ -180,21 +163,6 @@ class UserTagTable extends AbstractTableGateway
 			$statement -> execute();
 		}else{ 	$this->delete(array('user_tag_user_id' => $user_id)); }		
 	}
-
-	public function deleteAllUserTagsForRestAPI($user_id,$tag_list=array()){
-		if(!empty($tag_list)){
-			$sql = "DELETE FROM y2m_user_tag WHERE user_tag_user_id = ".$user_id." AND user_tag_tag_id IN (".implode(',',$tag_list).")"; 
-			$statement = $this->adapter-> query($sql); 
-			try {
-		        $result = $statement->execute();        // works fine
-		    } catch (\Exception $e) {
-		        die('Error: ' . $e->getMessage());
-		    }
-    		return $result->count();    
-		}
-		return;
-	}
-
 	public function getAllUserTagsWithIds($user_id){
 		$select = new Select;
 		$select->from('y2m_user_tag')
@@ -212,6 +180,17 @@ class UserTagTable extends AbstractTableGateway
 		$resultSet->initialize($statement->execute());	
 		return $resultSet->toArray(); 
 	}
+    public function checkTagExistForUser($user_id){
+        $sub_user_tag_select = new Select;
+        $sub_user_tag_select->from('y2m_user_tag')
+            ->columns(array(new Expression('COUNT(y2m_user_tag.user_tag_id) as tag_exists')))
+            ->where->equalTo('user_tag_user_id',$user_id);
+        $statement_tag = $this->adapter->createStatement();
+        $sub_user_tag_select->prepareStatement($this->adapter, $statement_tag);
+        $resultSetUserTags = new ResultSet();
+        $resultSetUserTags->initialize($statement_tag->execute());
+        return $resultSetUserTags->toArray();
+    }
 	public function getCountOfAllMatchedGroupsofUser($user_id){
 		$select = new Select;
 		$select->from('y2m_group')
@@ -278,7 +257,37 @@ class UserTagTable extends AbstractTableGateway
 		return $resultSet;
 	}
 	public function removeUserTag($tag_id,$user_id)
-    {
+    	{
        return $this->delete(array('user_tag_user_id' => $user_id,'user_tag_tag_id' =>$tag_id ));
-    }
+    	}
+	public function getAllUserTagsForAPI($user_id){
+		$select = new Select;
+		$select->from('y2m_user_tag')
+    		->join('y2m_tag', 'y2m_tag.tag_id = y2m_user_tag.user_tag_tag_id',  array('tag_title'=>new Expression( "GROUP_CONCAT(tag_id,'|',tag_title)"),'category_id'=>'category_id'))
+			->join('y2m_tag_category', 'y2m_tag_category.tag_category_id = y2m_tag.category_id', array('tag_category_title', 'tag_category_icon',  'tag_category_desc'))
+			->where(array('y2m_user_tag.user_tag_user_id' => $user_id))
+			->where(array('y2m_tag_category.tag_category_status' => 1))			 
+			->order(array('y2m_tag.tag_title ASC'));	
+
+		$select->group('y2m_tag.category_id');			
+		$statement = $this->adapter->createStatement();
+		$select->prepareStatement($this->adapter, $statement);
+		//echo $select->getSqlString();exit;
+		$resultSet = new ResultSet();
+		$resultSet->initialize($statement->execute());	
+		return $resultSet->toArray(); 
+	}
+	public function deleteAllUserTagsForRestAPI($user_id,$tag_list=array()){
+		if(!empty($tag_list)){
+			$sql = "DELETE FROM y2m_user_tag WHERE user_tag_user_id = ".$user_id." AND user_tag_tag_id IN (".implode(',',$tag_list).")"; 
+			$statement = $this->adapter-> query($sql); 
+			try {
+		        $result = $statement->execute();        // works fine
+		    } catch (\Exception $e) {
+		        die('Error: ' . $e->getMessage());
+		    }
+    		return $result->count();    
+		}
+		return;
+	}
 }

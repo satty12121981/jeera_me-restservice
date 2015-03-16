@@ -8,7 +8,9 @@ use Zend\View\Renderer\PhpRenderer;
 use \Exception;
 
 use Tag\Model\UserTag;
+use Tag\Model\GroupTag;
 use User\Model\User;
+use Groups\Model\Groups;
 
 class TagsController extends AbstractActionController
 {
@@ -16,6 +18,9 @@ class TagsController extends AbstractActionController
 	protected $userProfileTable;
 	protected $userTagTable;
 	protected $tagTable;
+    protected $groupTagTable;
+    protected $groupsTable;
+    protected $userGroupTable;
 	
 	public function init(){
         $this->flagSuccess = "Success";
@@ -75,19 +80,20 @@ class TagsController extends AbstractActionController
 			$dataArr = array();	
 			$postedValues = $this->getRequest()->getPost();
 			$accToken = strip_tags(trim($postedValues['accesstoken']));
-			$edit_user_tags = (isset($postedValues['tags'])&&$postedValues['tags']!=null&&$postedValues['tags']!=''&&$postedValues['tags']!='undefined')?$postedValues['tags']:'';
+			$edit_user_tags = (isset($postedValues['tags']))?array_filter($postedValues['tags']):'';
 			if ((!isset($accToken)) || (trim($accToken) == '')) {
 				$dataArr[0]['flag'] = "Failure";
 				$dataArr[0]['message'] = "Request Not Authorised.";
 				echo json_encode($dataArr);
 				exit;
 			}
-			if ((!isset($edit_user_tags))) {
+			if ((empty($edit_user_tags))) {
 				$dataArr[0]['flag'] = "Failure";
 				$dataArr[0]['message'] = "Please Input Tags.";
 				echo json_encode($dataArr);
 				exit;
 			}
+			
 			$userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
 			if(empty($userinfo)){
 				$dataArr[0]['flag'] = "Failure";
@@ -103,16 +109,23 @@ class TagsController extends AbstractActionController
 				foreach($edit_user_tags as $tags_in){
 					$data_usertags = array();
 					$tag_history = $this->getTagTable()->getTag($tags_in);
-					$tag_exist =  $this->getUserTagTable()->checkUserTag($user_id,$tags_in); 
-					if(!empty($tag_history)&&$tag_history->tag_id!=''&&empty($tag_exist)){
-						$data_usertags['user_tag_user_id'] = $user_id;
-						$data_usertags['user_tag_tag_id'] = $tags_in;
-						$data_usertags['user_tag_added_ip_address'] = $objUser->getUserIp();
-						$objUsertag = new UserTag();
-						$objUsertag->exchangeArray($data_usertags);
-						$this->getUserTagTable()->saveUserTag($objUsertag);
-						$flag=1;
-					}							
+					if(!empty($tag_history)&&$tag_history->tag_id!=''){
+						$tag_exist =  $this->getUserTagTable()->checkUserTag($user_id,$tags_in); 
+						if(empty($tag_exist)){
+							$data_usertags['user_tag_user_id'] = $user_id;
+							$data_usertags['user_tag_tag_id'] = $tags_in;
+							$data_usertags['user_tag_added_ip_address'] = $objUser->getUserIp();
+							$objUsertag = new UserTag();
+							$objUsertag->exchangeArray($data_usertags);
+							$this->getUserTagTable()->saveUserTag($objUsertag);
+							$flag=1;
+						}
+					}else{
+						$dataArr[0]['flag'] = "Failure";
+						$dataArr[0]['message'] = "Given tag ".$tags_in." is not exist in the system.";
+						echo json_encode($dataArr);
+						exit;
+					}
 				}
 				if($flag){
 					$userInterests = $this->getUserTagTable()->getAllUserTagsForAPI($userinfo->user_id);
@@ -146,14 +159,14 @@ class TagsController extends AbstractActionController
 			$dataArr = array();	
 			$postedValues = $this->getRequest()->getPost();
 			$accToken = strip_tags(trim($postedValues['accesstoken']));
-			$edit_user_tags = (isset($postedValues['tags'])&&$postedValues['tags']!=null&&$postedValues['tags']!=''&&$postedValues['tags']!='undefined')?$postedValues['tags']:'';
+			$edit_user_tags = (isset($postedValues['tags']))?array_filter($postedValues['tags']):'';
 			if ((!isset($accToken)) || (trim($accToken) == '')) {
 				$dataArr[0]['flag'] = "Failure";
 				$dataArr[0]['message'] = "Request Not Authorised.";
 				echo json_encode($dataArr);
 				exit;
 			}
-			if ((!isset($edit_user_tags))) {
+			if ((empty($edit_user_tags))) {
 				$dataArr[0]['flag'] = "Failure";
 				$dataArr[0]['message'] = "Please Input Tags.";
 				echo json_encode($dataArr);
@@ -171,7 +184,7 @@ class TagsController extends AbstractActionController
 			$flag =0;
 			if(isset($edit_user_tags[0]) && !empty($edit_user_tags[0])){
 				$edit_user_tags = explode(",", $edit_user_tags[0]);
-				if ($this->getUserTagTable()->deleteAllUserTagsForRestAPI($user_id,array_filter($edit_user_tags))){
+				if ($this->getUserTagTable()->deleteAllUserTagsForRestAPI($user_id,$edit_user_tags)){
 					$userInterests = $this->getUserTagTable()->getAllUserTagsForAPI($userinfo->user_id);
 					if(!empty($userInterests)){
 						$userInterests = $this->formatTagsWithCategory($userInterests,"|");
@@ -249,6 +262,249 @@ class TagsController extends AbstractActionController
 			exit;
 		}
 	}
+    public function ListGroupTagsAction(){
+        $error = '';
+        $group_tags = array();
+        $groupInterests = array();
+        $request = $this->getRequest();
+        if($this->getRequest()->getMethod() == 'POST') {
+            $dataArr = array();
+            $postedValues = $this->getRequest()->getPost();
+            $accToken = strip_tags(trim($postedValues['accesstoken']));
+            $groupid = strip_tags(trim($postedValues['groupid']));
+            if (empty($accToken)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Request Not Authorised.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (empty($groupid)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Request Not Authorised.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (isset($group_id) && !is_numeric($group_id)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a valid GroupId.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            if(empty($userinfo)){
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "InValid Access Token.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $groupinfo = $this->getGroupTable()->getGroup($groupid);
+            if(empty($groupinfo)){
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "InValid Group ID.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $group_id = $groupinfo->group_id;
+            $groupInterests = $this->getGroupTagTable()->getAllGroupTagsForAPI($groupid);
+            if(!empty($groupInterests)){
+                $groupInterests = $this->formatTagsWithCategory($groupInterests,"|");
+                $dataArr[0]['flag'] = "Success";
+                $dataArr[0]['grouptags'] = $groupInterests;
+                echo json_encode($dataArr);
+                exit;
+            } else {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "No Tag(s) to the group.";
+                echo json_encode($dataArr);
+                exit;
+            }
+
+        } else {
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = "Request not authorised.";
+            echo json_encode($dataArr);
+            exit;
+        }
+    }
+    public function AddGroupTagsAction(){
+        $error = '';
+        $group_tags = array();
+        $groupInterests = array();
+        $request = $this->getRequest();
+        if($this->getRequest()->getMethod() == 'POST') {
+            $dataArr = array();
+            $postedValues = $this->getRequest()->getPost();
+            $accToken = strip_tags(trim($postedValues['accesstoken']));
+            $group_id = strip_tags(trim($postedValues['groupid']));
+            $edit_group_tags = (isset($postedValues['tags']))?array_filter($postedValues['tags']):'';
+            if ((!isset($accToken)) || $accToken == '' ) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Request Not Authorised.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (empty($edit_group_tags)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please Input Tags.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            if(empty($userinfo)){
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "InValid Access Token.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (isset($group_id) && !is_numeric($group_id)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a valid GroupId.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $groupinfo = $this->getGroupTable()->getGroup($group_id);
+            if(empty($groupinfo->group_id)){
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "InValid Group ID.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $objgroup = new Groups();
+            $objUser = new User();
+            $flag =0;
+
+            if(!$this->getUserGroupTable()->checkOwner($groupinfo->group_id,$userinfo->user_id)){
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Access token user is not the owner to add tags to the group";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if(!empty($edit_group_tags[0])){
+                $edit_group_tags = explode(",", $edit_group_tags[0]);
+                foreach($edit_group_tags as $tags_in){
+                    $data_grouptags = array();
+                    $tag_history = $this->getTagTable()->getTag($tags_in);
+                    if(!empty($tag_history)&&$tag_history->tag_id!=''){
+                        $tag_exist =  $this->getGroupTagTable()->checkGroupTag($groupinfo->group_id,$tags_in);
+                        if(empty($tag_exist)) {
+                            $data_grouptags['group_tag_group_id'] = $groupinfo->group_id;
+                            $data_grouptags['group_tag_tag_id'] = $tags_in;
+                            $data_grouptags['group_tag_added_ip_address'] = $objUser->getUserIp();
+                            $objgrouptag = new GroupTag();
+                            $objgrouptag->exchangeArray($data_grouptags);
+                            $this->getGroupTagTable()->saveGroupTag($objgrouptag);
+                            $flag = 1;
+                        }
+                    }
+                    else{
+                        $dataArr[0]['flag'] = "Failure";
+                        $dataArr[0]['message'] = "Given tag ".$tags_in." does not exist in the system.";
+                        echo json_encode($dataArr);
+                        exit;
+                    }
+                }
+                if($flag){
+                    $groupInterests = $this->getGroupTagTable()->getAllGroupTagsForAPI($groupinfo->group_id);
+                    if(!empty($groupInterests)){
+                        $groupInterests = $this->formatTagsWithCategory($groupInterests,"|");
+                        $dataArr[0]['flag'] = "Success";
+                        $dataArr[0]['grouptags'] = $groupInterests;
+                        echo json_encode($dataArr);
+                        exit;
+                    }
+                }else{
+                    $dataArr[0]['flag'] = "Failure";
+                    $dataArr[0]['message'] = "Tag(s) already added to the group";
+                    echo json_encode($dataArr);
+                    exit;
+                }
+            }
+        } else {
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = "Request not authorised.";
+            echo json_encode($dataArr);
+            exit;
+        }
+    }
+    public function DeleteGroupTagsAction(){
+        $error = '';
+        $group_tags = array();
+        $groupInterests = array();
+        $request = $this->getRequest();
+        if($this->getRequest()->getMethod() == 'POST') {
+            $dataArr = array();
+            $postedValues = $this->getRequest()->getPost();
+            $accToken = strip_tags(trim($postedValues['accesstoken']));
+            $groupid = strip_tags(trim($postedValues['groupid']));
+            $edit_group_tags = (isset($postedValues['tags']))?array_filter($postedValues['tags']):'';
+            if ((!isset($accToken)) || (trim($accToken) == '')) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Request Not Authorised.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (empty($edit_group_tags)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please Input Tags.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            if(empty($userinfo)){
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "InValid Access Token.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (isset($group_id) && !is_numeric($group_id)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a valid GroupId.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $groupinfo = $this->getGroupTable()->getGroup($groupid);
+            if(empty($groupinfo)){
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "InValid Group ID.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if(!$this->getUserGroupTable()->checkOwner($groupinfo->group_id,$userinfo->user_id)){
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Access token user is not the owner to add tags to the group";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if(isset($edit_group_tags[0]) && !empty($edit_group_tags[0])){
+                $edit_group_tags = explode(",", $edit_group_tags[0]);
+                if ($this->getGroupTagTable()->deleteAllGroupTagsForRestAPI($groupid,$edit_group_tags)){
+                    $groupInterests = $this->getGroupTagTable()->getAllGroupTagsForAPI($groupinfo->group_id);
+                    if(!empty($groupInterests)){
+                        $groupInterests = $this->formatTagsWithCategory($groupInterests,"|");
+                        $dataArr[0]['flag'] = "Success";
+                        $dataArr[0]['grouptags'] = $groupInterests;
+                        echo json_encode($dataArr);
+                        exit;
+                    } else {
+                        $dataArr[0]['flag'] = "Failure";
+                        $dataArr[0]['message'] = "No Tag(s) to the group.";
+                        echo json_encode($dataArr);
+                        exit;
+                    }
+                }else{
+                    $dataArr[0]['flag'] = "Failure";
+                    $dataArr[0]['message'] = "Tag(s) does not exists for the group .";
+                    echo json_encode($dataArr);
+                    exit;
+                }
+            }
+        }else {
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = "Request not authorised.";
+            echo json_encode($dataArr);
+            exit;
+        }
+    }
 	public function getUserTable(){
 		$sm = $this->getServiceLocator();
 		return  $this->userTable = (!$this->userTable)?$sm->get('User\Model\UserTable'):$this->userTable;    
@@ -265,9 +521,21 @@ class TagsController extends AbstractActionController
 		$sm = $this->getServiceLocator();
 		return  $this->userTagTable = (!$this->userTagTable)?$sm->get('Tag\Model\UserTagTable'):$this->userTagTable;    
 	}
-
+    public function getGroupTagTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->groupTagTable = (!$this->groupTagTable)?$sm->get('Tag\Model\GroupTagTable'):$this->groupTagTable;
+    }
+    public function getGroupTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->groupsTable = (!$this->groupsTable)?$sm->get('Groups\Model\GroupsTable'):$this->groupsTable;
+    }
+    public function getUserGroupTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->userGroupTable = (!$this->userGroupTable)?$sm->get('Groups\Model\UserGroupTable'):$this->userGroupTable;
+    }
 	public function formatTagsWithCategory($taglistdata,$char){
 		$config = $this->getServiceLocator()->get('Config');
+		$loadtagslist = array();
 		if (!empty($taglistdata)){
 			$objarr_tags = array();
 			

@@ -504,7 +504,7 @@ class UserGroupTable extends AbstractTableGateway
 		return $resultSet->toArray();
 			   
 	}
-	public function getMatchGroupsByUserTagsForRestApi($user_id,$city,$country,$myfriends,$category,$limit=0,$offset=0){
+	public function getMatchGroupsByUserTagsForRestApi($user_id,$user_tag_status,$city,$country,$myfriends,$category,$limit=0,$offset=0){
 		$select = new Select;
 		$sub_select = new Select;
 		$sub_select2 = new Select;
@@ -526,20 +526,26 @@ class UserGroupTable extends AbstractTableGateway
 				   ->columns(array("group_id"))
 				   ->join(array('y2m_user_group'=>'y2m_user_group'),"y2m_group.group_id = y2m_user_group.user_group_group_id",array())
 				   ->where->in("user_group_user_id",$sub_select2);
-		$sub_select4->group('y2m_group.group_id');			 
+		$sub_select4->group('y2m_group.group_id');
 		$select->from('y2m_group')
 			   ->join('y2m_group_tag',"y2m_group_tag.group_tag_group_id = y2m_group.group_id")
 			   ->join('y2m_tag',"y2m_group_tag.group_tag_tag_id = y2m_tag.tag_id")
 			   ->join('y2m_tag_category',"y2m_tag_category.tag_category_id = y2m_tag.category_id")			   
-			   
 			   ->join("y2m_country","y2m_country.country_id = y2m_group.group_country_id",array("country_code_googlemap","country_title","country_code"),'left')
 			   ->join("y2m_city","y2m_city.city_id = y2m_group.group_city_id",array("city"=>"name"),'left')
 			   ->join("y2m_group_photo","y2m_group_photo.group_photo_group_id = y2m_group.group_id",array("group_photo_photo"=>"group_photo_photo"),'left')
 			   ->join(array('temp_member' => $sub_select), 'temp_member.group_id = y2m_group.group_id',array('member_count'),'left')
 			   ->join(array('temp_friends' => $sub_select3), 'temp_friends.group_id = y2m_group.group_id',array('friend_count'),'left')
 			   ->where('y2m_group.group_status = "active"')
-			   ->where('y2m_group.group_id NOT IN (SELECT user_group_group_id FROM y2m_user_group WHERE user_group_user_id = '.$user_id.' )')
-			   ->where(array("y2m_group_tag.group_tag_tag_id IN (SELECT user_tag_tag_id FROM y2m_user_tag WHERE user_tag_user_id = ".$user_id.")"));
+			   ->where(array('y2m_group.group_id NOT IN (SELECT user_group_group_id FROM y2m_user_group WHERE user_group_user_id = '.$user_id.' )'));
+
+	        if ($user_tag_status != ''){
+	            $select->where(array('y2m_group_tag.group_tag_tag_id IN
+	                (SELECT y2m_user_tag.user_tag_tag_id FROM y2m_user_tag where y2m_user_tag.user_tag_user_id= '.$user_id.')'));
+	        } else {
+	            $select->where(array('y2m_group_tag.group_tag_tag_id IN
+	                (SELECT y2m_tag.tag_id FROM y2m_tag)'));
+	        }
 		if($country!=''){
 			$select->where(array('y2m_country.country_id'=>$country)) ;
 		}
@@ -558,11 +564,10 @@ class UserGroupTable extends AbstractTableGateway
 		$select->offset((int) $offset);
 		$statement = $this->adapter->createStatement();
 		//echo $select->getSqlString(); exit;
-		$select->prepareStatement($this->adapter, $statement);		 
+		$select->prepareStatement($this->adapter, $statement);
 		$resultSet = new ResultSet();
-		$resultSet->initialize($statement->execute());	
-		return $resultSet->toArray();
-			   
+		$resultSet->initialize($statement->execute());
+        	return $resultSet->toArray();
 	}
 	public function fetchAllUserGroupCount($user_id,$visitor_id, $strType,$profile_type){ 
         // creating condition for gropu navigations
@@ -728,6 +733,7 @@ class UserGroupTable extends AbstractTableGateway
 		if($type == 'Owners'){
 			$select->where('(user_group_role =1 OR user_group_is_owner=1)');
 		}
+        $select->order(array('user_group_is_owner DESC','user_group_role DESC'));
 		$select->limit($limit);
 	    $select->offset($offset);
 		$statement = $this->adapter->createStatement();
