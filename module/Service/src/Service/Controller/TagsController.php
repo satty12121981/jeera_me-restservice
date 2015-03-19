@@ -21,7 +21,7 @@ class TagsController extends AbstractActionController
     protected $groupTagTable;
     protected $groupsTable;
     protected $userGroupTable;
-	
+	protected $tagCategoryTable;
 	public function init(){
         $this->flagSuccess = "Success";
 		$this->flagError = "Failure";
@@ -74,7 +74,7 @@ class TagsController extends AbstractActionController
     public function AddUserTagsAction(){
     	$error = '';
 		$user_tags = array();
-		$userIntrests = array();
+		$userInterests = array();
 		$request = $this->getRequest();
 		if($this->getRequest()->getMethod() == 'POST') {
 			$dataArr = array();	
@@ -93,7 +93,6 @@ class TagsController extends AbstractActionController
 				echo json_encode($dataArr);
 				exit;
 			}
-			
 			$userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
 			if(empty($userinfo)){
 				$dataArr[0]['flag'] = "Failure";
@@ -153,7 +152,7 @@ class TagsController extends AbstractActionController
     public function DeleteUserTagsAction(){
     	$error = '';
 		$user_tags = array();
-		$userIntrests = array();
+		$userInterests = array();
 		$request = $this->getRequest();
 		if($this->getRequest()->getMethod() == 'POST') {
 			$dataArr = array();	
@@ -219,7 +218,9 @@ class TagsController extends AbstractActionController
 			$dataArr = array();	
 			$postedValues = $this->getRequest()->getPost();
 			$accToken = strip_tags(trim($postedValues['accesstoken']));
-			$category = (isset($postedValues['category'])&&$postedValues['category']!=null&&$postedValues['category']!=''&&$postedValues['category']!='undefined')?$postedValues['category']:'';
+			$categoryId = (isset($postedValues['categoryID'])&&$postedValues['categoryID']!=null&&$postedValues['categoryID']!=''&&$postedValues['categoryID']!='undefined')?trim($postedValues['categoryID']):'';
+            $offset = (isset($postedValues['nparam']))?strip_tags(trim($postedValues['nparam'])):'';
+            $limit = (isset($postedValues['countparam']))?strip_tags(trim($postedValues['countparam'])):'';
 			$search_string = (isset($postedValues['search'])&&$postedValues['search']!=null&&$postedValues['search']!=''&&$postedValues['search']!='undefined')?strip_tags(trim($postedValues['search'])):'';
 			if ((!isset($accToken)) || (trim($accToken) == '')) {
 				$dataArr[0]['flag'] = "Failure";
@@ -227,7 +228,7 @@ class TagsController extends AbstractActionController
 				echo json_encode($dataArr);
 				exit;
 			}
-			if (!empty($category) && !is_numeric($category)) {
+			if (!empty($categoryId) && !is_numeric($categoryId)) {
  				$dataArr[0]['flag'] = "Failure";
 				$dataArr[0]['message'] = "Please input a Valid Category.";
 				echo json_encode($dataArr);
@@ -240,13 +241,25 @@ class TagsController extends AbstractActionController
 				echo json_encode($dataArr);
 				exit;
 			}
-			$taglistdata = $this->getTagTable()->getAllTagsWithCategories($category,$search_string);
+            if (!empty($limit) && !is_numeric($limit)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a Valid Count Param Field.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (!empty($offset) && !is_numeric($offset)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a Valid N Param Field.";
+                echo json_encode($dataArr);
+                exit;
+            }
+			$taglistdata = $this->getTagTable()->getAllTagsWithCategories((int) $limit,(int) $offset,$categoryId,'category_id','ASC',$search_string);
 			
 			if(!empty($taglistdata)){
 				$loadtagslist = array();
 				$loadtagslist = $this->formatTagsWithCategory($taglistdata,"|");
 				$dataArr[0]['flag'] = "Success";
-				$dataArr[0]['alltags'] = $loadtagslist;
+				$dataArr[0]['tags'] = $loadtagslist;
 				echo json_encode($dataArr);
 				exit;
 			}else{
@@ -262,6 +275,67 @@ class TagsController extends AbstractActionController
 			exit;
 		}
 	}
+    public function ListTagsByCategoryAction() {
+        $request = $this->getRequest();
+        if($this->getRequest()->getMethod() == 'POST') {
+            $config = $this->getServiceLocator()->get('Config');
+            $dataArr = array();
+            $postedValues = $this->getRequest()->getPost();
+            $accToken = strip_tags(trim($postedValues['accesstoken']));
+            $categoryId = (isset($postedValues['categoryID'])&&$postedValues['categoryID']!=null&&$postedValues['categoryID']!=''&&$postedValues['categoryID']!='undefined')?trim($postedValues['categoryID']):'';
+            $offset = (isset($postedValues['nparam']))?strip_tags(trim($postedValues['nparam'])):'';
+            $limit = (isset($postedValues['countparam']))?strip_tags(trim($postedValues['countparam'])):'';
+            if ((!isset($accToken)) || (trim($accToken) == '')) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Request Not Authorised.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (empty($categoryId) && !is_numeric($categoryId)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a Valid Category.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            if(empty($userinfo)){
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Invalid Access Token.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (!empty($limit) && !is_numeric($limit)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a Valid Count Param Field.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (!empty($offset) && !is_numeric($offset)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a Valid N Param Field.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $taglistdata = $this->getTagTable()->getAllTagsByCategory($categoryId,'category_id','ASC',(int) $limit,(int) $offset);
+
+            if(!empty($taglistdata)){
+                $dataArr[0]['flag'] = "Success";
+                $dataArr[0]['tags'] = $taglistdata;
+                echo json_encode($dataArr);
+                exit;
+            }else{
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "No Tags available.";
+                echo json_encode($dataArr);
+                exit;
+            }
+        }else{
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = "Request not authorised.";
+            echo json_encode($dataArr);
+            exit;
+        }
+    }
     public function ListGroupTagsAction(){
         $error = '';
         $group_tags = array();
@@ -505,6 +579,72 @@ class TagsController extends AbstractActionController
             exit;
         }
     }
+    public function ListTagCategoriesAction(){
+        if($this->getRequest()->getMethod() == 'POST') {
+            $config = $this->getServiceLocator()->get('Config');
+            $dataArr = array();
+            $postedValues = $this->getRequest()->getPost();
+            $accToken = (isset($postedValues['accesstoken']))?strip_tags(trim($postedValues['accesstoken'])):'';
+            $search_string = (isset($postedValues['search'])&&$postedValues['search']!=null&&$postedValues['search']!=''&&$postedValues['search']!='undefined')?strip_tags(trim($postedValues['search'])):'';
+            $offset = (isset($postedValues['nparam']))?strip_tags(trim($postedValues['nparam'])):'';
+            $limit = (isset($postedValues['countparam']))?strip_tags(trim($postedValues['countparam'])):'';
+            if (empty($accToken)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Request Not Authorised.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (!empty($limit) && !is_numeric($limit)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a Valid Count Param Field.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (!empty($offset) && !is_numeric($offset)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a Valid N Param Field.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            if(empty($userinfo)){
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Invalid Access Token.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $tagcategoriesdata = array();
+            $tagcategoriesdata = $this->getTagCategoryTable()->getAllTagCategoriesForRestAPI((int) $limit,(int) $offset,'tag_category_id','ASC',$search_string);
+            if(!empty($tagcategoriesdata)){
+                foreach($tagcategoriesdata as $index => $splitlist){
+                    if (!empty($splitlist['tag_category_icon']))
+                        $splitlist['tag_category_icon'] = $config['pathInfo']['absolute_img_path'].$config['image_folders']['tag_category'].$splitlist['tag_category_icon'];
+                    else
+                        $splitlist['tag_category_icon'] = $config['pathInfo']['absolute_img_path'].'/images/category-icon.png';
+                    $loadtagcatslist[] = array(
+                        'tag_category_id' =>$splitlist['tag_category_id'],
+                        'category_title' =>$splitlist['tag_category_title'],
+                        'tag_category_icon' =>$splitlist['tag_category_icon'],
+                        'tag_category_desc' =>$splitlist['tag_category_desc'],
+                    );
+                }
+                $dataArr[0]['flag'] = "Success";
+                $dataArr[0]['alltagcategories'] = $loadtagcatslist;
+                echo json_encode($dataArr);
+                exit;
+            }else{
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "No Tag categories available.";
+                echo json_encode($dataArr);
+                exit;
+            }
+        }else{
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = "Request not authorised.";
+            echo json_encode($dataArr);
+            exit;
+        }
+    }
 	public function getUserTable(){
 		$sm = $this->getServiceLocator();
 		return  $this->userTable = (!$this->userTable)?$sm->get('User\Model\UserTable'):$this->userTable;    
@@ -517,6 +657,10 @@ class TagsController extends AbstractActionController
 		$sm = $this->getServiceLocator();
 		return  $this->tagTable = (!$this->tagTable)?$sm->get('Tag\Model\TagTable'):$this->tagTable;    
 	}
+    public function getTagCategoryTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->tagCategoryTable = (!$this->tagCategoryTable)?$sm->get('Tag\Model\TagCategoryTable'):$this->tagCategoryTable;
+    }
 	public function getUserTagTable(){
 		$sm = $this->getServiceLocator();
 		return  $this->userTagTable = (!$this->userTagTable)?$sm->get('Tag\Model\UserTagTable'):$this->userTagTable;    

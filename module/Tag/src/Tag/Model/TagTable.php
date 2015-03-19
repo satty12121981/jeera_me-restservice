@@ -196,18 +196,18 @@ class TagTable extends AbstractTableGateway
 		$results = $statement -> execute();	
 		return $results;
 	}
-	public function getAllTagsWithCategories($category_id,$search){
+	public function getAllTagsWithCategories($limit=null,$offset=null,$category_id,$field='category_id',$order='ASC',$search=''){
 		$select = new Select;
  		$expression = new Expression(
             "GROUP_CONCAT(tag_id,'|',tag_title)"
         );
 		$select->from('y2m_tag')
-
-				->columns(array('tag_title'=>$expression,'category_id'))				
+				->columns(array('tag_title'=>$expression,'category_id'))
 				->join("y2m_tag_category","y2m_tag.category_id = y2m_tag_category.tag_category_id",array("tag_category_title","tag_category_icon","tag_category_desc"));
-	
-		$field = 'category_id';
-		$order = 'ASC';
+        if ($limit && $offset) {
+            $select->limit($limit);
+            $select->offset($offset);
+        }
 		$select->order($field.' '.$order);
 		if( $category_id ){
 			$select->where(array("y2m_tag_category.tag_category_id"=>$category_id));
@@ -222,7 +222,25 @@ class TagTable extends AbstractTableGateway
 		$resultSet = new ResultSet();
 		$resultSet->initialize($statement->execute());			 	
 		return  $resultSet->buffer();
-
 	}
 
+    public function getAllTagsByCategory($category_id,$field='category_id',$order='ASC',$limit=null,$offset=null){
+        $select = new Select;
+        $select->from('y2m_tag')
+            ->columns(array('tag_title','tag_id'))
+            ->where(array("category_id"=>$category_id));
+        if ($limit) {
+            $select->limit($limit);
+        }
+        if ($offset) {
+            $select->offset($offset);
+        }
+        $select->order($field.' '.$order);
+        $statement = $this->adapter->createStatement();
+        //echo $select->getSqlString();exit;
+        $select->prepareStatement($this->adapter, $statement);
+        $resultSet = new ResultSet();
+        $resultSet->initialize($statement->execute());
+        return  $resultSet->toArray();
+    }
 }

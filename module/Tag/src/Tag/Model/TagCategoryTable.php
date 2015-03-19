@@ -47,6 +47,32 @@ class TagCategoryTable extends AbstractTableGateway
         $resultSet->initialize($statement->execute());
         return  $resultSet->current()->tag_category_count;
     }
+    public function getAllTagCategoriesForRestAPI($limit=null,$offset=null,$field="tag_category_id",$order='ASC',$search='')
+    {
+        $select = new Select;
+        $select->from('y2m_tag_category')
+            ->where(array("tag_category_status=1"))
+            ->columns(array('tag_category_id' => 'tag_category_id', 'tag_category_title' => 'tag_category_title', 'tag_category_icon' => 'tag_category_icon', 'tag_category_desc' => 'tag_category_desc'));
+        if ($limit && $offset) {
+            $select->limit($limit);
+            $select->offset($offset);
+        }
+        if(!empty($search)){
+            $select->where->like('y2m_tag_category.tag_category_title',$search.'%');
+        }
+        $select->order($field.' '.$order);
+        $statement = $this->adapter->createStatement();
+        //echo $select->getSqlString();
+        try {
+            $select->prepareStatement($this->adapter, $statement);
+            $resultSet = new ResultSet();
+            $resultSet->initialize($statement->execute());
+            return  $resultSet->toArray();
+        } catch (\Exception $e) {
+            die('Error: ' . $e->getMessage());
+        }
+        return;
+    }
 	public function getAllTagCategories($limit,$offset,$field="tag_category_id",$order='ASC',$search=''){ 
         $select = new Select;
         $usersubselect = new select;
