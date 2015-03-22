@@ -31,6 +31,7 @@ class GroupPostsController extends AbstractActionController
 	protected $commentTable;
 	protected $activityRsvpTable;
     protected $userNotificationTable;
+    protected  $groupActivityInviteTable;
 
 	public function __construct(){
         $this->flagSuccess = "Success";
@@ -44,11 +45,25 @@ class GroupPostsController extends AbstractActionController
             $post = $request->getPost();
             $file = $request->getFiles();
             $accToken = (isset($post['accesstoken'])&&$post['accesstoken']!=null&&$post['accesstoken']!=''&&$post['accesstoken']!='undefined')?strip_tags(trim($post['accesstoken'])):'';
+            if (empty($accToken)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Request Not Authorised.";
+                echo json_encode($dataArr);
+                exit;
+            }
             $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error =($post['mediatype']==null || $post['mediatype']=='' || $post['mediatype']=='undefined')? "Media type required":$error;
             $error =($post['groupid']==null || $post['groupid']=='' || $post['groupid']=='undefined' || !is_numeric($post['groupid']))? "please input a valid group id":$error;
             $group  = $this->getGroupTable()->getPlanetinfo($post['groupid']);
             $error =(empty($group)||$group->group_id=='')?"Given group not exist in this system":$error;
+            $error =(empty($userinfo))?"Invalid Access Token.":$error;
+            if (!empty($error)){
+                $dataArr[0]['flag'] = $this->flagFailure;
+                $dataArr[0]['message'] = $error;
+                echo json_encode($dataArr);
+                exit;
+            }
+            $error =(empty($this->getUserGroupTable()->getGroupUserDetails($group->group_id,$userinfo->user_id)))?"User has no permission or not a member of the group to post.":$error;
             if (!empty($error)){
                 $dataArr[0]['flag'] = $this->flagFailure;
                 $dataArr[0]['message'] = $error;
@@ -101,11 +116,19 @@ class GroupPostsController extends AbstractActionController
                         $newActivity_id = $this->getActivityTable()->createActivity($objActivty);
                         if($newActivity_id){
                             $msg = $userinfo->user_given_name." added a new event under the group ".$group->group_title;
+                            $base_url = $config['pathInfo']['base_url'];
                             $subject = 'New event added';
+                            $from = 'admin@jeera.com';
                             switch($post['membertype']){
                                 case "allmembers":
                                     $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($group->group_id);
-                                    $this->grouppostNotifications($joinedMembers, $subject, $msg, $userinfo, $group);
+                                    if (count($joinedMembers)){
+                                        foreach($joinedMembers as $members){
+                                            if($members->user_group_user_id!=$userinfo->user_id){
+                                                $this->UpdateNotifications($members->user_group_user_id,$msg,2,$subject,$from,$userinfo->user_id,$group->group_id);
+                                            }
+                                        }
+                                    }
                                     break;
                                 case "friends":
                                     $friends = $this->getUserFriendTable()->userFriends($userinfo->user_id);
@@ -113,16 +136,18 @@ class GroupPostsController extends AbstractActionController
                                     break;
                                 case "invitemembers":
                                     $invited_members = $post['invitemembers'];
+                                    $invited_members = explode(",", $invited_members[0]);
                                     if(!empty($invited_members)){
                                         $config = $this->getServiceLocator()->get('Config');
                                         $base_url = $config['pathInfo']['base_url'];
                                         $from = 'admin@jeera.com';
                                         foreach($invited_members as $members){
                                             $usermemberinfo = $this->getUserTable()->getUser($members);
-                                            if(!empty($usermemberinfo)&&$usermemberinfo->user_id){
+                                            $groupmemberdata = $this->getUserGroupTable()->getGroupUserDetails($group->group_id,$usermemberinfo->user_id);
+                                            if(!empty($usermemberinfo) && !empty($groupmemberdata) && $usermemberinfo->user_id && $groupmemberdata->user_group_user_id){
                                                 $objActivityInvite = new ActivityInvite();
-                                                $objActivityInvite->group_activity_invite_sender_user_id = $usermemberinfo->user_id;
-                                                $objActivityInvite->group_activity_invite_receiver_user_id = $members;
+                                                $objActivityInvite->group_activity_invite_sender_user_id = $userinfo->user_id;
+                                                $objActivityInvite->group_activity_invite_receiver_user_id = $groupmemberdata->user_group_user_id;
                                                 $objActivityInvite->group_activity_invite_status = 'invited';
                                                 $objActivityInvite->group_activity_invite_activity_id = $newActivity_id;
                                                 $this->getActivityInviteTable()->saveActivityInvite($objActivityInvite);
@@ -293,5 +318,9 @@ class GroupPostsController extends AbstractActionController
 	public function getActivityRsvpTable(){
 		$sm = $this->getServiceLocator();
 		return  $this->activityRsvpTable = (!$this->activityRsvpTable)?$sm->get('Activity\Model\ActivityRsvpTable'):$this->activityRsvpTable;
+    }
+    public function getActivityInviteTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->groupActivityInviteTable = (!$this->groupActivityInviteTable)?$sm->get('Activity\Model\ActivityInviteTable'):$this->groupActivityInviteTable;
     }
 }
