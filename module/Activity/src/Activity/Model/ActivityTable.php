@@ -46,7 +46,7 @@ class ActivityTable extends AbstractTableGateway
 			if($where){	$select->where($where); }
 			if($order){ $select->order($order); }
 			if($limit){ $select->limit($limit); }
-			if($offset){ $select->offset($offset);  }		
+			if($offset){ $select->offset($offset); }
 			//echo $select->getSqlString();exit;
 		});		 
 		return $resultSet;
@@ -112,7 +112,7 @@ class ActivityTable extends AbstractTableGateway
         $row = $rowset->current();
         return $row;
     }	
-	//this will fetch the activites of a Galaxy
+	//this will fetch the activities of a Galaxy
 	public function getGroupAllActivity($group_id){        
        	$group_id = (int) $group_id; 
 		$resultSet = $this->select(function (Select $select) use ($group_id) {
@@ -122,7 +122,7 @@ class ActivityTable extends AbstractTableGateway
 		return $resultSet;	 
     }
 	
-	//THis function will be used for calender for fetching activites of User register
+	//this function will be used for calender for fetching activities of User register
 	public function getUserJoinedActivityForCalender($year, $month, $user_id){
 		$year = (int) $year;
 		$month = (int) $month;

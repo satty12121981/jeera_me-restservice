@@ -1,4 +1,12 @@
 <?php
+/**
+ * Zend Framework (http://framework.zend.com/)
+ *
+ * @link      http://github.com/zendframework/ZendSkeletonApplication for the canonical source repository
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
+
 namespace Service\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
@@ -9,7 +17,10 @@ use \Exception;
 
 class GroupsController extends AbstractActionController
 {
-    public $form_error ;
+                                                
+        public $form_error ;
+        public $flagSuccess;
+	public $flagError;
 	protected $userTable;
 	protected $userProfileTable;
 	protected $userFriendTable;
@@ -23,11 +34,17 @@ class GroupsController extends AbstractActionController
 	protected $commentTable;
 	protected $activityRsvpTable;
 	protected $groupTagTable;
+	 
+    protected $groupJoiningQuestionnaire;
+    protected $groupQuestionnaireOptions;
+    protected $groupJoiningInvitationTable;
+    protected $userGroupJoiningRequestTable;
+    protected $groupQuestionnaireAnswersTable;
 	
-	public function init(){
+    public function __construct(){
         $this->flagSuccess = "Success";
-		$this->flagError = "Failure";
-	}
+        $this->flagError = "Failure";
+    }
     public function exploregroupsAction(){
     	$error = '';
 		$request   = $this->getRequest();
@@ -593,6 +610,285 @@ class GroupsController extends AbstractActionController
 		return $return_photo;
 
 	}
+	public function getGroupQuestionsAction() {
+        $dataArr                                                    = array();               // declare array for response data
+        $arrQuestions                                               = array();              // declare array for questions
+        $request                                                    = $this->getRequest(); // create request object
+
+        // if request is of type POST
+        if ($request->isPost()) {
+            // create post object
+            $post                                                   = $request->getPost();
+            // get access token
+			$accToken                                               = (isset($post['accesstocken']) && $post['accesstocken'] != null && $post['accesstocken'] != '' && $post['accesstocken'] != 'undefined') ? strip_tags(trim($post['accesstocken'])) : '';
+            // get group id
+             $intGroupId                                            = (isset($post['GroupId']) && $post['GroupId'] != null && $post['GroupId'] != '' && $post['GroupId'] != 'undefined') ? strip_tags(trim($post['GroupId'])) : '';
+
+             // check access token
+             if ($accToken == '') {
+				$dataArr[0]['flag']                                 = $this->flagError;
+				$dataArr[0]['message']                              = "Request Not Authorised.";
+                $dataArr[0]['questions']                            = $arrQuestions;
+				echo json_encode($dataArr);
+				exit;
+             }
+             // check user id
+             if ($intGroupId == '') {
+                    $dataArr[0]['flag']                             = $this->flagError;
+                    $dataArr[0]['message']                          = "Request Not Authorised.";
+                    $dataArr[0]['questions']                        = $arrQuestions;
+                    echo json_encode($dataArr);
+                    exit;
+             }
+
+             // get user details on the basis of access token
+			$user_details                                           = $this->getUserTable()->getUserByAccessToken($accToken);
+
+            if(!empty($user_details)) {
+                // get user id on the basis of access token i.e. the user which is logged in
+                $loggedin_userId                                    = $user_details->user_id;
+
+                // get group
+                $arrGroup                                           = $this->getGroupTable()->getPlanetinfo($intGroupId);
+                if(!empty($arrGroup)) {
+                    // get questions
+                     $arrQuestionnaire                              = $this->getGroupJoiningQuestionnaireTable()->getQuestionnaireArray($intGroupId);
+                     if(!empty($arrQuestionnaire)){
+                         $ctr                                       = 0;
+                         foreach($arrQuestionnaire as $question){
+                             $arrQuestions[$ctr]['questionnaire_id']    = $question['questionnaire_id'];
+                             $arrQuestions[$ctr]['question']            = $question['question'];
+                             $arrQuestions[$ctr]['answer_type']         = strtolower($question['answer_type']);
+
+                             // check answer type for options
+                             if($question['answer_type'] == 'checkbox' || $question['answer_type'] == 'radio'){
+                                $arrOptionsDetails                 = $this->getGroupQuestionnaireOptionsTable()->getoptionOfOneQuestion($question['questionnaire_id']);
+                                $arrOptions                        = array();
+                                $optCtr                            = 0;
+                                foreach($arrOptionsDetails as $option){
+                                    $arrOptions[$optCtr]['option_id']  = $option['option_id'];
+                                    $arrOptions[$optCtr]['option']     = $option['option'];
+                                    $optCtr++;
+                                }// foreach
+                                $arrQuestions[$ctr]['options']          = $arrOptions;
+                             }// if check answer type
+                             $ctr++;
+                         }// foreach
+                            $dataArr[0]['flag']                     = $this->flagSuccess;
+                            $dataArr[0]['message']                  = "";
+                            $dataArr[0]['questions']                = $arrQuestions;
+                     }else{
+                        $dataArr[0]['flag']                         = $this->flagSuccess;
+                        $dataArr[0]['message']                      = "No question exists for this group.";
+                        $dataArr[0]['questions']                    = $arrQuestions;
+                     }
+                }else{
+                    $dataArr[0]['flag']                             = $this->flagError;
+                    $dataArr[0]['message']                          = "Group not exist in the system.";
+                    $dataArr[0]['questions']                        = $arrQuestions;
+                }
+            }else{
+                $dataArr[0]['flag']                                 = $this->flagError;
+				$dataArr[0]['message']                              = "Invalid Access Token.";
+                $dataArr[0]['questions']                            = $arrQuestions;
+            }
+        }else{
+            $dataArr[0]['flag']                                     = $this->flagError;
+			$dataArr[0]['message']                                  = "Request Not Authorised.";
+            $dataArr[0]['questions']                                = $arrQuestions;
+        }
+
+        echo json_encode($dataArr);
+        exit;
+
+    }	  
+      public function joinGroupAction() {
+        $dataArr                                                    = array();               // declare array for response data
+        $arrQuestions                                               = array();              // declare array for questions/answer
+        $request                                                    = $this->getRequest(); // create request object
+
+        // if request is of type POST
+        if ($request->isPost()) {
+             $post                                                  = $request->getPost();
+            // get access token
+			$accToken                                               = (isset($post['accesstocken']) && $post['accesstocken'] != null && $post['accesstocken'] != '' && $post['accesstocken'] != 'undefined') ? strip_tags(trim($post['accesstocken'])) : '';
+            // get group id
+             $intGroupId                                            = (isset($post['GroupId']) && $post['GroupId'] != null && $post['GroupId'] != '' && $post['GroupId'] != 'undefined') ? strip_tags(trim($post['GroupId'])) : '';
+             // question ans answers0
+             $arrQuestionAnswer                                     = (isset($post['QuestionAnswers']) && $post['QuestionAnswers'] != null && $post['QuestionAnswers'] != '' && $post['QuestionAnswers'] != 'undefined') ? strip_tags(trim($post['QuestionAnswers'])) : '';
+
+            // check access token
+            if ($accToken != '') {
+                 // check group id
+                 if ($intGroupId != '') {
+                    // get user details on the basis of access token
+                    $user_details                                   = $this->getUserTable()->getUserByAccessToken($accToken);
+                    if(!empty($user_details)) {
+                        // get user id on the basis of access token i.e. the user which is logged in
+                        $loggedin_userId                            = $user_details->user_id;
+                        // get group
+                        $arrGroup                                   = $this->getGroupTable()->getPlanetinfo($intGroupId);
+                        if(!empty($arrGroup)) {
+                            $strGroupType                           = $arrGroup['group_type'];
+                            // check user if already  the member or not
+                            $usergroup                              = $this->getUserGroupTable()->getUserGroup($loggedin_userId,$intGroupId);
+                            if(empty($usergroup)){
+                                // check the question and options
+                                $questionStatus                     = $this->fncValidateQuestionAnswer($intGroupId, $arrQuestionAnswer);
+                                if($questionStatus == 0){
+                                    // for open group
+                                    if($arrGroup['group_type'] == 'open'){
+                                        $user_data['user_group_user_id']    = $loggedin_userId;
+                                        $user_data['user_group_group_id']   = $intGroupId;
+                                        $user_data['user_group_status']     = "available";
+                                        $this->getUserGroupTable()->AddMembersTOGroup($user_data);
+                                        //save question and answer
+                                        $this->fncSaveQuestionAnswer($intGroupId, $loggedin_userId, $arrQuestionAnswer);
+
+                                        $dataArr[0]['flag']                 = $this->flagSuccess;
+                                        $dataArr[0]['message']              = "User added into group.";
+                                    }else if($arrGroup['group_type'] == 'private'){// for private group
+                                        // check invitation existence
+                                        $invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($loggedin_userId,$intGroupId);
+                                        if($invitedHystory['user_group_joining_invitation_id'] != ''){
+                                            $user_data['user_group_user_id']    = $loggedin_userId;
+                                            $user_data['user_group_group_id']   = $intGroupId;
+                                            $user_data['user_group_status']     = "available";
+                                            $this->getUserGroupTable()->AddMembersTOGroup($user_data);
+
+                                            //save question and answer
+                                            $this->fncSaveQuestionAnswer($intGroupId, $loggedin_userId, $arrQuestionAnswer);
+
+                                            $dataArr[0]['flag']                 = $this->flagSuccess;
+                                            $dataArr[0]['message']              = "User added into group.";
+                                        }else{
+                                            $dataArr[0]['flag']                 = $this->flagError;
+                                            $dataArr[0]['message']              = "Invitation does not exist in system.";
+                                        }
+                                    }else if($arrGroup['group_type'] == 'public'){
+                                        // check request existence
+                                         $invitedHystory = $this->getUserGroupJoiningRequestTable()->checkIfrequestExist($loggedin_userId,$intGroupId);
+                                         if($invitedHystory['user_group_joining_request_id'] == ''){
+                                                $user_data['user_group_joining_request_user_id']    = $loggedin_userId;
+                                                $user_data['user_group_joining_request_group_id']   = $intGroupId;
+                                                $user_data['user_group_joining_request_status']     = "active";
+                                                $this->getUserGroupJoiningRequestTable()->AddRequestTOGroup($user_data);
+
+                                                //save question and answer
+                                                $this->fncSaveQuestionAnswer($intGroupId, $loggedin_userId, $arrQuestionAnswer);
+
+                                                $dataArr[0]['flag']     = $this->flagSuccess;
+                                                $dataArr[0]['message']  = "Request has been sent.";
+                                         }else{
+                                             $dataArr[0]['flag']        = $this->flagError;
+                                             $dataArr[0]['message']     = "Request has already been sent.";
+                                         }
+                                    }
+                                }else{
+                                    $dataArr[0]['flag']             = $this->flagError;
+                                    $dataArr[0]['message']          = "Invalid question or options.";
+                                }
+                            }else{
+                                $dataArr[0]['flag']                 = $this->flagError;
+                                $dataArr[0]['message']              = "User is already the group member.";
+                            }
+                        }else{
+                            $dataArr[0]['flag']                     = $this->flagError;
+                            $dataArr[0]['message']                  = "Group not exist in the system.";
+                        }
+                    }else{
+                        $dataArr[0]['flag']                         = $this->flagError;
+                        $dataArr[0]['message']                      = "Invalid Access Token.";
+                    }
+                }else{
+                    $dataArr[0]['flag']                             = $this->flagError;
+                    $dataArr[0]['message']                          = "Request Not Authorised.";
+                }
+            }else{
+                $dataArr[0]['flag']                                 = $this->flagError;
+				$dataArr[0]['message']                              = "Request Not Authorised.";
+            }
+        }else{
+            $dataArr[0]['flag']                                     = $this->flagError;
+			$dataArr[0]['message']                                  = "Request Not Authorised.";
+        }
+
+        echo json_encode($dataArr);
+        exit;
+     }
+                                                
+    public function fncSaveQuestionAnswer($intGroupId, $intUserId, $jsonQuestionAnswer){
+        if($jsonQuestionAnswer != ''){
+             $arrQuestionList                 = json_decode($jsonQuestionAnswer, TRUE);
+
+             if(!empty($arrQuestionList)){
+                 foreach($arrQuestionList as $question){
+                     $arrQuestionDetails            = $this->getGroupJoiningQuestionnaireTable()->getQuestionFromQuestionId($question['questionnaire_id']);
+                     if(!empty($arrQuestionDetails)){
+                         $data                          = array();
+                        $arrGroupQuestion = $this->getGroupJoiningQuestionnaireTable()->getQuestionFromQuestionIdAndGroupId($question['questionnaire_id'], $intGroupId);
+                        if(!empty($arrGroupQuestion)){
+                            if($question['answer_type'] == 'radio'|| $question['answer_type'] == 'checkbox'){
+                               $data['group_id']           = $intGroupId;
+                               $data['question_id']        = $question['questionnaire_id'];
+                               $data['selected_options']   = $question['selected_options'];
+                               $data['added_user_id']      = $intUserId;
+                           }else{
+                               $data['group_id']           = $intGroupId;
+                               $data['question_id']        = $question['questionnaire_id'];
+                               $data['answer']             = $question['answer'];
+                               $data['added_user_id']      = $intUserId;
+                           }
+                           // save question with answers
+                           $this->getGroupQuestionnaireAnswersTable()->AddAnswer($data);
+                        }
+                     }
+
+                 }// foreach
+             }
+        }
+    }
+
+    // fucntion to validate question and answer
+    public function fncValidateQuestionAnswer($intGroupId, $jsonQuestionAnswer){
+        $questionError  = 0;
+        // check question/ answer
+        if($jsonQuestionAnswer != ''){
+             $arrQuestionList                = json_decode($jsonQuestionAnswer, TRUE);
+             if(!empty($arrQuestionList)){
+                  foreach($arrQuestionList as $question){
+                     // check question existence
+                     $arrQuestionDetails     = $this->getGroupJoiningQuestionnaireTable()->getQuestionFromQuestionId($question['questionnaire_id']);
+                     if(!empty($arrQuestionDetails)){
+                         // check group's question
+                         $arrGroupQuestion   = $this->getGroupJoiningQuestionnaireTable()->getQuestionFromQuestionIdAndGroupId($question['questionnaire_id'], $intGroupId);
+                         if(!empty($arrGroupQuestion)){
+                            if($question['answer_type'] == 'radio'|| $question['answer_type'] == 'checkbox'){
+                                if(trim($question['selected_options']) != ''){
+                                    // check options
+                                    $sptOption   = explode(',',$question['selected_options']);
+                                    for($a=0; $a<count($sptOption); $a++ ){
+                                       $arrOption   = $this->getGroupQuestionnaireOptionsTable()->getSelectedOptionDetails($sptOption[0]);
+                                       if($arrOption[0]['question_id'] != $question['questionnaire_id']){
+                                           $questionError   = 1;
+                                       }
+                                    }// for
+                                }else{
+                                  $questionError   = 1;
+                                }
+                             }
+                         }else{
+                             $questionError      = 1;
+                         }
+                     }else{
+                             $questionError      = 1;
+                     }
+                  }// foreach
+             }
+         }
+
+         return $questionError;
+    }
     public function timeAgo($time_ago){ //echo $time_ago;die();
 		$time_ago = strtotime($time_ago);
 		$cur_time   = time();
@@ -658,7 +954,7 @@ class GroupsController extends AbstractActionController
 			}
 		}
 	}
-	public function get_youtube_id_from_url($url){
+	public function  get_youtube_id_from_url($url){
 		if (stristr($url,'youtu.be/'))
 			{preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return $final_ID[4]; }
 		else 
@@ -715,5 +1011,29 @@ class GroupsController extends AbstractActionController
 	public function getUserFriendTable(){
 		$sm = $this->getServiceLocator();
 		return  $this->userFriendTable = (!$this->userFriendTable)?$sm->get('User\Model\UserFriendTable'):$this->userFriendTable;    
+	}	 
+    public function getGroupTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupTable = (!$this->groupTable)?$sm->get('Groups\Model\GroupsTable'):$this->groupTable;
+    } 
+    public function getGroupJoiningQuestionnaireTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupJoiningQuestionnaire = (!$this->groupJoiningQuestionnaire)?$sm->get('Groups\Model\GroupJoiningQuestionnaireTable'):$this->groupJoiningQuestionnaire;
+    } 
+    public function getGroupQuestionnaireOptionsTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupQuestionnaireOptions = (!$this->groupQuestionnaireOptions)?$sm->get('Groups\Model\GroupQuestionnaireOptionsTable'):$this->groupQuestionnaireOptions;
+    } 
+    public function getGroupJoiningInvitationTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupJoiningInvitationTable = (!$this->groupJoiningInvitationTable)?$sm->get('Groups\Model\UserGroupJoiningInvitationTable'):$this->groupJoiningInvitationTable;
+    } 	
+    public function getUserGroupJoiningRequestTable(){
+		$sm = $this->getServiceLocator();
+        return  $this->userGroupJoiningRequestTable = (!$this->userGroupJoiningRequestTable)?$sm->get('Groups\Model\UserGroupJoiningRequestTable'):$this->userGroupJoiningRequestTable;
+    } 
+    public function getGroupQuestionnaireAnswersTable(){
+		$sm = $this->getServiceLocator();
+        return  $this->groupQuestionnaireAnswersTable = (!$this->groupQuestionnaireAnswersTable)?$sm->get('Groups\Model\GroupQuestionnaireAnswersTable'):$this->groupQuestionnaireAnswersTable;
 	}
 }

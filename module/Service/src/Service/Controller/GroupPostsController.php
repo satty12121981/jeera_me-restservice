@@ -53,9 +53,10 @@ class GroupPostsController extends AbstractActionController
             }
             $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error =($post['mediatype']==null || $post['mediatype']=='' || $post['mediatype']=='undefined')? "Media type required":$error;
+            $error =($post['mediatype']!="status" && $post['mediatype']!="image" && $post['mediatype']!="video" && $post['mediatype']!="event")? "please post with valid media type":$error;
             $error =($post['groupid']==null || $post['groupid']=='' || $post['groupid']=='undefined' || !is_numeric($post['groupid']))? "please input a valid group id":$error;
             $group  = $this->getGroupTable()->getPlanetinfo($post['groupid']);
-            $error =(empty($group)||$group->group_id=='')?"Given group not exist in this system":$error;
+            $error =(empty($group)||$group->group_id=='')?"Given group not exist in the system":$error;
             $error =(empty($userinfo))?"Invalid Access Token.":$error;
             if (!empty($error)){
                 $dataArr[0]['flag'] = $this->flagFailure;
@@ -63,7 +64,8 @@ class GroupPostsController extends AbstractActionController
                 echo json_encode($dataArr);
                 exit;
             }
-            $error =(empty($this->getUserGroupTable()->getGroupUserDetails($group->group_id,$userinfo->user_id)))?"User has no permission or not a member of the group to post.":$error;
+            $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($group->group_id,$userinfo->user_id);
+            $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group to post.":$error;
             if (!empty($error)){
                 $dataArr[0]['flag'] = $this->flagFailure;
                 $dataArr[0]['message'] = $error;
@@ -83,12 +85,13 @@ class GroupPostsController extends AbstractActionController
                         $IdDiscussion = $this->getDiscussionTable()->saveDiscussion($objDiscusion);
                         if($IdDiscussion){
                             $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($group->group_id);
-                            $subject = 'New status added';
-                            $msg = $userinfo->user_given_name . " added a new status under the group " . $group->group_title;
-                            $this->grouppostNotifications($joinedMembers, $subject, $msg, $userinfo, $group);
+                            $msg = $userinfo->user_given_name." added a new status under the group ".$group->group_title;
+							$subject = 'New status added';
+							$process = 'New Discussion';
+                            $this->grouppostNotifications($joinedMembers, $subject, $msg, $userinfo,$IdDiscussion,6,$process);
                             $dataArr[0]['flag'] = $this->flagSuccess;
                             $error = "Status posted successfully";
-                        }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "Some error occured. Please try again";}
+                        }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "Some error occurred. Please try again";}
                     }else{
                         $dataArr[0]['flag'] = $this->flagFailure;
                     }
@@ -111,28 +114,30 @@ class GroupPostsController extends AbstractActionController
                         $objActivty->group_activity_type = 'open';
                         $objActivty->group_activity_start_timestamp = date("Y-m-d H:i:s",$stamp);
                         $objActivty->group_activity_location = $post['location'];
-                        $objActivty->group_activity_location_lat = $post['location_lat'];
-                        $objActivty->group_activity_location_lng = $post['location_lng'];
+                        $objActivty->group_activity_location_lat = (isset($post['location_lat']))?$post['location_lat']:"";
+                        $objActivty->group_activity_location_lng = (isset($post['location_lng']))?$post['location_lng']:"";
                         $newActivity_id = $this->getActivityTable()->createActivity($objActivty);
                         if($newActivity_id){
                             $msg = $userinfo->user_given_name." added a new event under the group ".$group->group_title;
                             $base_url = $config['pathInfo']['base_url'];
                             $subject = 'New event added';
                             $from = 'admin@jeera.com';
+							$process = 'New Event';
+                            if(!isset($post['membertype']) || empty($post['membertype'])) $post['membertype'] = "allmembers";
                             switch($post['membertype']){
                                 case "allmembers":
                                     $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($group->group_id);
                                     if (count($joinedMembers)){
                                         foreach($joinedMembers as $members){
                                             if($members->user_group_user_id!=$userinfo->user_id){
-                                                $this->UpdateNotifications($members->user_group_user_id,$msg,2,$subject,$from,$userinfo->user_id,$group->group_id);
+                                                $this->UpdateNotifications($members->user_group_user_id,$msg,7,$subject,$from,$userinfo->user_id,$newActivity_id,$process);
                                             }
                                         }
                                     }
                                     break;
                                 case "friends":
                                     $friends = $this->getUserFriendTable()->userFriends($userinfo->user_id);
-                                    $this->grouppostNotifications($friends, $subject, $msg, $userinfo, $group);
+                                    $this->grouppostNotifications($friends, $subject, $msg, $userinfo, $newActivity_id,7,$process);
                                     break;
                                 case "invitemembers":
                                     $invited_members = $post['invitemembers'];
@@ -151,7 +156,7 @@ class GroupPostsController extends AbstractActionController
                                                 $objActivityInvite->group_activity_invite_status = 'invited';
                                                 $objActivityInvite->group_activity_invite_activity_id = $newActivity_id;
                                                 $this->getActivityInviteTable()->saveActivityInvite($objActivityInvite);
-                                                $this->UpdateNotifications($members,$msg,2,$subject,$from,$userinfo->user_id,$group->group_id);
+                                                $this->UpdateNotifications($members,$msg,7,$subject,$from,$userinfo->user_id,$newActivity_id,$process);
                                             }
                                         }
                                     }
@@ -191,7 +196,8 @@ class GroupPostsController extends AbstractActionController
                                     $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($group->group_id);
                                     $msg = $userinfo->user_given_name." added a new image under the group ".$group->group_title;
                                     $subject = 'New image added';
-                                    $this->grouppostNotifications($joinedMembers, $subject, $msg, $userinfo, $group);
+									$process = 'New Media';
+                                    $this->grouppostNotifications($joinedMembers, $subject, $msg, $userinfo,$addeditem,8,$process);
                                     $dataArr[0]['flag'] = $this->flagSuccess; $error = "media posted successfully";
                                 }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "Some error occcured. Please try again"; }
                             }
@@ -201,7 +207,7 @@ class GroupPostsController extends AbstractActionController
                         }
                     }else{
                         $dataArr[0]['flag'] = $this->flagFailure;
-                        $error = "Select one image to upload and continue";
+                        $error = "Select a image to upload and continue";
                     }
                     break;
                 case 'video':
@@ -219,7 +225,8 @@ class GroupPostsController extends AbstractActionController
                             $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($group->group_id);
                             $msg = $userinfo->user_given_name." added a new video under the group ".$group->group_title;
                             $subject = 'New video added';
-                            $this->grouppostNotifications($joinedMembers, $subject, $msg, $userinfo, $group);
+							$process = 'New Media';
+                            $this->grouppostNotifications($joinedMembers, $subject, $msg, $userinfo, $addeditem,8,$process);
                             $dataArr[0]['flag'] = $this->flagSuccess; $error = "media posted successfully";
                         }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "Some error occcured. Please try again"; }
                     }else{
@@ -249,19 +256,19 @@ class GroupPostsController extends AbstractActionController
             return TRUE;
         return FALSE;
     }
-    public function grouppostNotifications($joinedMembers, $subject, $msg, $userinfo, $group){
+    public function grouppostNotifications($joinedMembers, $subject, $msg, $userinfo, $reference_id,$type,$process){
         if (count($joinedMembers)) {
             $config = $this->getServiceLocator()->get('Config');
             $base_url = $config['pathInfo']['base_url'];
             $from = 'admin@jeera.com';
             foreach ($joinedMembers as $members) {
                 if ($members->user_group_user_id != $userinfo->user_id) {
-                    $this->UpdateNotifications($members->user_group_user_id, $msg, 2, $subject, $from, $userinfo->user_id, $group->group_id);
+                    $this->UpdateNotifications($members->user_group_user_id, $msg, $type, $subject, $from, $userinfo->user_id, $reference_id,$process);
                 }
             }
         }
     }
-    public function UpdateNotifications($user_notification_user_id,$msg,$type,$subject,$from,$sender,$reference_id){
+    public function UpdateNotifications($user_notification_user_id,$msg,$type,$subject,$from,$sender,$reference_id,$process){
         $UserGroupNotificationData = array();
         $UserGroupNotificationData['user_notification_user_id'] =$user_notification_user_id;
         $UserGroupNotificationData['user_notification_content']  = $msg;
@@ -270,7 +277,7 @@ class GroupPostsController extends AbstractActionController
         $UserGroupNotificationData['user_notification_status'] = 'unread';
         $UserGroupNotificationData['user_notification_sender_id'] = $sender;
         $UserGroupNotificationData['user_notification_reference_id'] = $reference_id;
-
+		$UserGroupNotificationData['user_notification_process'] = $process;
         #lets Save the User Notification
         $UserGroupNotificationSaveObject = new UserNotification();
         $UserGroupNotificationSaveObject->exchangeArray($UserGroupNotificationData);
