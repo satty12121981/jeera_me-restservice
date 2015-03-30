@@ -65,7 +65,7 @@ class UserGroupTable extends AbstractTableGateway
 		}
 		$statement = $this->adapter->createStatement();
 		$select->prepareStatement($this->adapter, $statement);
-		//echo $select->getSqlString();exit;
+		//echo $select->getSqlString();
 		$resultSet = new ResultSet();
 		$resultSet->initialize($statement->execute());	  
 	  	return $resultSet; 
@@ -212,7 +212,7 @@ class UserGroupTable extends AbstractTableGateway
 		$select = new Select;
 		$select->from('y2m_user_group')
 			   ->columns(array("user_group_user_id"))			   
-			   ->where(new Expression("(y2m_user_group.user_group_role!=0 OR user_group_is_owner = 1) AND y2m_user_group.user_group_group_id = ".$group_id));
+			   ->where("(y2m_user_group.user_group_role!=0 OR user_group_is_owner = 1) AND y2m_user_group.user_group_group_id = ".$group_id);
 		$statement = $this->adapter->createStatement();
 		//echo $select->getSqlString();exit;
 		$select->prepareStatement($this->adapter, $statement);		 
@@ -552,7 +552,6 @@ class UserGroupTable extends AbstractTableGateway
 		if($city!=''){
 			$select->where(array('y2m_city.city_id'=>$city));
 		}
-
 		if(isset($category[0]) && $category[0] !=''){
 			$select->where->in("y2m_tag_category.tag_category_id",$category);
 		}
@@ -563,11 +562,11 @@ class UserGroupTable extends AbstractTableGateway
 		$select->limit((int) $limit);
 		$select->offset((int) $offset);
 		$statement = $this->adapter->createStatement();
-		//echo $select->getSqlString(); exit;
+		//echo $select->getSqlString();
 		$select->prepareStatement($this->adapter, $statement);
 		$resultSet = new ResultSet();
 		$resultSet->initialize($statement->execute());
-        	return $resultSet->toArray();
+        return $resultSet->toArray();
 	}
 	public function fetchAllUserGroupCount($user_id,$visitor_id, $strType,$profile_type){ 
         // creating condition for gropu navigations
@@ -733,7 +732,7 @@ class UserGroupTable extends AbstractTableGateway
 		if($type == 'Owners'){
 			$select->where('(user_group_role =1 OR user_group_is_owner=1)');
 		}
-        $select->order(array('user_group_is_owner DESC','user_group_role DESC'));
+		$select->order(array('user_group_is_owner DESC','user_group_role DESC'));
 		$select->limit($limit);
 	    $select->offset($offset);
 		$statement = $this->adapter->createStatement();

@@ -109,6 +109,27 @@ class GroupsController extends AbstractActionController
 					$list['group_photo_photo'] = $config['pathInfo']['absolute_img_path'].'/images/group-img_def.jpg';
 					$tag_category = $this->getGroupTagTable()->getAllGroupTagCategiry($list['group_id']);
 					$tags = $this->getGroupTagTable()->fetchAllGroupTags($list['group_id']);
+                    $groupUsers = $this->getUserGroupTable()->getMembers($list['group_id'],$user_id,"",0,5);
+                    $arrMembers = array();
+                    if (!empty($groupUsers)) {
+                        foreach ($groupUsers as $f_list) {
+                            $profile_photo = $this->manipulateProfilePic($user_id, $f_list['profile_icon'], $f_list['user_fbid']);
+                            $arrMembers[] = array(
+                                'user_id'=>$f_list['user_id'],
+                                'user_given_name'=>$f_list['user_given_name'],
+                                'user_profile_name'=>$f_list['user_profile_name'],
+                                'country_title'=>$f_list['country_title'],
+                                'country_code'=>$f_list['country_code'],
+                                'city'=>$f_list['city'],
+                                'profile_photo'=>$profile_photo,
+                                'is_admin'=>$f_list['is_admin'],
+                                'user_group_is_owner'=>$f_list['user_group_is_owner'],
+                                'user_group_role'=>$f_list['user_group_role']
+                            );
+
+                        }
+                        $flag = 1;
+                    }
 					$temptags = array();
 					foreach($tags as $tags_list){						 
 						$temptags[] = array('tag_id'=>$tags_list['tag_id'],
@@ -139,6 +160,7 @@ class GroupsController extends AbstractActionController
 						'tag_category_count' =>count($tag_category),
 						'tag_category' =>$tag_category_temp,
 						'tags' =>$temptags,
+                        'groupmembers'=>$arrMembers,
 						);
 				}
 				$dataArr[0]['flag'] = "Success";
@@ -702,7 +724,7 @@ class GroupsController extends AbstractActionController
         exit;
 
     }	  
-      public function joinGroupAction() {
+    public function joinGroupAction() {
         $dataArr                                                    = array();               // declare array for response data
         $arrQuestions                                               = array();              // declare array for questions/answer
         $request                                                    = $this->getRequest(); // create request object
@@ -816,7 +838,6 @@ class GroupsController extends AbstractActionController
         echo json_encode($dataArr);
         exit;
      }
-                                                
     public function fncSaveQuestionAnswer($intGroupId, $intUserId, $jsonQuestionAnswer){
         if($jsonQuestionAnswer != ''){
              $arrQuestionList                 = json_decode($jsonQuestionAnswer, TRUE);
@@ -848,8 +869,7 @@ class GroupsController extends AbstractActionController
              }
         }
     }
-
-    // fucntion to validate question and answer
+    // function to validate question and answer
     public function fncValidateQuestionAnswer($intGroupId, $jsonQuestionAnswer){
         $questionError  = 0;
         // check question/ answer

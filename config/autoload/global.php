@@ -14,7 +14,7 @@
 return array(
     'db' => array(
         'driver'         => 'Pdo',
-        'dsn'            => 'mysql:dbname=y2m_jeerav1.2;host=localhost',
+        'dsn'            => 'mysql:dbname=y2m_jeera_admin;host=localhost',
 		'username'       => 'root',
         'password'       => '',
         'driver_options' => array(
