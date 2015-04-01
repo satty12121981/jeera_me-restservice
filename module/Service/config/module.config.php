@@ -105,6 +105,8 @@ return array(
             'Service\Controller\Groups' => 'Service\Controller\GroupsController',          
             'Service\Controller\Tags' => 'Service\Controller\TagsController',
             'Service\Controller\GroupPosts' => 'Service\Controller\GroupPostsController',
+            'Service\Controller\Activity' => 'Service\Controller\ActivityController',
+            'Service\Controller\Like' => 'Service\Controller\LikeController',
         ),
     ),   
     

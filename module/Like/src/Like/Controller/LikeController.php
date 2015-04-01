@@ -44,7 +44,7 @@ class LikeController extends AbstractActionController
 	public function indexAction(){
 		return $this;
 	}	
-	#This will load all Subgroups Of Group   
+	#This will like post and cooments
 	public function LikesAction() {		
 		$error = '';
 		$like_count = 0;
