@@ -142,6 +142,28 @@ class LikeTable extends AbstractTableGateway
 		$resultSet->initialize($statement->execute());	  
 	  	return $resultSet->toArray(); 
 	}
+
+    public function likedUsersForRestAPI($LikeTypeId,$ReferenceId,$UserId,$limit,$offset){
+        $select = new Select;
+        $select->from('y2m_like')
+            ->columns(array('is_friend'=>new Expression('IF(EXISTS(SELECT * FROM y2m_user_friend WHERE  (y2m_user_friend.user_friend_sender_user_id = y2m_like.like_by_user_id AND y2m_user_friend.user_friend_friend_user_id = '.$UserId.')OR(y2m_user_friend.user_friend_friend_user_id = y2m_like.like_by_user_id AND y2m_user_friend.user_friend_sender_user_id = '.$UserId.')),1,0)'),
+                'is_requested'=>new Expression('IF(EXISTS(SELECT * FROM   y2m_user_friend_request WHERE  ( y2m_user_friend_request.user_friend_request_friend_user_id = y2m_like.like_by_user_id AND y2m_user_friend_request.user_friend_request_sender_user_id = '.$UserId.' AND y2m_user_friend_request.user_friend_request_status = 0) ),1,0)'),
+                'get_request'=>new Expression('IF(EXISTS(SELECT * FROM   y2m_user_friend_request WHERE  ( y2m_user_friend_request.user_friend_request_sender_user_id = y2m_like.like_by_user_id AND y2m_user_friend_request.user_friend_request_friend_user_id = '.$UserId.' AND y2m_user_friend_request.user_friend_request_status = 0) ),1,0)'),
+            ))
+            ->join('y2m_user', 'y2m_user.user_id = y2m_like.like_by_user_id', array('user_given_name','user_id','user_profile_name','user_register_type','user_fbid'))
+            ->join('y2m_user_profile_photo','y2m_user.user_profile_photo_id = y2m_user_profile_photo.profile_photo_id',array('profile_photo'),'left')
+            ->where(array('y2m_like.like_system_type_id' => $LikeTypeId,'y2m_like.like_refer_id' => $ReferenceId));
+        if($limit!=''){
+            $select->limit($limit);
+            $select->offset($offset);
+        }
+        $statement = $this->adapter->createStatement();
+        $select->prepareStatement($this->adapter, $statement);
+        //echo $select->getSqlString();exit;
+        $resultSet = new ResultSet();
+        $resultSet->initialize($statement->execute());
+        return $resultSet->toArray();
+    }
 	public function getUserLIkeCount($user_id){
 		$sql = "SELECT count(*) as like_count FROM (Select count(*)as cnt from y2m_like WHERE `like_by_user_id`=".$user_id." group by `like_refer_id`,`like_system_type_id`) as likes";
 		//echo $sql;die();

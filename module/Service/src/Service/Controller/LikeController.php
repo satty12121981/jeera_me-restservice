@@ -43,6 +43,7 @@ class LikeController extends AbstractActionController
 		$error = '';
 		$like_count = 0;
 		$str_liked_users = '';
+        $arrLikeMembers  = array();
         $request   = $this->getRequest();
         if ($request->isPost()){
             $post = $request->getPost();
@@ -64,36 +65,18 @@ class LikeController extends AbstractActionController
                     if($refer_id!=''){
                         $discussion_data = $this->getDiscussionTable()->getDiscussion($refer_id);
                         if(!empty($discussion_data)){
-
                             if($this->addLike($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id)){
                                 $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                 $like_count = $like_details->likes_counts;
                                 $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($discussion_data->group_discussion_group_id);
                                 $group  = $this->getGroupTable()->getPlanetinfo($discussion_data->group_discussion_group_id);
                                 if(!empty($like_details)){
-                                    $liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,2,0);
-                                    $arr_likedUsers = array();
-                                    if($like_details['is_liked']==1){
-                                        $arr_likedUsers[] = 'you';
-                                    }
-                                    if($like_details['likes_counts']>0&&!empty($liked_users)){
-                                        foreach($liked_users as $likeuser){
-                                            $arr_likedUsers[] = $likeuser['user_given_name'];
-                                        }
-                                    }
-                                    if(!empty($arr_likedUsers)){
-                                    $str_liked_users = implode(',',$arr_likedUsers);}
+                                    $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
                                 }
-                                foreach($joinedMembers as $members){
-                                    if($members->user_group_user_id!=$userinfo->user_id){
-                                        $config = $this->getServiceLocator()->get('Config');
-                                        $base_url = $config['pathInfo']['base_url'];
-                                        $msg = $userinfo->user_given_name." Like one status in the group ".$group->group_title;
-                                        $subject = 'Like status';
-                                        $from = 'admin@jeera.com';
-                                        $this->UpdateNotifications($members->user_group_user_id,$msg,2,$subject,$from,$userinfo->user_id,$refer_id);
-                                    }
-                                }
+                                $msg = $userinfo->user_given_name." Like one status in the group ".$group->group_title;
+                                $subject = 'Like status';
+                                $type = 6;
+                                $this->likedPostUsersNotifications($joinedMembers, $userinfo, $group, $refer_id, $msg, $subject,$type);
                             }
                         }else{$error = "Content Not exist";}
                     }else{$error = "Content Not exist";}
@@ -108,29 +91,12 @@ class LikeController extends AbstractActionController
                                 $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($media_data->media_added_group_id);
                                 $group  = $this->getGroupTable()->getPlanetinfo($media_data->media_added_group_id);
                                 if(!empty($like_details)){
-                                    $liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,2,0);
-                                    $arr_likedUsers = array();
-                                    if($like_details['is_liked']==1){
-                                        $arr_likedUsers[] = 'you';
-                                    }
-                                    if($like_details['likes_counts']>0&&!empty($liked_users)){
-                                        foreach($liked_users as $likeuser){
-                                            $arr_likedUsers[] = $likeuser['user_given_name'];
-                                        }
-                                    }
-                                    if(!empty($arr_likedUsers)){
-                                    $str_liked_users = implode(',',$arr_likedUsers);}
+                                    $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
                                 }
-                                foreach($joinedMembers as $members){
-                                    if($members->user_group_user_id!=$userinfo->user_id){
-                                        $config = $this->getServiceLocator()->get('Config');
-                                        $base_url = $config['pathInfo']['base_url'];
-                                        $msg = $userinfo->user_given_name." Like one media in the group ".$group->group_title;
-                                        $subject = 'Like Media';
-                                        $from = 'admin@jeera.com';
-                                        $this->UpdateNotifications($members->user_group_user_id,$msg,2,$subject,$from,$userinfo->user_id,$refer_id);
-                                    }
-                                }
+                                $msg = $userinfo->user_given_name." Like one media in the group ".$group->group_title;
+                                $subject = 'Like Media';
+                                $type = 8;
+                                $this->likedPostUsersNotifications($joinedMembers, $userinfo, $group, $refer_id, $msg, $subject,$type);
                             }
                         }else{$error = "Content Not exist";}
                     }else{$error = "Content Not exist";}
@@ -145,29 +111,12 @@ class LikeController extends AbstractActionController
                                 $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($activity_data->group_activity_group_id);
                                 $group  = $this->getGroupTable()->getPlanetinfo($activity_data->group_activity_group_id);
                                 if(!empty($like_details)){
-                                    $liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,2,0);
-                                    $arr_likedUsers = array();
-                                    if($like_details['is_liked']==1){
-                                        $arr_likedUsers[] = 'you';
-                                    }
-                                    if($like_details['likes_counts']>0&&!empty($liked_users)){
-                                        foreach($liked_users as $likeuser){
-                                            $arr_likedUsers[] = $likeuser['user_given_name'];
-                                        }
-                                    }
-                                    if(!empty($arr_likedUsers)){
-                                    $str_liked_users = implode(',',$arr_likedUsers);}
+                                    $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
                                 }
-                                foreach($joinedMembers as $members){
-                                    if($members->user_group_user_id!=$userinfo->user_id){
-                                        $config = $this->getServiceLocator()->get('Config');
-                                        $base_url = $config['pathInfo']['base_url'];
-                                        $msg = $userinfo->user_given_name." Like one activity in the group ".$group->group_title;
-                                        $subject = 'Like Activity';
-                                        $from = 'admin@jeera.com';
-                                        $this->UpdateNotifications($members->user_group_user_id,$msg,2,$subject,$from,$userinfo->user_id,$refer_id);
-                                    }
-                                }
+                                $subject = 'Like Activity';
+                                $from = 'admin@jeera.com';
+                                $type = 7;
+                                $this->likedPostUsersNotifications($joinedMembers, $userinfo, $group, $refer_id, $msg, $subject,$type);
                             }
                         }else{$error = "Content Not exist";}
                     }else{$error = "Content Not exist";}
@@ -180,18 +129,7 @@ class LikeController extends AbstractActionController
                                 $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                 $like_count = $like_details->likes_counts;
                                 if(!empty($like_details)){
-                                    $liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,2,0);
-                                    $arr_likedUsers = array();
-                                    if($like_details['is_liked']==1){
-                                        $arr_likedUsers[] = 'you';
-                                    }
-                                    if($like_details['likes_counts']>0&&!empty($liked_users)){
-                                        foreach($liked_users as $likeuser){
-                                            $arr_likedUsers[] = $likeuser['user_given_name'];
-                                        }
-                                    }
-                                    if(!empty($arr_likedUsers)){
-                                    $str_liked_users = implode(',',$arr_likedUsers);}
+                                    $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
                                 }
                                 if($comment_data->comment_by_user_id!=$userinfo->user_id){
                                     $config = $this->getServiceLocator()->get('Config');
@@ -199,7 +137,16 @@ class LikeController extends AbstractActionController
                                     $msg = $userinfo->user_given_name." Like your comment";
                                     $subject = 'Like status';
                                     $from = 'admin@jeera.com';
-                                    $this->UpdateNotifications($comment_data->comment_by_user_id,$msg,2,$subject,$from,$userinfo->user_id,$refer_id);
+                                    $process = 'comment like';
+                                    if($comment_data->comment_system_type_id == 1){
+                                            $this->UpdateNotifications($comment_data->comment_by_user_id,$msg,7,$subject,$from,$userinfo->user_id,$comment_data->comment_refer_id,$process);
+                                    }
+                                    else if($comment_data->comment_system_type_id == 2){
+                                            $this->UpdateNotifications($comment_data->comment_by_user_id,$msg,6,$subject,$from,$userinfo->user_id,$comment_data->comment_refer_id,$process);
+                                    }
+                                    else if($comment_data->comment_system_type_id == 4){
+                                            $this->UpdateNotifications($comment_data->comment_by_user_id,$msg,8,$subject,$from,$userinfo->user_id,$comment_data->comment_refer_id,$process);
+                                    }
                                 }
                             }
                         }else{$error = "Content Not exist";}
@@ -207,13 +154,39 @@ class LikeController extends AbstractActionController
                 break;
             }
         }
+        if (!empty($liked_users)) {
+            foreach ($liked_users as $f_list) {
+                $profile_photo = $this->manipulateProfilePic($f_list['user_id'], $f_list['profile_photo'], $f_list['user_fbid']);
+                $arrLikeMembers[] = array(
+                    'user_id'=>$f_list['user_id'],
+                    'user_fbid'=>$f_list['user_fbid'],
+                    'user_given_name'=>$f_list['user_given_name'],
+                    'user_profile_name'=>$f_list['user_profile_name'],
+                    'profile_photo'=>$profile_photo,
+                );
+
+            }
+        }
         $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
         $dataArr[0]['message'] = $error;
         $dataArr[0]['like_count'] = $like_count;
-        $dataArr[0]['liked_users'] = $str_liked_users	;
+        $dataArr[0]['liked_users'] = $arrLikeMembers;
         echo json_encode($dataArr);
         exit;
 	}
+    public function likedPostUsersNotifications($joinedMembers, $userinfo, $group, $refer_id, $msg, $subject,$type){
+        if (count($joinedMembers)) {
+            $config = $this->getServiceLocator()->get('Config');
+            $base_url = $config['pathInfo']['base_url'];
+            $from = 'admin@jeera.com';
+            $process="like";
+            foreach($joinedMembers as $members){
+                if($members->user_group_user_id!=$userinfo->user_id){
+                    $this->UpdateNotifications($members->user_group_user_id,$msg,$type,$subject,$from,$userinfo->user_id,$refer_id,$process);
+                }
+            }
+        }
+    }
     public function checkError($error){
         if (!empty($error)){
             $dataArr[0]['flag'] = $this->flagFailure;
@@ -228,7 +201,6 @@ class LikeController extends AbstractActionController
 		$Like = new Like();
 		$this->likeTable = $sm->get('Like\Model\LikeTable');
 		$likeData = $this->likeTable->LikeExistsCheck($type,$content_id,$user_id);
-
         if ( empty( $likeData->like_id ) ) {
             $LikesData = array();
             $LikesData['like_system_type_id'] = $type;
@@ -274,6 +246,7 @@ class LikeController extends AbstractActionController
                                 if( $this->getLikeTable()->deleteLikeByReference($SystemTypeData->system_type_id,$likeData->like_by_user_id,$refer_id)){
                                     $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                     $like_count = $like_details->likes_counts;
+                                    $error = "Content UnLiked By User";
                                 }
                             }else {$error = "Content Not Liked By User to unlike";}
                         }else{$error = "Content Not exist";}
@@ -288,6 +261,7 @@ class LikeController extends AbstractActionController
                                 if( $this->getLikeTable()->deleteLikeByReference($SystemTypeData->system_type_id,$likeData->like_by_user_id,$refer_id)){
                                     $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                     $like_count = $like_details->likes_counts;
+                                    $error = "Content UnLiked By User";
                                 }
                             }else {$error = "Content Not Liked By User to unlike";}
                         }else{$error = "Content Not exist";}
@@ -302,6 +276,7 @@ class LikeController extends AbstractActionController
                                 if( $this->getLikeTable()->deleteLikeByReference($SystemTypeData->system_type_id,$likeData->like_by_user_id,$refer_id)){
                                     $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                     $like_count = $like_details->likes_counts;
+                                    $error = "Content UnLiked By User";
                                 }
                             }else {$error = "Content Not Liked By User to unlike";}
                         }else{$error = "Content Not exist";}
@@ -316,6 +291,7 @@ class LikeController extends AbstractActionController
                                 if( $this->getLikeTable()->deleteLikeByReference($SystemTypeData->system_type_id,$likeData->like_by_user_id,$refer_id)){
                                     $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                     $like_count = $like_details->likes_counts;
+                                    $error = "Content UnLiked By User";
                                 }
                             }else {$error = "Content Not Liked By User to unlike";}
                         }else{$error = "Content Not exist";}
@@ -331,7 +307,6 @@ class LikeController extends AbstractActionController
 	}
 	public function LikesUsersListAction() {
 		$error = '';
-		$like_count = 0;
 		$liked_users = array();
         $request   = $this->getRequest();
         if ($request->isPost()) {
@@ -349,31 +324,62 @@ class LikeController extends AbstractActionController
             $error = (isset($post['content_id']) && $post['content_id'] != null && $post['content_id'] != '' && $post['content_id'] != 'undefined' && is_numeric($post['content_id'])) ? '' : 'please input a valid content id';
             $this->checkError($error);
             $refer_id = trim($post['content_id']);
-            $liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id, $refer_id, $userinfo->user_id, 10, 0);
+            $offset = (isset($post['nparam']))?trim($post['nparam']):'';
+            $limit = (isset($post['countparam']))?trim($post['countparam']):'';
+            $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id, $refer_id, $userinfo->user_id, (int) $limit, (int) $offset);
+        }
+        if (!empty($liked_users)) {
+            foreach ($liked_users as $f_list) {
+                $profile_photo = $this->manipulateProfilePic($f_list['user_id'], $f_list['profile_photo'], $f_list['user_fbid']);
+                $arrLikeMembers[] = array(
+                    'user_id'=>$f_list['user_id'],
+                    'user_fbid'=>$f_list['user_fbid'],
+                    'user_given_name'=>$f_list['user_given_name'],
+                    'user_profile_name'=>$f_list['user_profile_name'],
+                    'profile_photo'=>$profile_photo,
+                );
+
+            }
         }
         $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
         $dataArr[0]['message'] = $error;
-        $dataArr[0]['liked_users'] = $liked_users	;
+        $dataArr[0]['liked_users'] = $arrLikeMembers;
         echo json_encode($dataArr);
         exit;
 	}	
-	
-	public function UpdateNotifications($user_notification_user_id,$msg,$type,$subject,$from,$sender,$reference_id){
+
+	public function UpdateNotifications($user_notification_user_id,$msg,$type,$subject,$from,$sender,$reference_id,$processs){
+
 		$UserGroupNotificationData = array();						
+
 		$UserGroupNotificationData['user_notification_user_id'] =$user_notification_user_id;		 
+
 		$UserGroupNotificationData['user_notification_content']  = $msg;
+
 		$UserGroupNotificationData['user_notification_added_timestamp'] = date('Y-m-d H:i:s');			
+
 		$UserGroupNotificationData['user_notification_notification_type_id'] = $type;
+
 		$UserGroupNotificationData['user_notification_status'] = 'unread';
+
 		$UserGroupNotificationData['user_notification_sender_id'] = $sender;	
+
 		$UserGroupNotificationData['user_notification_reference_id'] = $reference_id;
+		$UserGroupNotificationData['user_notification_process'] = $processs;
 		#lets Save the User Notification
+
 		$UserGroupNotificationSaveObject = new UserNotification();
+
 		$UserGroupNotificationSaveObject->exchangeArray($UserGroupNotificationData);	
+
 		$insertedUserGroupNotificationId ="";	#this will hold the latest inserted id value
+
 		$insertedUserGroupNotificationId = $this->getUserNotificationTable()->saveUserNotification($UserGroupNotificationSaveObject);
+
 		$userData = $this->getUserTable()->getUser($user_notification_user_id); 
+
 		//$this->sendNotificationMail($msg,$subject,$userData->user_email,$from);
+
 	}
 	public function sendNotificationMail($msg,$subject,$emailId,$from){
 		$this->renderer = $this->getServiceLocator()->get('ViewRenderer');		
@@ -396,7 +402,19 @@ class LikeController extends AbstractActionController
 		$transport = new Mail\Transport\Sendmail();
 		$transport->send($message);
 		return true;
-	}	
+	}
+    public function manipulateProfilePic($user_id, $profile_photo = null, $fb_id = null){
+        $config = $this->getServiceLocator()->get('Config');
+        $return_photo = null;
+        if (!empty($profile_photo))
+            $return_photo = $config['pathInfo']['absolute_img_path'].$config['image_folders']['profile_path'].$user_id.'/'.$profile_photo;
+        else if(isset($fb_id) && !empty($fb_id))
+            $return_photo = 'http://graph.facebook.com/'.$fb_id.'/picture?type=normal';
+        else
+            $return_photo = $config['pathInfo']['absolute_img_path'].'/images/noimg.jpg';
+        return $return_photo;
+
+    }
 	public function getActivityRsvpTable(){
         if (!$this->activityRsvpTable) {
             $sm = $this->getServiceLocator();

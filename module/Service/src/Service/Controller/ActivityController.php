@@ -39,7 +39,7 @@ class ActivityController extends AbstractActionController
             $error =(empty($activityDetails))?"Invalid Activity Id.":$error;
             $this->checkError($error);
             $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($activityDetails->group_activity_group_id,$userinfo->user_id);
-            $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group to post.":$error;
+            $error =(empty($userPermissionOnGroup))?"User has no permission on the event.":$error;
             $this->checkError($error);
             if(!empty($activityDetails)){
                 if ($this->getActivityRsvpTable()->getActivityRsvpOfUser($userinfo->user_id, $activity_id)){
@@ -80,6 +80,12 @@ class ActivityController extends AbstractActionController
             $error =(empty($userinfo))?"Invalid Access Token.":$error;
             $this->checkError($error);
             $activity_id =  $post['activity_id'];
+            $activityDetails = $this->getActivityTable()->getActivity($activity_id);
+            $error =(empty($activityDetails))?"Invalid Activity Id.":$error;
+            $this->checkError($error);
+            $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($activityDetails->group_activity_group_id,$userinfo->user_id);
+            $error =(empty($userPermissionOnGroup))?"User has no permission on the event.":$error;
+            $this->checkError($error);
             if($activity_id!=''){
                 $activity = $this->getActivityTable()->getActivity($activity_id);
                 $activity_rsvp = $this->getActivityRsvpTable()->getActivityRsvpOfUser($userinfo->user_id, $activity_id);
@@ -95,8 +101,8 @@ class ActivityController extends AbstractActionController
                             $msg = $userinfo->user_given_name." is joined in your activity ".$activity->group_activity_title ;
                             $subject = 'Event members';
                             $from = 'admin@jeera.com';
-                            $process = "Event Joined";
-                            $this->UpdateNotifications($activity->group_activity_owner_user_id,$msg,1,$subject,$from,$userinfo->user_id,$activity->group_activity_group_id,$process);
+                            $process = 'Join Event';
+                            $this->UpdateNotifications($activity->group_activity_owner_user_id,$msg,7,$subject,$from,$userinfo->user_id,$activity->group_activity_group_id,$process);
                             $error = "Event joined Successfully";
                         }else{$error="Some error occurred. Please try again";}
                     }else{$error = "Activity RSVP already exist for the user";}
