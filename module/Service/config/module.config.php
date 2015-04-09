@@ -107,7 +107,9 @@ return array(
             'Service\Controller\GroupPosts' => 'Service\Controller\GroupPostsController',
             'Service\Controller\Activity' => 'Service\Controller\ActivityController',
             'Service\Controller\Like' => 'Service\Controller\LikeController',
+            'Service\Controller\Comment' => 'Service\Controller\CommentController',
         ),
     ),   
     
 );
+

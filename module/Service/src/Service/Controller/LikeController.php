@@ -45,6 +45,9 @@ class LikeController extends AbstractActionController
 		$str_liked_users = '';
         $arrLikeMembers  = array();
         $request   = $this->getRequest();
+        $from = 'admin@jeera.com';
+        $config = $this->getServiceLocator()->get('Config');
+        $base_url = $config['pathInfo']['base_url'];
         if ($request->isPost()){
             $post = $request->getPost();
             $accToken = (isset($post['accesstoken'])&&$post['accesstoken']!=null&&$post['accesstoken']!=''&&$post['accesstoken']!='undefined')?strip_tags(trim($post['accesstoken'])):'';
@@ -113,8 +116,8 @@ class LikeController extends AbstractActionController
                                 if(!empty($like_details)){
                                     $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
                                 }
+                                $msg = $userinfo->user_given_name." Like one activity in the group ".$group->group_title;
                                 $subject = 'Like Activity';
-                                $from = 'admin@jeera.com';
                                 $type = 7;
                                 $this->likedPostUsersNotifications($joinedMembers, $userinfo, $group, $refer_id, $msg, $subject,$type);
                             }
@@ -132,11 +135,8 @@ class LikeController extends AbstractActionController
                                     $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
                                 }
                                 if($comment_data->comment_by_user_id!=$userinfo->user_id){
-                                    $config = $this->getServiceLocator()->get('Config');
-                                    $base_url = $config['pathInfo']['base_url'];
                                     $msg = $userinfo->user_given_name." Like your comment";
                                     $subject = 'Like status';
-                                    $from = 'admin@jeera.com';
                                     $process = 'comment like';
                                     if($comment_data->comment_system_type_id == 1){
                                             $this->UpdateNotifications($comment_data->comment_by_user_id,$msg,7,$subject,$from,$userinfo->user_id,$comment_data->comment_refer_id,$process);
@@ -219,6 +219,7 @@ class LikeController extends AbstractActionController
  	public function UnLikeAction() {
 		$error = '';
 		$like_count = 0;
+        $arrLikeMembers  = array();
 		$auth = new AuthenticationService();
         $request   = $this->getRequest();
         if ($request->isPost()) {
@@ -246,6 +247,9 @@ class LikeController extends AbstractActionController
                                 if( $this->getLikeTable()->deleteLikeByReference($SystemTypeData->system_type_id,$likeData->like_by_user_id,$refer_id)){
                                     $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                     $like_count = $like_details->likes_counts;
+                                    if(!empty($like_details)){
+                                        $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
+                                    }
                                     $error = "Content UnLiked By User";
                                 }
                             }else {$error = "Content Not Liked By User to unlike";}
@@ -260,6 +264,9 @@ class LikeController extends AbstractActionController
                             if ( !empty( $likeData->like_id ) ) {
                                 if( $this->getLikeTable()->deleteLikeByReference($SystemTypeData->system_type_id,$likeData->like_by_user_id,$refer_id)){
                                     $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                                    if(!empty($like_details)){
+                                        $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
+                                    }
                                     $like_count = $like_details->likes_counts;
                                     $error = "Content UnLiked By User";
                                 }
@@ -275,6 +282,9 @@ class LikeController extends AbstractActionController
                             if ( !empty( $likeData->like_id ) ) {
                                 if( $this->getLikeTable()->deleteLikeByReference($SystemTypeData->system_type_id,$likeData->like_by_user_id,$refer_id)){
                                     $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                                    if(!empty($like_details)){
+                                        $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
+                                    }
                                     $like_count = $like_details->likes_counts;
                                     $error = "Content UnLiked By User";
                                 }
@@ -290,6 +300,9 @@ class LikeController extends AbstractActionController
                             if ( !empty( $likeData->like_id ) ) {
                                 if( $this->getLikeTable()->deleteLikeByReference($SystemTypeData->system_type_id,$likeData->like_by_user_id,$refer_id)){
                                     $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                                    if(!empty($like_details)){
+                                        $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
+                                    }
                                     $like_count = $like_details->likes_counts;
                                     $error = "Content UnLiked By User";
                                 }
@@ -299,9 +312,23 @@ class LikeController extends AbstractActionController
                 break;
             }
         }
+        if (!empty($liked_users)) {
+            foreach ($liked_users as $f_list) {
+                $profile_photo = $this->manipulateProfilePic($f_list['user_id'], $f_list['profile_photo'], $f_list['user_fbid']);
+                $arrLikeMembers[] = array(
+                    'user_id'=>$f_list['user_id'],
+                    'user_fbid'=>$f_list['user_fbid'],
+                    'user_given_name'=>$f_list['user_given_name'],
+                    'user_profile_name'=>$f_list['user_profile_name'],
+                    'profile_photo'=>$profile_photo,
+                );
+
+            }
+        }
         $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
         $dataArr[0]['message'] = $error;
         $dataArr[0]['like_count'] = $like_count;
+        $dataArr[0]['liked_users'] = $arrLikeMembers;
         echo json_encode($dataArr);
         exit;
 	}
@@ -309,6 +336,7 @@ class LikeController extends AbstractActionController
 		$error = '';
 		$liked_users = array();
         $request   = $this->getRequest();
+        $arrLikeMembers = array();
         if ($request->isPost()) {
             $post = $request->getPost();
             $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
@@ -340,14 +368,13 @@ class LikeController extends AbstractActionController
                 );
 
             }
-        }
+        } else $error = "No Likes exists for the content";
         $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
         $dataArr[0]['message'] = $error;
         $dataArr[0]['liked_users'] = $arrLikeMembers;
         echo json_encode($dataArr);
         exit;
 	}	
-
 	public function UpdateNotifications($user_notification_user_id,$msg,$type,$subject,$from,$sender,$reference_id,$processs){
 
 		$UserGroupNotificationData = array();						
