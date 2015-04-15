@@ -108,6 +108,7 @@ return array(
             'Service\Controller\Activity' => 'Service\Controller\ActivityController',
             'Service\Controller\Like' => 'Service\Controller\LikeController',
             'Service\Controller\Comment' => 'Service\Controller\CommentController',
+            'Service\Controller\Notification' => 'Service\Controller\NotificationController',
         ),
     ),   
     

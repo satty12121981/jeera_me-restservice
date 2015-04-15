@@ -436,9 +436,10 @@ class CommentTable extends AbstractTableGateway
 
 		$select->order(array('y2m_comment.comment_added_timestamp DESC'));
 
-		$select->limit($limit);
-
-		$select->offset($offset);		
+        if($limit){
+            $select->limit($limit);
+            $select->offset($offset);
+        }
 
 		$statement = $this->adapter->createStatement();
 
@@ -519,5 +520,25 @@ class CommentTable extends AbstractTableGateway
 		return $resultSet->current();
 
 	}
+	public function getCommentWIthSystemType($comment_id){
+		$comment_id  = (int) $comment_id;
 
+		$select = new Select;
+
+        $select->from('y2m_comment')
+			->join("y2m_system_type",'y2m_comment.comment_system_type_id = y2m_system_type.system_type_id',array("system_type_id","system_type_title"))
+			->where(array('y2m_comment.comment_id'=>$comment_id));
+
+		$statement = $this->adapter->createStatement();
+
+		$select->prepareStatement($this->adapter, $statement);
+
+		//echo $mainSelect->getSqlString();
+
+		$resultSet = new ResultSet();		
+
+		$resultSet->initialize($statement->execute());	  
+
+		return $resultSet->current();
+	}
 }

@@ -6,10 +6,9 @@ namespace Service\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\JsonModel;
-use Zend\Session\Container; // We need this when using sessions
 use Zend\Authentication\AuthenticationService;	//Needed for checking User session
 use Zend\Authentication\Adapter\DbTable as AuthAdapter;	//Db apapter
-use Zend\Crypt\BlockCipher;		# For encryption
+
 /*use Zend\Authentication\Result as Result;
 use Zend\Authentication\Storage;*/
 
@@ -42,7 +41,7 @@ class CommentController extends AbstractActionController
         $this->flagSuccess = "Success";
         $this->flagFailure = "Failure";
 	}
-    public function getCommentsAction(){
+    public function getcommentsAction(){
         $error = '';
         $comment_count = 0;
         $comments = array();
@@ -78,10 +77,9 @@ class CommentController extends AbstractActionController
                 exit;
             }
             $comments_details = $this->getCommentTable()->getAllCommentsWithLike($SystemTypeData->system_type_id,$commentSystemType->system_type_id,$refer_id,$userinfo->user_id,(int) $limit, (int) $offset);
-            if(!empty($comments_details)){
+            if(!empty($comments_details) & count($comments_details) > 0){
                 foreach($comments_details as $list){
-                    $str_liked_users = '';
-                    $arr_likedUsers = array();
+                    $arrLikeMembers = array();
                     $like_details = $this->getLikeTable()->fetchLikesCountByReference($commentSystemType->system_type_id,$list->comment_id,$userinfo->user_id);
                     if(!empty($like_details)){
                         $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id, $refer_id, $userinfo->user_id, (int) $limit, (int) $offset);
@@ -96,7 +94,7 @@ class CommentController extends AbstractActionController
                                     'profile_photo'=>$profile_photo,
                                 );
                             }
-                        } else $error = "No Likes exists for the content";
+                        }
                     }
                     $comments[] = array(
                         'likes_count'=>$like_details['likes_counts'],
@@ -109,15 +107,154 @@ class CommentController extends AbstractActionController
                         'user_register_type'=>$list->user_register_type,
                         'user_fbid'=>$list->user_fbid,
                         'profile_photo'=>$list->profile_photo,
-                        'liked_users'=>$arr_likedUsers,
                         'user_profile_name'=>$list->user_profile_name,
+                        'liked_users'=>$arrLikeMembers,
                     );
                 }
+            } else $error = "No Comments for content";
+        }
+
+        $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
+        $dataArr[0]['message'] = $error;
+        $dataArr[0]['comments'] = $comments;
+        echo json_encode($dataArr);
+        exit;
+    }
+    public function editcommentAction(){
+        $error = '';
+        $request   = $this->getRequest();
+        if ($request->isPost()){
+            $post = $request->getPost();
+            $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+            $error = (empty($accToken)) ? "Request Not Authorised." : $error;
+            $this->checkError($error);
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
+            $this->checkError($error);
+            $error = (isset($post['comment_id']) && $post['comment_id'] != null && $post['comment_id'] != '' && $post['comment_id'] != 'undefined' && is_numeric($post['comment_id'])) ? '' : 'please input a valid comment id';
+            $this->checkError($error);
+            $comment_id = $post['comment_id'];
+            $error = (isset($post['edited_comment']) && $post['edited_comment'] != null && $post['edited_comment'] != '' && $post['edited_comment'] != 'undefined' ) ? '' : 'please input a valid comment';
+            $this->checkError($error);
+            $comment = $post['edited_comment'];
+            $comment_details = $this->getCommentTable()->getCommentWIthSystemType($comment_id);
+            if(empty($comment_details)) {
+                $error = "This comments no longer exist in the system";
+                $this->checkError($error);
+            }
+            $allowedit = 0;
+            if($comment_details->comment_by_user_id == $userinfo->user_id){
+                $allowedit = 1;
+            }
+            switch($comment_details->system_type_title){
+                case 'Activity':
+                    $activity_deatils =  $this->getActivityTable()->getActivity($comment_details->comment_refer_id);
+                    if($activity_deatils->group_activity_owner_user_id == $userinfo->user_id){
+                        $allowedit = 1;
+                    }
+                    if($this->getUserGroupTable()->checkOwner($activity_deatils->group_activity_group_id,$userinfo->user_id)){
+                        $allowedit = 1;
+                    }
+                    break;
+                case 'Discussion':
+                    $discussion_deatils =  $this->getDiscussionTable()->getDiscussion($comment_details->comment_refer_id);
+                    if($discussion_deatils->group_discussion_owner_user_id == $userinfo->user_id){
+                        $allowedit = 1;
+                    }
+                    if($this->getUserGroupTable()->checkOwner($discussion_deatils->group_discussion_group_id,$userinfo->user_id)){
+                        $allowedit = 1;
+                    }
+                    break;
+                case 'Media':
+                    $media_deatils =  $this->getGroupMediaTable()->getMedia($comment_details->comment_refer_id);
+                    if($media_deatils->media_added_user_id == $userinfo->user_id){
+                        $allowedit = 1;
+                    }
+                    if($this->getUserGroupTable()->checkOwner($media_deatils->media_added_group_id,$userinfo->user_id)){
+                        $allowedit = 1;
+                    }
+                    break;
+            }
+            if($allowedit == 1){
+                $data['comment_content'] = $comment;
+                $this->getCommentTable()->updateCommentTable($data,$comment_id);
+                $dataArr[0]['flag'] = $this->flagSuccess;
+                $dataArr[0]['message'] = "Comment edited successfully";
+                echo json_encode($dataArr);
+                exit;
+            }else {
+                $error = "User not allowed to edit";
             }
         }
         $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
         $dataArr[0]['message'] = $error;
-        $dataArr[0]['comments'] = $comments;
+        echo json_encode($dataArr);
+        exit;
+    }
+    public function deletecommentAction(){
+        $error = '';
+        $request   = $this->getRequest();
+        if ($request->isPost()) {
+            $post = $request->getPost();
+            $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+            $error = (empty($accToken)) ? "Request Not Authorised." : $error;
+            $this->checkError($error);
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
+            $this->checkError($error);
+            $error = (isset($post['comment_id']) && $post['comment_id'] != null && $post['comment_id'] != '' && $post['comment_id'] != 'undefined' && is_numeric($post['comment_id'])) ? '' : 'please input a valid comment id';
+            $this->checkError($error);
+            $comment_id = $post['comment_id'];
+            $comment_details = $this->getCommentTable()->getCommentWIthSystemType($comment_id);
+            if(empty($comment_details)) {
+                $error = "This comments no longer exist in the system";
+                $this->checkError($error);
+            }
+            $allowdelete = 0;
+            if ($comment_details->comment_by_user_id == $userinfo->user_id) {
+                $allowdelete = 1;
+            }
+            switch ($comment_details->system_type_title) {
+                case 'Activity':
+                    $activity_deatils = $this->getActivityTable()->getActivity($comment_details->comment_refer_id);
+                    if ($activity_deatils->group_activity_owner_user_id == $userinfo->user_id) {
+                        $allowdelete = 1;
+                    }
+                    if ($this->getUserGroupTable()->checkOwner($activity_deatils->group_activity_group_id, $userinfo->user_id)) {
+                        $allowdelete = 1;
+                    }
+                    break;
+                case 'Discussion':
+                    $discussion_deatils = $this->getDiscussionTable()->getDiscussion($comment_details->comment_refer_id);
+                    if ($discussion_deatils->group_discussion_owner_user_id == $userinfo->user_id) {
+                        $allowdelete = 1;
+                    }
+                    if ($this->getUserGroupTable()->checkOwner($discussion_deatils->group_discussion_group_id, $userinfo->user_id)) {
+                        $allowdelete = 1;
+                    }
+                    break;
+                case 'Media':
+                    $media_deatils = $this->getGroupMediaTable()->getMedia($comment_details->comment_refer_id);
+                    if ($media_deatils->media_added_user_id == $userinfo->user_id) {
+                        $allowdelete = 1;
+                    }
+                    if ($this->getUserGroupTable()->checkOwner($media_deatils->media_added_group_id, $userinfo->user_id)) {
+                        $allowdelete = 1;
+                    }
+                    break;
+            }
+            if ($allowdelete == 1) {
+                $this->getCommentTable()->deleteComment($comment_id);
+                $dataArr[0]['flag'] = $this->flagSuccess;
+                $dataArr[0]['message'] = "Comment deleted successfully";
+                echo json_encode($dataArr);
+                exit;
+            } else {
+                $error = "User not allowed to delete";
+            }
+        }
+        $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
+        $dataArr[0]['message'] = $error;
         echo json_encode($dataArr);
         exit;
     }
@@ -128,6 +265,18 @@ class CommentController extends AbstractActionController
             echo json_encode($dataArr);
             exit;
         }
+    }
+    public function manipulateProfilePic($user_id, $profile_photo = null, $fb_id = null){
+        $config = $this->getServiceLocator()->get('Config');
+        $return_photo = null;
+        if (!empty($profile_photo))
+            $return_photo = $config['pathInfo']['absolute_img_path'].$config['image_folders']['profile_path'].$user_id.'/'.$profile_photo;
+        else if(isset($fb_id) && !empty($fb_id))
+            $return_photo = 'http://graph.facebook.com/'.$fb_id.'/picture?type=normal';
+        else
+            $return_photo = $config['pathInfo']['absolute_img_path'].'/images/noimg.jpg';
+        return $return_photo;
+
     }
     public function timeAgo($time_ago){
         $time_ago = strtotime($time_ago);
