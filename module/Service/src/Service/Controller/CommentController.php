@@ -120,9 +120,145 @@ class CommentController extends AbstractActionController
         echo json_encode($dataArr);
         exit;
     }
+    public function addcommentAction(){
+        $error = '';
+        $comment_count = 0;
+        $comment_id	= 0;
+        $request = $this->getRequest();
+        if ($request->isPost()){
+            $config = $this->getServiceLocator()->get('Config');
+            $base_url = $config['pathInfo']['base_url'];
+            $from = 'admin@jeera.com';
+            $post = $request->getPost();
+            $system_type = $post['type'];
+            $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+            $error = (empty($accToken)) ? "Request Not Authorised." : $error;
+            $this->checkError($error);
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
+            $this->checkError($error);
+            $error = (isset($post['content_id']) && $post['content_id'] != null && $post['content_id'] != '' && $post['content_id'] != 'undefined' && is_numeric($post['content_id'])) ? '' : 'please input a valid content id';
+            $this->checkError($error);
+            $refer_id = $post['content_id'];;
+            $error = (isset($post['txt_comment']) && $post['txt_comment'] != null && $post['txt_comment'] != '' && $post['txt_comment'] != 'undefined' ) ? '' : 'please input a valid comment';
+            $this->checkError($error);
+            $comment = $post['txt_comment'];
+            $hashedUser  = (isset($post['hashed_user']) && !empty($post['hashed_user'])) ?array_filter($post['hashed_user']):'';
+            $hashedUser = explode(",", $hashedUser[0]);
+            $SystemTypeData = $this->getGroupTable()->fetchSystemType($system_type);
+            $error = (empty($SystemTypeData)) ? "Invalid Content Type to like" : $error;
+            $this->checkError($error);
+            switch($system_type){
+                case 'Discussion':
+                        $discussion_data = $this->getDiscussionTable()->getDiscussion($refer_id);
+                        if(!empty($discussion_data)){
+                            $comment_id = $this->postComment($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id,$comment);
+                            if($comment_id){
+                                $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                                $comment_count = $comment_details['comment_counts'];
+                                $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($discussion_data->group_discussion_group_id);
+                                $group  = $this->getGroupTable()->getPlanetinfo($discussion_data->group_discussion_group_id);
+                                $msg_mentioned = $userinfo->user_given_name." mentioned you in a comment on status in the group ".$group->group_title;
+                                $subject_mentioned = 'Comment status';
+                                $process_mentioned = 'comment_hashed';
+                                $process_hash_id = 6;
+                                $this->postcommentmentioneduserNotifications($userinfo,$hashedUser,$msg_mentioned,$process_hash_id,$subject_mentioned,$from,$refer_id,$process_mentioned);
+                                $msg = $userinfo->user_given_name . " Commented one status in the group " . $group->group_title;
+                                $subject = 'Comment status';
+                                $process = 'comment';
+                                $process_join_id = 6;
+                                $this->postcommentuserNotifications($userinfo,$joinedMembers,$hashedUser,$msg,$process_join_id,$subject,$from,$refer_id,$process);
+                            }
+                        }else{$error = "Content Not exist";}
+                    break;
+                case 'Media':
+                        $media_data = $this->getGroupMediaTable()->getMedia($refer_id);
+                        if(!empty($media_data)){
+                            $comment_id = $this->postComment($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id,$comment);
+                            if($comment_id){
+                                $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                                $comment_count = $comment_details['comment_counts'];
+                                $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($media_data->media_added_group_id);
+                                $group  = $this->getGroupTable()->getPlanetinfo($media_data->media_added_group_id);
+                                $msg_mentioned = $userinfo->user_given_name." mentioned you in a comment on status in the group ".$group->group_title;
+                                $subject_mentioned = 'Comment status';
+                                $process_mentioned = 'comment_hashed';
+                                $process_hash_id = 6;
+                                $this->postcommentmentioneduserNotifications($userinfo,$hashedUser,$msg_mentioned,$process_hash_id,$subject_mentioned,$from,$refer_id,$process_mentioned);
+                                $msg = $userinfo->user_given_name." Commented one media in the group ".$group->group_title;
+                                $subject = 'Comment Media';
+                                $process = 'comment';
+                                $process_join_id = 8;
+                                $this->postcommentuserNotifications($userinfo,$joinedMembers,$hashedUser,$msg,$process_join_id,$subject,$from,$refer_id,$process);
+                            }
+                        }else{$error = "Content Not exist";}
+                    break;
+                case 'Activity':
+                        $activity_data = $this->getActivityTable()->getActivity($refer_id);
+                        if(!empty($activity_data)){
+                            $comment_id = $this->postComment($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id,$comment);
+                            if($comment_id){
+                                $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                                $comment_count = $comment_details['comment_counts'];
+                                $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($activity_data->group_activity_group_id);
+                                $group  = $this->getGroupTable()->getPlanetinfo($activity_data->group_activity_group_id);
+                                $msg_mentioned = $userinfo->user_given_name." mentioned you in a comment on status in the group ".$group->group_title;
+                                $subject_mentioned = 'Comment status';
+                                $process_mentioned = 'comment_hashed';
+                                $process_hash_id = 6;
+                                $this->postcommentmentioneduserNotifications($userinfo,$hashedUser,$msg_mentioned,$process_hash_id,$subject_mentioned,$from,$refer_id,$process_mentioned);
+                                $msg = $userinfo->user_given_name." commented one activity in the group ".$group->group_title;
+                                $subject = 'commented Activity';
+                                $process = 'comment';
+                                $process_join_id = 7;
+                                $this->postcommentuserNotifications($userinfo,$joinedMembers,$hashedUser,$msg,$process_join_id,$subject,$from,$refer_id,$process);
+                            }
+                        }else{$error = "Content Not exist";}
+                    break;
+            }
+        }
+        $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
+        $dataArr[0]['message'] = (empty($error))?"Comment Posted Successfully":$error;
+        $dataArr[0]['comment_id'] = $comment_id;
+        $dataArr[0]['comment_count'] = $comment_count;
+        echo json_encode($dataArr);
+        exit;
+    }
+    public function postComment($user_id,$system_type_id,$referer_id,$comment)
+    {
+        $commentsData = array();
+        $commentsData['comment_system_type_id'] = $system_type_id;
+        $commentsData['comment_by_user_id'] = $user_id;
+        $commentsData['comment_refer_id'] = $referer_id;
+        $commentsData['comment_content'] = $comment;
+        $commentsData['comment_status'] = "active";
+        $Objcomment = new Comment();
+        $Objcomment->exchangeArray($commentsData);
+        $insertedcommentsId = "";
+        $insertedcommentsId = $this->getCommentTable()->saveComment($Objcomment);
+        return $insertedcommentsId;
+    }
+    public function postcommentmentioneduserNotifications($userinfo,$hashedUser,$msg,$process_hash_id,$subject,$from,$refer_id,$process){
+        if (count($hashedUser)){
+            foreach($hashedUser as $users){
+                if($users!=$userinfo->user_id && is_numeric($users) && $this->userTable->getUser($users)){
+                    $this->UpdateNotifications($users,$msg,$process_hash_id,$subject,$from,$userinfo->user_id,$refer_id,$process);
+                }
+            }
+        }
+    }
+    public function postcommentuserNotifications($userinfo,$joinedMembers,$hashedUser,$msg,$process_join_id,$subject,$from,$refer_id,$process){
+        if (count($joinedMembers)) {
+            foreach ($joinedMembers as $members) {
+                if ($members->user_group_user_id != $userinfo->user_id && !in_array($members->user_group_user_id, $hashedUser)) {
+                    $this->UpdateNotifications($members->user_group_user_id, $msg, $process_join_id, $subject, $from, $userinfo->user_id, $refer_id, $process);
+                }
+            }
+        }
+    }
     public function editcommentAction(){
         $error = '';
-        $request   = $this->getRequest();
+        $request = $this->getRequest();
         if ($request->isPost()){
             $post = $request->getPost();
             $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';

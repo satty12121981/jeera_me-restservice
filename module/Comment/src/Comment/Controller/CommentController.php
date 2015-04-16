@@ -7,6 +7,7 @@
 namespace Comment\Controller;
 
 
+
 use Zend\Mvc\Controller\AbstractActionController;
 
 use Zend\View\Model\ViewModel;	//Return model 
@@ -25,18 +26,21 @@ use Zend\Crypt\BlockCipher;		# For encryption
 
 use Zend\Authentication\Storage;*/
 
+ 
 
 #Group classs
 
-use Comment\Model\Comment;
+ use Comment\Model\Comment;  
 
 use \Exception;		#Exception class for handling exception
 
+ 
 
 use Zend\View\Helper\HelperInterface;
 
 use Zend\View\Renderer\RendererInterface;
 
+ 
 
 use Zend\Mail;
 
@@ -47,7 +51,8 @@ use Zend\Mime\Part as MimePart;
 use Notification\Model\UserNotification; 
 
 class CommentController extends AbstractActionController
-{
+
+{     
 
 	protected $userTable;
 
@@ -77,6 +82,7 @@ class CommentController extends AbstractActionController
 
 	protected $groupMediaTable;
 
+	 
 
 	public function __construct(){
 
@@ -1143,134 +1149,9 @@ class CommentController extends AbstractActionController
 
 	}
 
-	public function  editCommentAction(){
-		$error = ''; 
-		$auth = new AuthenticationService();
-		if ($auth->hasIdentity()) {
-			$identity = $auth->getIdentity();
-			$userinfo = $this->getUserTable()->getUser($identity->user_id);
-			if(!empty($userinfo)&&$userinfo->user_id){ 
-				$request   = $this->getRequest();
-				if ($request->isPost()){
-					$post = $request->getPost();
-					$comment_id = $post['comment_id'];
-					$comment = $post['edited_comment'];
-					if($comment!=''){
-						$comment_details = $this->getCommentTable()->getCommentWIthSystemType($comment_id);
-						if(!empty($comment_details)){
-							$allowedit = 0;
-							if($comment_details->comment_by_user_id == $identity->user_id){
-								$allowedit = 1;
-							}
-							switch($comment_details->system_type_title){
-								case 'Activity':
-									$activity_deatils =  $this->getActivityTable()->getActivity($comment_details->comment_refer_id);
-									if($activity_deatils->group_activity_owner_user_id == $identity->user_id){
-										$allowedit = 1;
-									}
-									if($this->getUserGroupTable()->checkOwner($activity_deatils->group_activity_group_id,$identity->user_id)){
-										$allowedit = 1;
-									}
-								break;
-								case 'Discussion':
-									$discussion_deatils =  $this->getDiscussionTable()->getDiscussion($comment_details->comment_refer_id);
-									if($discussion_deatils->group_discussion_owner_user_id == $identity->user_id){
-										$allowedit = 1;
-									}
-									if($this->getUserGroupTable->checkOwner($discussion_deatils->group_discussion_group_id,$identity->user_id)){
-										$allowedit = 1;
-									}
-								break;
-								case 'Media':
-									$media_deatils =  $this->getGroupMediaTable()->getMedia($comment_details->comment_refer_id);
-									if($media_deatils->media_added_user_id == $identity->user_id){
-										$allowedit = 1;
-									}
-									if($this->getUserGroupTable->checkOwner($media_deatils->media_added_group_id,$identity->user_id)){
-										$allowedit = 1;
-									}
-								break;							 
-							}
-							if($allowedit == 1){
-								$data['comment_content'] = $comment;
-								$this->getCommentTable()->updateCommentTable($data,$comment_id);
-							}						
-						}else{ $error = "This comments no longer exist in the system";}
-					}else{ $error = "Type your comments to submit";}					 
-				}else{	$error = "Unable to process";}
-			}else{$error = "User not exist in the system";}
-		}else{$error = "Your session has to be expired";}
-		$return_array= array();		 
-		$return_array['process_status'] = (empty($error))?'success':'failed';
-		$return_array['process_info'] = $error;			 
-		$result = new JsonModel(array(
-		'return_array' => $return_array,      
-		));	
-		return $result;
-	}
+	 
 
-	public function  deleteCommentAction(){
-		$error = ''; 
-		$auth = new AuthenticationService();
-		if ($auth->hasIdentity()) {
-			$identity = $auth->getIdentity();
-			$userinfo = $this->getUserTable()->getUser($identity->user_id);
-			if(!empty($userinfo)&&$userinfo->user_id){ 
-				$request   = $this->getRequest();
-				if ($request->isPost()){
-					$post = $request->getPost();
-					$comment_id = $post['comment_id'];					 
-					$comment_details = $this->getCommentTable()->getCommentWIthSystemType($comment_id);
-					if(!empty($comment_details)){
-						$allowedit = 0;
-						if($comment_details->comment_by_user_id == $identity->user_id){
-							$allowedit = 1;
-						}
-						switch($comment_details->system_type_title){
-							case 'Activity':
-								$activity_deatils =  $this->getActivityTable()->getActivity($comment_details->comment_refer_id);
-								if($activity_deatils->group_activity_owner_user_id == $identity->user_id){
-									$allowedit = 1;
-								}
-								if($this->getUserGroupTable()->checkOwner($activity_deatils->group_activity_group_id,$identity->user_id)){
-									$allowedit = 1;
-								}
-							break;
-							case 'Discussion':
-								$discussion_deatils =  $this->getDiscussionTable()->getDiscussion($comment_details->comment_refer_id);
-								if($discussion_deatils->group_discussion_owner_user_id == $identity->user_id){
-									$allowedit = 1;
-								}
-								if($this->getUserGroupTable->checkOwner($discussion_deatils->group_discussion_group_id,$identity->user_id)){
-									$allowedit = 1;
-								}
-							break;
-							case 'Media':
-								$media_deatils =  $this->getGroupMediaTable()->getMedia($comment_details->comment_refer_id);
-								if($media_deatils->media_added_user_id == $identity->user_id){
-									$allowedit = 1;
-								}
-								if($this->getUserGroupTable->checkOwner($media_deatils->media_added_group_id,$identity->user_id)){
-									$allowedit = 1;
-								}
-							break;							 
-						}
-						if($allowedit == 1){
-						 
-							$this->getCommentTable()->deleteComment($comment_id);
-						}						
-					}else{ $error = "This comments no longer exist in the system";}				  
-				}else{	$error = "Unable to process";}
-			}else{$error = "User not exist in the system";}
-		}else{$error = "Your session has to be expired";}
-		$return_array= array();		 
-		$return_array['process_status'] = (empty($error))?'success':'failed';
-		$return_array['process_info'] = $error;			 
-		$result = new JsonModel(array(
-		'return_array' => $return_array,      
-		));	
-		return $result;
-	}
+	
 
 	
 
@@ -1365,6 +1246,8 @@ class CommentController extends AbstractActionController
 		return true;
 
 	}	
+
+	
 
 	public function getUserTable(){       
 
