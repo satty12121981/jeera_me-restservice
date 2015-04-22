@@ -654,7 +654,7 @@ class UserGroupTable extends AbstractTableGateway
 		$resultSet->initialize($statement->execute());
 		return $resultSet->toArray(); 
 	}
-	 public function deleteOneUserGroup($group_id, $user_id){
+	public function deleteOneUserGroup($group_id, $user_id){
        return $this->delete(array('user_group_user_id' => $user_id, 'user_group_group_id' => $group_id));
     }
 	public function checkOwner($group_id, $user_id){

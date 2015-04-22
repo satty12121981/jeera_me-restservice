@@ -37,6 +37,180 @@ class GroupPostsController extends AbstractActionController
         $this->flagSuccess = "Success";
 		$this->flagFailure = "Failure";
 	}
+
+    public function MyFeedsAction(){
+        $error = '';
+        $feeds = array();
+        $request   = $this->getRequest();
+        if ($request->isPost()){
+            $post = $request->getPost();
+            $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+            $error = (empty($accToken)) ? "Request Not Authorised." : $error;
+            $this->checkError($error);
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
+            $this->checkError($error);
+            $type	= $post['type'];
+            $activity  = $post['activity'];
+            $group_id = "";
+            if (isset($post['groupid'])){
+                $group  = $this->getGroupTable()->getPlanetinfo($post['groupid']);
+                $error =(empty($group)||$group->group_id=='')? "Given group not exist in the system":$error;
+                $this->checkError($error);
+                $group_id = $post['groupid'];
+                $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($group->group_id,$userinfo->user_id);
+                $error =(empty($userPermissionOnGroup))?"User has no permission on the group to view feeds.":$error;
+                $this->checkError($error);
+            }
+            $offset = (isset($post['nparam']))?trim($post['nparam']):'';
+            $limit = (isset($post['countparam']))?trim($post['countparam']):'';
+            if (!empty($limit) && !is_numeric($limit)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a Valid Count Param Field.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (!empty($offset) && !is_numeric($offset)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a Valid N Param Field.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $feeds_list = $this->getGroupTable()->getNewsFeedsAPI($userinfo->user_id,$type,$group_id,$activity,(int) $limit,(int) $offset);
+            foreach($feeds_list as $list){
+                $is_admin = 0;
+                if($this->getUserGroupTable()->checkOwner($list['group_id'],$list['user_id'])){
+                    $is_admin = 1;
+                }
+                switch($list['type']){
+                    case "New Activity":
+                        $activity_details = array();
+                        $activity = $this->getActivityTable()->getActivityForFeed($list['event_id'],$userinfo->user_id);
+                        $SystemTypeData   = $this->groupTable->fetchSystemType("Activity");
+                        $like_details     = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
+                        $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
+                        $str_liked_users  = '';
+                        $arrLikedUsers = array();
+                        $arrLikedUsers = $this->formatLikedUsers($like_details,$SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
+                        $rsvp_count = $this->getActivityRsvpTable()->getCountOfAllRSVPuser($activity->group_activity_id)->rsvp_count;
+                        $attending_users = array();
+                        if($rsvp_count>0){
+                            $attending_users = $this->getActivityRsvpTable()->getJoinMembers($activity->group_activity_id,3,0);
+                        }
+                        $allow_join = (strtotime($activity->group_activity_start_timestamp)>strtotime("now"))?1:0;
+                        $activity_details = array(
+                            "group_activity_id" => $activity->group_activity_id,
+                            "group_activity_title" => $activity->group_activity_title,
+                            "group_activity_location" => $activity->group_activity_location,
+                            "group_activity_location_lat" => $activity->group_activity_location_lat,
+                            "group_activity_location_lng" => $activity->group_activity_location_lng,
+                            "group_activity_content" => $activity->group_activity_content,
+                            "group_activity_start_timestamp" => date("M d,Y H:s a",strtotime($activity->group_activity_start_timestamp)),
+                            "user_given_name" => $list['user_given_name'],
+                            "group_title" =>$list['group_title'],
+                            "group_seo_title" =>$list['group_seo_title'],
+                            "group_id" =>$list['group_id'],
+                            "user_id" => $list['user_id'],
+                            "user_profile_name" => $list['user_profile_name'],
+                            "profile_photo" => $this->manipulateProfilePic($list['user_id'], $list['profile_photo'], $list['user_fbid']),
+                            "user_fbid" => $list['user_fbid'],
+                            "like_count"	=>$like_details['likes_counts'],
+                            "is_liked"	=>$like_details['is_liked'],
+                            "comment_counts"	=>$comment_details['comment_counts'],
+                            "is_commented"	=>$comment_details['is_commented'],
+                            "liked_users"	=>$arrLikedUsers,
+                            "rsvp_count" =>($activity->rsvp_count)?$activity->rsvp_count:0,
+                            "rsvp_friend_count" =>($activity->friend_count)?$activity->friend_count:0,
+                            "is_going"=>$activity->is_going,
+                            "attending_users" =>$attending_users,
+                            "allow_join" =>$allow_join,
+                            'is_admin'=>$is_admin,
+                        );
+                        $feeds[] = array('content' => $activity_details,
+                            'type'=>$list['type'],
+                            'time'=>$this->timeAgo($list['update_time']),
+                        );
+                        break;
+                    case "New Status":
+                        $discussion_details = array();
+                        $discussion = $this->getDiscussionTable()->getDiscussionForFeed($list['event_id']);
+                        $SystemTypeData = $this->groupTable->fetchSystemType("Discussion");
+                        $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
+                        $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
+                        $str_liked_users = '';
+                        $arrLikedUsers = array();
+                        $arrLikedUsers = $this->formatLikedUsers($like_details,$SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
+                        $discussion_details = array(
+                            "group_discussion_id" => $discussion->group_discussion_id,
+                            "group_discussion_content" => $discussion->group_discussion_content,
+                            "group_title" =>$list['group_title'],
+                            "group_seo_title" =>$list['group_seo_title'],
+                            "group_id" =>$list['group_id'],
+                            "user_given_name" => $list['user_given_name'],
+                            "user_id" => $list['user_id'],
+                            "user_profile_name" => $list['user_profile_name'],
+                            "profile_photo" => $this->manipulateProfilePic($list['user_id'], $list['profile_photo'], $list['user_fbid']),
+                            "user_fbid" => $list['user_fbid'],
+                            "like_count"	=>$like_details['likes_counts'],
+                            "is_liked"	=>$like_details['is_liked'],
+                            "liked_users"	=>$arrLikedUsers,
+                            "comment_counts"	=>$comment_details['comment_counts'],
+                            "is_commented"	=>$comment_details['is_commented'],
+                            'is_admin'=>$is_admin,
+                        );
+                        $feeds[] = array('content' => $discussion_details,
+                            'type'=>$list['type'],
+                            'time'=>$this->timeAgo($list['update_time']),
+                        );
+                        break;
+                    case "New Media":
+                        $media_details = array();
+                        $media = $this->getGroupMediaTable()->getMediaForFeed($list['event_id']);
+                        $video_id  = '';
+                        if($media->media_type == 'video')
+                            $video_id  = $this->get_youtube_id_from_url($media->media_content);
+                        $SystemTypeData = $this->groupTable->fetchSystemType("Media");
+                        $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
+                        $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
+                        $str_liked_users = '';
+                        $arrLikedUsers = array();
+                        $arrLikedUsers = $this->formatLikedUsers($like_details,$SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
+                        $media_details = array(
+                            "group_media_id" => $media->group_media_id,
+                            "media_type" => $media->media_type,
+                            "media_content" => $media->media_content,
+                            "media_caption" => $media->media_caption,
+                            "video_id" => $video_id,
+                            "group_title" =>$list['group_title'],
+                            "group_seo_title" =>$list['group_seo_title'],
+                            "group_id" =>$list['group_id'],
+                            "user_given_name" => $list['user_given_name'],
+                            "user_id" => $list['user_id'],
+                            "user_profile_name" => $list['user_profile_name'],
+                            "profile_photo" => $this->manipulateProfilePic($list['user_id'], $list['profile_photo'], $list['user_fbid']),
+                            "user_fbid" => $list['user_fbid'],
+                            "like_count"	=>$like_details['likes_counts'],
+                            "is_liked"	=>$like_details['is_liked'],
+                            "liked_users"	=>$arrLikedUsers,
+                            "comment_counts"	=>$comment_details['comment_counts'],
+                            "is_commented"	=>$comment_details['is_commented'],
+                            'is_admin'=>$is_admin,
+                        );
+                        $feeds[] = array('content' => $media_details,
+                            'type'=>$list['type'],
+                            'time'=>$this->timeAgo($list['update_time']),
+                        );
+                        break;
+                }
+            }
+        }
+        $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
+        $dataArr[0]['message'] = $error;
+        $dataArr[0]['feeds'] = $feeds;
+        echo json_encode($dataArr);
+        exit;
+
+    }
     public function PostMediaAction(){
     	$error = '';
 		$request   = $this->getRequest();
@@ -244,6 +418,109 @@ class GroupPostsController extends AbstractActionController
             exit;
         }
         return;
+    }
+    public function manipulateProfilePic($user_id, $profile_photo = null, $fb_id = null){
+        $config = $this->getServiceLocator()->get('Config');
+        $return_photo = null;
+        if (!empty($profile_photo))
+            $return_photo = $config['pathInfo']['absolute_img_path'].$config['image_folders']['profile_path'].$user_id.'/'.$profile_photo;
+        else if(isset($fb_id) && !empty($fb_id))
+            $return_photo = 'http://graph.facebook.com/'.$fb_id.'/picture?type=normal';
+        else
+            $return_photo = $config['pathInfo']['absolute_img_path'].'/images/noimg.jpg';
+        return $return_photo;
+
+    }
+    public function formatLikedUsers($like_details,$system_type_id,$refer_id,$user_id){
+        $arrLikedUsers = array();
+        if(!empty($like_details)&&isset($like_details['likes_counts'])){
+            $liked_users = $this->getLikeTable()->likedUsersForRestAPI($system_type_id,$refer_id,$user_id,"","");
+            if($like_details['likes_counts']>0&&!empty($liked_users)){
+                foreach($liked_users as $likeuser){
+                    $arrLikedUsers[] = $likeuser['user_given_name'];
+                }
+            }
+        }
+        return $arrLikedUsers;
+    }
+    public function timeAgo($time_ago){ //echo $time_ago;die();
+        $time_ago = strtotime($time_ago);
+        $cur_time   = time();
+        $time_elapsed   = $cur_time - $time_ago;
+        $seconds    = $time_elapsed ;
+        $minutes    = round($time_elapsed / 60 );
+        $hours      = round($time_elapsed / 3600);
+        $days       = round($time_elapsed / 86400 );
+        $weeks      = round($time_elapsed / 604800);
+        $months     = round($time_elapsed / 2600640 );
+        $years      = round($time_elapsed / 31207680 );
+        // Seconds
+        if($seconds <= 60){
+            return "just now";
+        }
+        //Minutes
+        else if($minutes <=60){
+            if($minutes==1){
+                return "one minute ago";
+            }
+            else{
+                return "$minutes minutes ago";
+            }
+        }
+        //Hours
+        else if($hours <=24){
+            if($hours==1){
+                return "an hour ago";
+            }else{
+                return "$hours hrs ago";
+            }
+        }
+        //Days
+        else if($days <= 7){
+            if($days==1){
+                return "yesterday";
+            }else{
+                return "$days days ago";
+            }
+        }
+        //Weeks
+        else if($weeks <= 4.3){
+            if($weeks==1){
+                return "a week ago";
+            }else{
+                return "$weeks weeks ago";
+            }
+        }
+        //Months
+        else if($months <=12){
+            if($months==1){
+                return "a month ago";
+            }else{
+                return "$months months ago";
+            }
+        }
+        //Years
+        else{
+            if($years==1){
+                return "one year ago";
+            }else{
+                return "$years years ago";
+            }
+        }
+    }
+    public function  get_youtube_id_from_url($url){
+        if (stristr($url,'youtu.be/'))
+        {preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return isset($final_ID[4])?$final_ID[4]:''; }
+        else
+        {@preg_match('/(https:|http:|):(\/\/www\.|\/\/|)(.*?)\/(embed\/|watch.*?v=|channel\/)([a-z_A-Z0-9\-]{11})/i', $url, $IDD); return isset($IDD[5])?$IDD[5]:''; }
+    }
+    public function checkError($error){
+        if (!empty($error)){
+            $dataArr[0]['flag'] = $this->flagFailure;
+            $dataArr[0]['message'] = $error;
+            echo json_encode($dataArr);
+            exit;
+        }
     }
     public function is_date( $str ){
         $stamp = strtotime( $str );

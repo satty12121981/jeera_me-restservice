@@ -270,7 +270,8 @@ class UserProfileController extends AbstractActionController
 								$msg = '<a href="'.$base_url.$myinfo->user_profile_name.'">'.$identity->user_given_name." Sent you a friend request</a>";
 								$subject = 'Friend request';
 								$from = 'admin@jeera.com';
-								$this->UpdateNotifications($userinfo->user_id,$msg,2,$subject,$from,$identity->user_id,$identity->user_id);							 
+								$process = 'requested';
+								$this->UpdateNotifications($userinfo->user_id,$msg,1,$subject,$from,$identity->user_id,$identity->user_id,$process);							 
 							}else{$error = "Some error occurred.Please try again";}
 						}else{$error = "Already requested";}
 					}else{$error = "Unable to process";}
@@ -303,9 +304,10 @@ class UserProfileController extends AbstractActionController
 								$config = $this->getServiceLocator()->get('Config');
 								$base_url = $config['pathInfo']['base_url'];								 
 								$msg = '<a href="'.$base_url.$identity->user_profile_name.'">'.$identity->user_given_name." accept your friend request</a>";
-								$subject = 'Friend request process';
+								$subject = 'Friend request';
 								$from = 'admin@jeera.com';
-								$this->UpdateNotifications($userinfo->user_id,$msg,2,$subject,$from,$identity->user_id,$identity->user_id);
+								$process = 'accepted';
+								$this->UpdateNotifications($userinfo->user_id,$msg,2,$subject,$from,$identity->user_id,$identity->user_id,$process);
 							}else{$error = "Some error occurred. Please try again";}						 
 						}else{$error = "Already processed this request";}
 					}else{$error = "Unable to process";}
@@ -822,11 +824,11 @@ class UserProfileController extends AbstractActionController
 			}
 		}
 	}
-	public function get_youtube_id_from_url($url){
+	public function  get_youtube_id_from_url($url){
 		if (stristr($url,'youtu.be/'))
-			{preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return $final_ID[4]; }
+			{preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return isset($final_ID[4])?$final_ID[4]:''; }
 		else 
-			{@preg_match('/(https:|http:|):(\/\/www\.|\/\/|)(.*?)\/(embed\/|watch.*?v=|)([a-z_A-Z0-9\-]{11})/i', $url, $IDD); return $IDD[5]; }
+			{@preg_match('/(https:|http:|):(\/\/www\.|\/\/|)(.*?)\/(embed\/|watch.*?v=|channel\/)([a-z_A-Z0-9\-]{11})/i', $url, $IDD); return isset($IDD[5])?$IDD[5]:''; }
 	}
 	public function exploreAction(){
 		$error = '';
@@ -902,6 +904,7 @@ class UserProfileController extends AbstractActionController
 				return $result;
 			}
 		}else{return $this->redirect()->toRoute('home', array('action' => 'index'));}
+		
 	}
 	public function saveSettingsAction(){
 		$error = '';
@@ -1078,6 +1081,10 @@ class UserProfileController extends AbstractActionController
 				if(!empty($userinfo)&&$userinfo->user_id){				 
 					$feeds_list = $this->getGroupTable()->getNewsFeeds($identity->user_id,$type,$group_id,$activity,$limit,$offset);				 
 					foreach($feeds_list as $list){
+						$is_admin = 0;
+						if($this->getUserGroupTable()->checkOwner($list['group_id'],$list['user_id'])){
+							$is_admin = 1;
+						}
 						switch($list['type']){
 							case "New Activity":
 							$activity_details = array();
@@ -1133,6 +1140,7 @@ class UserProfileController extends AbstractActionController
 													"is_going"=>$activity->is_going,
 													"attending_users" =>$attending_users,
 													"allow_join" =>$allow_join,
+													'is_admin'=>$is_admin,
 													);
 							$feeds[] = array('content' => $activity_details,
 											'type'=>$list['type'],
@@ -1176,6 +1184,7 @@ class UserProfileController extends AbstractActionController
 													"liked_users"	=>$arr_likedUsers,
 													"comment_counts"	=>$comment_details['comment_counts'],
 													"is_commented"	=>$comment_details['is_commented'],
+													'is_admin'=>$is_admin,
 													);
 								$feeds[] = array('content' => $discussion_details,
 												'type'=>$list['type'],
@@ -1224,7 +1233,8 @@ class UserProfileController extends AbstractActionController
 													"is_liked"	=>$like_details['is_liked'],	
 													"liked_users"	=>$arr_likedUsers,	
 													"comment_counts"	=>$comment_details['comment_counts'],
-													"is_commented"	=>$comment_details['is_commented'],												
+													"is_commented"	=>$comment_details['is_commented'],	
+													'is_admin'=>$is_admin,													
 													);
 								$feeds[] = array('content' => $media_details,
 												'type'=>$list['type'],
@@ -1264,6 +1274,10 @@ class UserProfileController extends AbstractActionController
 				if(!empty($userinfo)&&$userinfo->user_id){				 
 					$feeds_list = $this->getGroupTable()->getMyFeeds($userinfo->user_id,$type,$limit,$offset);				 
 					foreach($feeds_list as $list){
+						$is_admin = 0;
+						if($this->getUserGroupTable()->checkOwner($list['group_id'],$list['user_id'])){
+							$is_admin = 1;
+						}
 						switch($list['type']){
 							case "New Activity":
 							$activity_details = array();
@@ -1318,6 +1332,7 @@ class UserProfileController extends AbstractActionController
 													"is_going"=>$activity->is_going,
 													"attending_users" =>$attending_users,
 													"allow_join" =>$allow_join,
+													'is_admin'=>$is_admin,	
 													);
 							$feeds[] = array('content' => $activity_details,
 											'type'=>$list['type'],
@@ -1360,6 +1375,7 @@ class UserProfileController extends AbstractActionController
 													"liked_users"	=>$arr_likedUsers,
 													"comment_counts"	=>$comment_details['comment_counts'],
 													"is_commented"	=>$comment_details['is_commented'],
+													'is_admin'=>$is_admin,	
 													);
 								$feeds[] = array('content' => $discussion_details,
 												'type'=>$list['type'],
@@ -1408,7 +1424,8 @@ class UserProfileController extends AbstractActionController
 													"is_liked"	=>$like_details['is_liked'],	
 													"liked_users"	=>$arr_likedUsers,	
 													"comment_counts"	=>$comment_details['comment_counts'],
-													"is_commented"	=>$comment_details['is_commented'],												
+													"is_commented"	=>$comment_details['is_commented'],	
+													'is_admin'=>$is_admin,			
 													);
 								$feeds[] = array('content' => $media_details,
 												'type'=>$list['type'],
@@ -1493,6 +1510,10 @@ class UserProfileController extends AbstractActionController
 				if(!empty($myinfo)&&$myinfo->user_id){				 
 					$feeds_list = $this->getGroupTable()->getMyActivity($myinfo->user_id,$type,$limit,$offset);				 
 					foreach($feeds_list as $list){
+						$is_admin = 0;
+						if($this->getUserGroupTable()->checkOwner($list['group_id'],$list['user_id'])){
+							$is_admin = 1;
+						}
 						switch($list['type']){
 							case "New Activity":
 							$activity_details = array();
@@ -1546,6 +1567,7 @@ class UserProfileController extends AbstractActionController
 													"is_going"=>$activity->is_going,
 													"attending_users" =>$attending_users,
 													"allow_join" =>$allow_join,
+													'is_admin'=>$is_admin,
 													);
 							$feeds[] = array('content' => $activity_details,
 											'type'=>$list['type'],
@@ -1589,6 +1611,7 @@ class UserProfileController extends AbstractActionController
 													"liked_users"	=>$arr_likedUsers,
 													"comment_counts"	=>$comment_details['comment_counts'],
 													"is_commented"	=>$comment_details['is_commented'],
+													'is_admin'=>$is_admin,
 													);
 								$feeds[] = array('content' => $discussion_details,
 												'type'=>$list['type'],
@@ -1637,7 +1660,8 @@ class UserProfileController extends AbstractActionController
 													"is_liked"	=>$like_details['is_liked'],	
 													"liked_users"	=>$arr_likedUsers,	
 													"comment_counts"	=>$comment_details['comment_counts'],
-													"is_commented"	=>$comment_details['is_commented'],												
+													"is_commented"	=>$comment_details['is_commented'],	
+													'is_admin'=>$is_admin,													
 													);
 								$feeds[] = array('content' => $media_details,
 												'type'=>$list['type'],
@@ -1658,7 +1682,47 @@ class UserProfileController extends AbstractActionController
 		));		
 		return $result;
 	}
-	public function UpdateNotifications($user_notification_user_id,$msg,$type,$subject,$from,$sender,$reference_id){
+	public function getFriendsAction(){
+		$error = '';
+		$auth = new AuthenticationService();
+		$arrFriends = array(); 
+		$friends_count = 0;
+		$request_count  = 0;
+		$mutual_friends_count = 0;
+		$sent_count  = 0;
+		if ($auth->hasIdentity()) {			 
+			$identity = $auth->getIdentity();			 
+			if(!empty($identity)&&$identity->user_id){	
+				$request   = $this->getRequest();
+				if ($request->isPost()){
+					$post = $request->getPost(); 
+					$page = $post['page_counter'];
+					$str_search = $post['str_search'];
+					$offset = ($page)?($page)*10:0;	
+					$friendslist = $this->getUserFriendTable()->getFriendsForSearchWithLimit($identity->user_id,$str_search,$offset,10);				
+					 					
+					foreach($friendslist as $list){ 						 					 
+						$arrFriends[] = array(
+							'user_given_name' =>$list->user_given_name,
+							'user_id' =>$list->user_id,
+							'user_profile_name' =>$list->user_profile_name,					 
+							'profile_photo' =>$list->profile_photo,	
+							'user_fbid' => $list->user_fbid,						 
+						);
+					}					 
+				}else{$error = "Unable to process";}
+			}else{	$error = "User not exist in the system"; }
+		}else{$error = "Your session is already expired";}
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error;	
+		$return_array['arrFriends'] = $arrFriends;			 
+		$result = new JsonModel(array(
+			'return_array' => $return_array,      
+		));		
+		return $result;	
+	}
+	public function UpdateNotifications($user_notification_user_id,$msg,$type,$subject,$from,$sender,$reference_id,$processs){
 		$UserGroupNotificationData = array();						
 		$UserGroupNotificationData['user_notification_user_id'] =$user_notification_user_id;		 
 		$UserGroupNotificationData['user_notification_content']  = $msg;
@@ -1667,6 +1731,7 @@ class UserProfileController extends AbstractActionController
 		$UserGroupNotificationData['user_notification_status'] = 'unread';
 		$UserGroupNotificationData['user_notification_sender_id'] = $sender;
 		$UserGroupNotificationData['user_notification_reference_id'] = $reference_id;		
+		$UserGroupNotificationData['user_notification_process'] = $processs;
 		#lets Save the User Notification
 		$UserGroupNotificationSaveObject = new UserNotification();
 		$UserGroupNotificationSaveObject->exchangeArray($UserGroupNotificationData);	

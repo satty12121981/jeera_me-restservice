@@ -54,7 +54,7 @@ class CommentController extends AbstractActionController
             $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
             $this->checkError($error);
-            $system_type = $post['type'];
+            $system_type = ucfirst($post['type']);
             $SystemTypeData = $this->getGroupTable()->fetchSystemType($system_type);
             $error = (empty($SystemTypeData)) ? "Invalid Content Type to like" : $error;
             $this->checkError($error);
@@ -106,7 +106,7 @@ class CommentController extends AbstractActionController
                         'user_id'=>$list->user_id,
                         'user_register_type'=>$list->user_register_type,
                         'user_fbid'=>$list->user_fbid,
-                        'profile_photo'=>$list->profile_photo,
+                        'profile_photo'=>$this->manipulateProfilePic($list['user_id'], $list->profile_photo, $list['user_fbid']),
                         'user_profile_name'=>$list->user_profile_name,
                         'liked_users'=>$arrLikeMembers,
                     );
@@ -130,7 +130,7 @@ class CommentController extends AbstractActionController
             $base_url = $config['pathInfo']['base_url'];
             $from = 'admin@jeera.com';
             $post = $request->getPost();
-            $system_type = $post['type'];
+            $system_type = ucfirst($post['type']);
             $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
             $error = (empty($accToken)) ? "Request Not Authorised." : $error;
             $this->checkError($error);
@@ -143,12 +143,12 @@ class CommentController extends AbstractActionController
             $error = (isset($post['txt_comment']) && $post['txt_comment'] != null && $post['txt_comment'] != '' && $post['txt_comment'] != 'undefined' ) ? '' : 'please input a valid comment';
             $this->checkError($error);
             $comment = $post['txt_comment'];
-            $hashedUser  = (isset($post['hashed_user']) && !empty($post['hashed_user'])) ?array_filter($post['hashed_user']):'';
+            $hashedUser  = (isset($post['hashed_user']) && !empty($post['hashed_user']) && is_array($post['hashed_user'])) ?array_filter($post['hashed_user']):array(0=>0);
             $hashedUser = explode(",", $hashedUser[0]);
             $SystemTypeData = $this->getGroupTable()->fetchSystemType($system_type);
             $error = (empty($SystemTypeData)) ? "Invalid Content Type to like" : $error;
             $this->checkError($error);
-            switch($system_type){
+            switch(ucfirst($system_type)){
                 case 'Discussion':
                         $discussion_data = $this->getDiscussionTable()->getDiscussion($refer_id);
                         if(!empty($discussion_data)){
@@ -250,8 +250,15 @@ class CommentController extends AbstractActionController
     public function postcommentuserNotifications($userinfo,$joinedMembers,$hashedUser,$msg,$process_join_id,$subject,$from,$refer_id,$process){
         if (count($joinedMembers)) {
             foreach ($joinedMembers as $members) {
-                if ($members->user_group_user_id != $userinfo->user_id && !in_array($members->user_group_user_id, $hashedUser)) {
-                    $this->UpdateNotifications($members->user_group_user_id, $msg, $process_join_id, $subject, $from, $userinfo->user_id, $refer_id, $process);
+                if(!empty($hashedUser)) {
+                    if ($members->user_group_user_id != $userinfo->user_id && !in_array($members->user_group_user_id, $hashedUser)) {
+                        $this->UpdateNotifications($members->user_group_user_id, $msg, $process_join_id, $subject, $from, $userinfo->user_id, $refer_id, $process);
+                    }
+                }
+                else{
+                    if($members->user_group_user_id!=$userinfo->user_id){
+                        $this->UpdateNotifications($members->user_group_user_id, $msg, $process_join_id, $subject, $from, $userinfo->user_id, $refer_id, $process);
+                    }
                 }
             }
         }

@@ -56,14 +56,14 @@ class LikeController extends AbstractActionController
             $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error =(empty($userinfo))?"Invalid Access Token.":$error;
             $this->checkError($error);
-            $system_type = $post['type'];
+            $system_type = ucfirst($post['type']);
             $SystemTypeData = $this->getGroupTable()->fetchSystemType($system_type);
             $error =(empty($SystemTypeData))?"Invalid Content Type to like":$error;
             $this->checkError($error);
             $error = (isset($post['content_id'])&&$post['content_id']!=null&&$post['content_id']!=''&&$post['content_id']!='undefined' && is_numeric($post['content_id']))?'':'please input a valid content id';
             $this->checkError($error);
             $refer_id = trim($post['content_id']);
-            switch($system_type){
+            switch(ucfirst($system_type)){
                 case 'Discussion':
                     if($refer_id!=''){
                         $discussion_data = $this->getDiscussionTable()->getDiscussion($refer_id);
@@ -230,14 +230,14 @@ class LikeController extends AbstractActionController
             $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
             $this->checkError($error);
-            $system_type = $post['type'];
+            $system_type = ucfirst($post['type']);
             $SystemTypeData = $this->getGroupTable()->fetchSystemType($system_type);
             $error = (empty($SystemTypeData)) ? "Invalid Content Type to like" : $error;
             $this->checkError($error);
             $error = (isset($post['content_id']) && $post['content_id'] != null && $post['content_id'] != '' && $post['content_id'] != 'undefined' && is_numeric($post['content_id'])) ? '' : 'please input a valid content id';
             $this->checkError($error);
             $refer_id = trim($post['content_id']);
-            switch($system_type){
+            switch(ucfirst($system_type)){
                 case 'Discussion':
                     if($refer_id!=''){
                         $discussion_data = $this->getDiscussionTable()->getDiscussion($refer_id);
@@ -345,7 +345,7 @@ class LikeController extends AbstractActionController
             $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
             $this->checkError($error);
-            $system_type = $post['type'];
+            $system_type = ucfirst($post['type']);
             $SystemTypeData = $this->getGroupTable()->fetchSystemType($system_type);
             $error = (empty($SystemTypeData)) ? "Invalid Content Type to like" : $error;
             $this->checkError($error);
