@@ -42,6 +42,7 @@ class GroupPostsController extends AbstractActionController
         $error = '';
         $feeds = array();
         $request   = $this->getRequest();
+        $config = $this->getServiceLocator()->get('Config');
         if ($request->isPost()){
             $post = $request->getPost();
             $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
@@ -94,9 +95,24 @@ class GroupPostsController extends AbstractActionController
                         $arrLikedUsers = $this->formatLikedUsers($like_details,$SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
                         $rsvp_count = $this->getActivityRsvpTable()->getCountOfAllRSVPuser($activity->group_activity_id)->rsvp_count;
                         $attending_users = array();
+                        $tempattendusers =  array();
                         if($rsvp_count>0){
                             $attending_users = $this->getActivityRsvpTable()->getJoinMembers($activity->group_activity_id,3,0);
                         }
+                        if (count($attending_users)){
+                            foreach ($attending_users as $attendlist) {
+                                unset($attendlist['group_activity_rsvp_id']);
+                                unset($attendlist['group_activity_rsvp_user_id']);
+                                unset($attendlist['group_activity_rsvp_activity_id']);
+                                unset($attendlist['group_activity_rsvp_added_timestamp']);
+                                unset($attendlist['group_activity_rsvp_added_ip_address']);
+                                unset($attendlist['group_activity_rsvp_group_id']);
+                                $attendlist['profile_photo'] = $this->manipulateProfilePic($attendlist['user_id'], $attendlist['profile_photo'], $attendlist['user_fbid']);
+                                $tempattendusers[]=$attendlist;
+                            }
+                            $attending_users = $tempattendusers;
+                        }
+
                         $allow_join = (strtotime($activity->group_activity_start_timestamp)>strtotime("now"))?1:0;
                         $activity_details = array(
                             "group_activity_id" => $activity->group_activity_id,
@@ -175,6 +191,13 @@ class GroupPostsController extends AbstractActionController
                         $str_liked_users = '';
                         $arrLikedUsers = array();
                         $arrLikedUsers = $this->formatLikedUsers($like_details,$SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
+                        if (!empty($media->media_content)){
+                            if($media->media_type == 'video'){
+                                $media->media_content =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
+                            }else{
+                                $media->media_content = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$list['group_id'].'/media/medium/'.$media->media_content;
+                            }
+                        }
                         $media_details = array(
                             "group_media_id" => $media->group_media_id,
                             "media_type" => $media->media_type,

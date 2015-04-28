@@ -2,14 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0b736442-2289-4c94-904e-bdd89460f66f" name="Default" comment="Adding New comment service to add edit delete getlist of comments&#10;">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/CommentController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/CommentController.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Comment/src/Comment/Model/CommentTable.php" afterPath="$PROJECT_DIR$/module/Comment/src/Comment/Model/CommentTable.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php" afterPath="$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupsTable.php" afterPath="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupsTable.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/TagsController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/TagsController.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php" afterPath="$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/User/src/User/Controller/UserProfileController.php" afterPath="$PROJECT_DIR$/module/User/src/User/Controller/UserProfileController.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="jeera_me-restservice.iws" />
@@ -35,14 +34,22 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="GroupPostsController.php" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php">
+      <file leaf-file-name="UserGroupTable.php" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.18309858" vertical-offset="3177" max-vertical-offset="10064">
-              <caret line="207" column="33" selection-start-line="207" selection-start-column="33" selection-end-line="207" selection-end-column="33" />
-              <folding>
-                <element signature="e#31817#32155#0#PHP" expanded="false" />
-              </folding>
+            <state vertical-scroll-proportion="-0.65384614" vertical-offset="10098" max-vertical-offset="13787">
+              <caret line="602" column="5" selection-start-line="602" selection-start-column="5" selection-end-line="602" selection-end-column="5" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GroupsController.php" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="3.9202898" vertical-offset="2834" max-vertical-offset="26792">
+              <caret line="317" column="16" selection-start-line="317" selection-start-column="16" selection-end-line="317" selection-end-column="16" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -75,18 +82,19 @@
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/ActivityController.php" />
         <option value="$PROJECT_DIR$/module/Like/src/Like/Model/LikeTable.php" />
         <option value="$PROJECT_DIR$/module/Comment/src/Comment/Controller/CommentController.php" />
-        <option value="$PROJECT_DIR$/module/Comment/src/Comment/Model/CommentTable.php" />
         <option value="$PROJECT_DIR$/module/Service/config/module.config.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/NotificationController.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/FriendsController.php" />
-        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/CommentController.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/TagsController.php" />
         <option value="$PROJECT_DIR$/module/User/src/User/Controller/UserProfileController.php" />
-        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php" />
         <option value="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupsTable.php" />
-        <option value="$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
+        <option value="$PROJECT_DIR$/module/Comment/src/Comment/Model/CommentTable.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" />
+        <option value="$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php" />
+        <option value="$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php" />
       </list>
     </option>
   </component>
@@ -96,9 +104,8 @@
   <component name="PhpWorkspaceProjectConfiguration" backward_compatibility_performed="true" />
   <component name="ProjectFrameBounds">
     <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="1382" />
-    <option name="height" value="744" />
+    <option name="width" value="1377" />
+    <option name="height" value="728" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -222,6 +229,24 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jeera_me-restservice" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jeera_me-restservice" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="module" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Groups" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
       <pane id="Scope" />
@@ -278,50 +303,29 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="0" />
+    <frame x="-8" y="0" width="1377" height="728" extended-state="1" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.51968503" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24963397" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23572475" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25128582" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32913387" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3279483" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.51968503" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.06808199" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.06808199" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
     </layout>
-    <layout-to-restore>
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.51968503" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32913387" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24963397" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25183016" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.06808199" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-    </layout-to-restore>
   </component>
   <component name="Vcs.Log.UiProperties">
     <option name="RECENTLY_FILTERED_USER_GROUPS">
@@ -348,13 +352,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/module/Comment/src/Comment/Model/CommentTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="7097" max-vertical-offset="8993">
-          <caret line="438" column="11" selection-start-line="438" selection-start-column="11" selection-end-line="438" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/Comment/src/Comment/Model/Comment.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="1085" max-vertical-offset="1666">
@@ -488,13 +485,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="765" max-vertical-offset="5423">
-          <caret line="306" column="41" selection-start-line="306" selection-start-column="41" selection-end-line="306" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/Groups/view/groups/groups/groupdetails.phtml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.15492958" vertical-offset="27282" max-vertical-offset="47379">
@@ -565,13 +555,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/module/Comment/src/Comment/Model/CommentTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6144366" vertical-offset="7097" max-vertical-offset="8993">
-          <caret line="438" column="11" selection-start-line="438" selection-start-column="11" selection-end-line="438" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/Notification/src/Notification/Model/NotificationTable.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.40963855" vertical-offset="0" max-vertical-offset="2584">
@@ -600,13 +583,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/module/User/src/User/Model/UserTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-11.115385" vertical-offset="561" max-vertical-offset="3349">
-          <caret line="54" column="27" selection-start-line="54" selection-start-column="20" selection-end-line="54" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/Comment/src/Comment/Controller/CommentController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.17957747" vertical-offset="0" max-vertical-offset="2448">
@@ -628,34 +604,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/FriendsController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.19190142" vertical-offset="248" max-vertical-offset="8245">
-          <caret line="39" column="52" selection-start-line="39" selection-start-column="52" selection-end-line="39" selection-end-column="52" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/TagsController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.47359154" vertical-offset="1788" max-vertical-offset="9520">
-          <caret line="133" column="51" selection-start-line="133" selection-start-column="51" selection-end-line="133" selection-end-column="51" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/IndexController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="23.923077" vertical-offset="741" max-vertical-offset="1870">
-          <caret line="13" column="30" selection-start-line="13" selection-start-column="30" selection-end-line="13" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3320965" vertical-offset="5822" max-vertical-offset="7157">
-          <caret line="1361" column="5" selection-start-line="1297" selection-start-column="4" selection-end-line="1361" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/User/src/User/Controller/UserProfileController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.3320965" vertical-offset="569" max-vertical-offset="2465">
@@ -663,95 +611,109 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-7.5384617" vertical-offset="620" max-vertical-offset="1445">
-          <caret line="417" column="39" selection-start-line="417" selection-start-column="20" selection-end-line="417" selection-end-column="39" />
-          <folding>
-            <element signature="e#637#735#0#PHP" expanded="false" />
-            <element signature="e#791#1087#0#PHP" expanded="false" />
-            <element signature="e#1139#1826#0#PHP" expanded="false" />
-            <element signature="e#1863#3965#0#PHP" expanded="false" />
-            <element signature="e#3967#6313#0#PHP" expanded="false" />
-            <element signature="e#6398#6999#0#PHP" expanded="false" />
-            <element signature="e#7050#7950#0#PHP" expanded="false" />
-            <element signature="e#7999#8949#0#PHP" expanded="false" />
-            <element signature="e#9000#10324#0#PHP" expanded="false" />
-            <element signature="e#10330#11295#0#PHP" expanded="false" />
-            <element signature="e#11300#11419#0#PHP" expanded="false" />
-            <element signature="e#11421#12039#0#PHP" expanded="false" />
-            <element signature="e#12041#12592#0#PHP" expanded="false" />
-            <element signature="e#12595#13227#0#PHP" expanded="false" />
-            <element signature="e#13229#13770#0#PHP" expanded="false" />
-            <element signature="e#13772#13921#0#PHP" expanded="false" />
-            <element signature="e#13923#14117#0#PHP" expanded="false" />
-            <element signature="e#14119#14318#0#PHP" expanded="false" />
-            <element signature="e#14323#16494#0#PHP" expanded="false" />
-            <element signature="e#16496#17507#0#PHP" expanded="false" />
-            <element signature="e#17509#18977#0#PHP" expanded="false" />
-            <element signature="e#18979#19128#0#PHP" expanded="false" />
-            <element signature="e#19130#19862#0#PHP" expanded="false" />
-            <element signature="e#19864#20734#0#PHP" expanded="false" />
-            <element signature="e#20736#21845#0#PHP" expanded="false" />
-            <element signature="e#21847#22543#0#PHP" expanded="false" />
-            <element signature="e#22545#23451#0#PHP" expanded="false" />
-            <element signature="e#23453#23665#0#PHP" expanded="false" />
-            <element signature="e#23667#23888#0#PHP" expanded="false" />
-            <element signature="e#23890#24422#0#PHP" expanded="false" />
-            <element signature="e#24424#24876#0#PHP" expanded="false" />
-            <element signature="e#24878#25759#0#PHP" expanded="false" />
-            <element signature="e#25761#28847#0#PHP" expanded="false" />
-            <element signature="e#28849#33088#0#PHP" expanded="false" />
-            <element signature="e#33090#34511#0#PHP" expanded="false" />
-            <element signature="e#34513#38498#0#PHP" expanded="false" />
-            <element signature="e#39316#40485#0#PHP" expanded="false" />
-            <element signature="e#40487#43596#0#PHP" expanded="false" />
-            <element signature="e#43598#44340#0#PHP" expanded="false" />
-            <element signature="e#44342#44936#0#PHP" expanded="false" />
-            <element signature="e#44938#45637#0#PHP" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupsTable.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-40.923077" vertical-offset="3696" max-vertical-offset="13923">
           <caret line="286" column="10" selection-start-line="286" selection-start-column="10" selection-end-line="286" selection-end-column="10" />
-          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/ActivityController.php">
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/IndexController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-4.387324" vertical-offset="2679" max-vertical-offset="3247">
-          <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="15" />
-          <folding />
+        <state vertical-scroll-proportion="0.20950705" vertical-offset="0" max-vertical-offset="1870">
+          <caret line="13" column="30" selection-start-line="13" selection-start-column="30" selection-end-line="13" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Comment/src/Comment/Model/CommentTable.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.82042253" vertical-offset="9139" max-vertical-offset="9911">
+          <caret line="577" column="48" selection-start-line="577" selection-start-column="48" selection-end-line="577" selection-end-column="48" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/CommentController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-2.9330986" vertical-offset="3315" max-vertical-offset="9571">
+        <state vertical-scroll-proportion="-12.181338" vertical-offset="8568" max-vertical-offset="9571">
           <caret line="113" column="47" selection-start-line="113" selection-start-column="47" selection-end-line="113" selection-end-column="47" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="8.169014" vertical-offset="1395" max-vertical-offset="8279">
-          <caret line="368" column="0" selection-start-line="368" selection-start-column="0" selection-end-line="368" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.18309858" vertical-offset="3177" max-vertical-offset="10064">
-          <caret line="207" column="33" selection-start-line="207" selection-start-column="33" selection-end-line="207" selection-end-column="33" />
+        <state vertical-scroll-proportion="5.7764087" vertical-offset="493" max-vertical-offset="6749">
+          <caret line="236" column="38" selection-start-line="236" selection-start-column="38" selection-end-line="236" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.26056337" vertical-offset="1977" max-vertical-offset="8687">
+          <caret line="138" column="50" selection-start-line="138" selection-start-column="50" selection-end-line="138" selection-end-column="50" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../jeerav1.2live/module/Service/src/Service/Controller/ActivityController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="3094">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/User/src/User/Model/UserTable.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.4311594" vertical-offset="561" max-vertical-offset="3349">
+          <caret line="51" column="13" selection-start-line="51" selection-start-column="13" selection-end-line="51" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/ActivityController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="2.5253623" vertical-offset="408" max-vertical-offset="3247">
+          <caret line="106" column="17" selection-start-line="106" selection-start-column="0" selection-end-line="107" selection-end-column="0" />
           <folding>
-            <element signature="e#31817#32155#0#PHP" expanded="false" />
+            <element signature="e#36#85#0#PHP" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/TagsController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.8043478" vertical-offset="9076" max-vertical-offset="12104">
+          <caret line="569" column="17" selection-start-line="557" selection-start-column="11" selection-end-line="569" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/FriendsController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.19746377" vertical-offset="248" max-vertical-offset="8245">
+          <caret line="39" column="52" selection-start-line="39" selection-start-column="52" selection-end-line="39" selection-end-column="52" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-1.2101449" vertical-offset="12279" max-vertical-offset="35581">
+          <caret line="702" column="27" selection-start-line="702" selection-start-column="27" selection-end-line="702" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.65384614" vertical-offset="10098" max-vertical-offset="13787">
+          <caret line="602" column="5" selection-start-line="602" selection-start-column="5" selection-end-line="602" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="3.9202898" vertical-offset="2834" max-vertical-offset="26792">
+          <caret line="317" column="16" selection-start-line="317" selection-start-column="16" selection-end-line="317" selection-end-column="16" />
+          <folding />
         </state>
       </provider>
     </entry>

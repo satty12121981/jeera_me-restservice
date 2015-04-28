@@ -63,6 +63,8 @@ class GroupsController extends AbstractActionController
 				$viewModel->addChild($profileWidget, 'profileWidget');
 				$myprofile =($userinfo->user_id== $identity->user_id)?1:0;
 				$viewModel->setVariable( 'myprofile' , $myprofile);	
+				$myIntrests = $this->getUserTagTable()->getAllUserTags($identity->user_id);
+				$viewModel->setVariable( 'myIntrests' , $myIntrests);
 				$profile_data = $this->getUserTable()->getProfileDetails($identity->user_id);				 
 				$viewModel->setVariable( 'profile_data' , $profile_data);
 				$friends_count = $this->getUserFriendTable()->getFriendsCount($userinfo->user_id)->friends_count;				
@@ -114,6 +116,8 @@ class GroupsController extends AbstractActionController
 					  case 3:
 					  $objGroup->intGroupType = 'private';
 					  break;
+					  default:
+					   $objGroup->intGroupType = 'open';
 					 }
 					$arrgrouptags = explode(',',$this->getRequest()->getPost('addedtags'));
 					$arrQuestions       = explode(',',$this->getRequest()->getPost('QuestionDetails'));
@@ -220,7 +224,7 @@ class GroupsController extends AbstractActionController
                                 foreach($arrAddedFriends as $group_invt){
                                     $UserGroupJoiningInvitation->user_group_joining_invitation_sender_user_id           = $identity->user_id;
                                     $UserGroupJoiningInvitation->user_group_joining_invitation_receiver_id              = $group_invt;
-                                    $UserGroupJoiningInvitation->user_group_joining_invitation_status                   = 0;
+                                    $UserGroupJoiningInvitation->user_group_joining_invitation_status                   = "active";
                                     $UserGroupJoiningInvitation->user_group_joining_invitation_ip_address               = $_SERVER["SERVER_ADDR"];
                                     $UserGroupJoiningInvitation->user_group_joining_invitation_group_id                 = $intGroupId;
                                     $intUserGroupJoiningInvitation   = $this->getGroupJoiningInvitationTable()->saveUserGroupJoiningInvite($UserGroupJoiningInvitation);
@@ -230,7 +234,8 @@ class GroupsController extends AbstractActionController
 										$msg = $identity->user_given_name." invited you to join the group ".$objGroup->strGroupName;
 										$subject = 'Group joining invitation';
 										$from = 'admin@jeera.com';
-										$this->UpdateNotifications($group_invt,$msg,1,$subject,$from,$identity->user_id,$intGroupId);
+										$process = 'Invite';
+										$this->UpdateNotifications($group_invt,$msg,3,$subject,$from,$identity->user_id,$intGroupId,$process);
 									}
                                 }
                             }
@@ -355,7 +360,8 @@ class GroupsController extends AbstractActionController
 													$msg = $identity->user_given_name." added a new status under the group ".$group->group_title;
 													$subject = 'New status added';
 													$from = 'admin@jeera.com';
-													$this->UpdateNotifications($members->user_group_user_id,$msg,2,$subject,$from,$identity->user_id,$group->group_id);
+													$process = 'New Media';
+													$this->UpdateNotifications($members->user_group_user_id,$msg,8,$subject,$from,$identity->user_id,$addeditem,$process);
 												}
 											}
 										}else{$error = "Some error occcured. Please try again"; }
@@ -383,7 +389,8 @@ class GroupsController extends AbstractActionController
 											$msg = $identity->user_given_name." added a new status under the group ".$group->group_title;
 											$subject = 'New status added';
 											$from = 'admin@jeera.com';
-											$this->UpdateNotifications($members->user_group_user_id,$msg,2,$subject,$from,$identity->user_id,$group->group_id);
+											$process = 'New Media';
+											$this->UpdateNotifications($members->user_group_user_id,$msg,8,$subject,$from,$identity->user_id,$addeditem,$process);
 										}
 									}
 								}else{$error = "Some error occcured. Please try again"; }
@@ -453,6 +460,10 @@ class GroupsController extends AbstractActionController
 				$media_id = $post['media_id'];
 				if($media_id){
 					$group_media = $this->getGroupMediaTable()->getOneMedia($media_id);
+					$is_admin = 0;
+					if($this->getUserGroupTable()->checkOwner($group_media->group_id,$group_media->user_id)){
+						$is_admin = 1;
+					}
 					$arr_group_media = array();
 					if(!empty($group_media)&&$group_media->group_media_id!=''){
 						$SystemTypeData = $this->getGroupTable()->fetchSystemType("Media");
@@ -470,8 +481,7 @@ class GroupsController extends AbstractActionController
 									$arr_likedUsers[] = $likeuser['user_given_name'];
 								}
 							}
-							if(!empty($arr_likedUsers)){
-							$str_liked_users = implode(',',$arr_likedUsers);}
+							 
 						}	
 						$commet_users = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$media_id,$identity->user_id);
 						$next_item = $this->getGroupMediaTable()->getNextMedia($group_media->group_id,$media_id);
@@ -490,6 +500,7 @@ class GroupsController extends AbstractActionController
 										'user_first_name' => $group_media->user_first_name,
 										'user_last_name' => $group_media->user_last_name,
 										'user_profile_name' => $group_media->user_profile_name,
+										'user_fbid' => $group_media->user_fbid,
 										'profile_photo' => $group_media->profile_photo,
 										'likedUsers' => $arr_likedUsers,
 										'likes_counts' =>$like_details['likes_counts'],
@@ -498,15 +509,17 @@ class GroupsController extends AbstractActionController
 										'is_commented' =>$commet_users['is_commented'],
 										'next_id' =>(isset($next_item->group_media_id))?$next_item->group_media_id:'',
 										'prev_id' =>(isset($prev_item->group_media_id))?$prev_item->group_media_id:'',
+										'is_admin'=>$is_admin,
 										);
 						$commentSystemTYpe =$this->getGroupTable()->fetchSystemType('Comment'); 
 						$comments_details = $this->getCommentTable()->getAllCommentsWithLike($SystemTypeData->system_type_id,$commentSystemTYpe->system_type_id,$media_id,$identity->user_id,10,0);
 						if(!empty($comments_details)){
 							foreach($comments_details as $list){
-								$str_liked_users = '';
+								 
+								$arr_likedUsers = array();
 								$like_details = $this->getLikeTable()->fetchLikesCountByReference($commentSystemTYpe->system_type_id,$list->comment_id,$identity->user_id);
 								if(!empty($like_details)){  
-									$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($commentSystemTYpe->system_type_id,$media_id,$identity->user_id,2,0);
+									$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($commentSystemTYpe->system_type_id,$list->comment_id,$identity->user_id,2,0);
 									$arr_likedUsers = array();
 									if($like_details['is_liked']==1){
 										$arr_likedUsers[] = 'you';
@@ -516,8 +529,7 @@ class GroupsController extends AbstractActionController
 											$arr_likedUsers[] = $likeuser['user_given_name'];
 										}
 									}
-									if(!empty($arr_likedUsers)){
-									$str_liked_users = implode(',',$arr_likedUsers);}
+									 
 								}
 								$comments[] = array(
 												'likes_count'=>$like_details['likes_counts'],
@@ -530,7 +542,8 @@ class GroupsController extends AbstractActionController
 												'user_register_type'=>$list->user_register_type,
 												'user_fbid'=>$list->user_fbid,
 												'profile_photo'=>$list->profile_photo,
-												'str_liked_users'=>$str_liked_users
+												'likedUsers'=>$arr_likedUsers,
+												'user_profile_name'=>$list->user_profile_name
 											);
 							}
 						}
@@ -630,12 +643,21 @@ class GroupsController extends AbstractActionController
 				$limit =10;
 				$page =($page>0)?$page-1:0;
 				$offset = $page*$limit;
-				$friends = '';
-				$groups = $this->getUserGroupTable()->getmatchGroupsByuserTags($identity->user_id,$city,$country,$friends,$category,$limit,$offset);
+				$groups = $this->getUserGroupTable()->getmatchGroupsByuserTags($identity->user_id,$city,$country,$category,$limit,$offset);
 				if(!empty($groups)){
 					foreach($groups as $list){
 						$tag_category = $this->getGroupTagTable()->getAllGroupTagCategiry($list['group_id']);
 						$tags = $this->getGroupTagTable()->fetchAllGroupTags($list['group_id']);
+						$is_requested = 0;
+						$requestedHystory = $this->getUserGroupJoiningRequestTable()->checkActiveRequestExist($list['group_id'],$identity->user_id);
+						if(!empty($requestedHystory)&&$requestedHystory->user_group_joining_request_id!=''){
+							$is_requested = 1;
+						}
+						$is_invited = 0;
+						$invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($identity->user_id,$list['group_id']);
+						if(!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){
+							$is_invited = 1;
+						}
 						$arr_group_list[] = array(
 										'group_id' =>$list['group_id'],
 										'group_title' =>$list['group_title'],
@@ -650,6 +672,8 @@ class GroupsController extends AbstractActionController
 										'tag_category_count' =>count($tag_category),
 										'tag_category' =>$tag_category,
 										'tags' =>$tags,
+										'is_requested'=>$is_requested,
+										'is_invited'=>$is_invited,
 										);
 					}
 				}
@@ -665,7 +689,7 @@ class GroupsController extends AbstractActionController
 		));		
 		return $result;
 	}
-	public function grouplistAction(){
+	 public function grouplistAction(){
         $error = '';
 		$auth = new AuthenticationService();	
 		$arr_group_list = '';
@@ -698,6 +722,16 @@ class GroupsController extends AbstractActionController
 								if($list['is_admin']){
 									$request_count = $this->getUserGroupJoiningRequestTable()->countGroupMemberRequests($list['group_id'])->memberCount;
 								}
+								$is_requested = 0;
+								$requestedHystory = $this->getUserGroupJoiningRequestTable()->checkActiveRequestExist($list['group_id'],$identity->user_id);
+								if(!empty($requestedHystory)&&$requestedHystory->user_group_joining_request_id!=''){
+									$is_requested = 1;
+								}
+								$is_invited = 0;
+								$invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($identity->user_id,$list['group_id']);
+								if(!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){
+									$is_invited = 1;
+								}
 								$arr_group_list[] = array(
 									'group_id' =>$list['group_id'],
 									'group_title' =>$list['group_title'],
@@ -715,12 +749,12 @@ class GroupsController extends AbstractActionController
 									'tag_category_count' =>count($tag_category),
 									'tag_category' =>$tag_category,
 									'request_count' =>$request_count,
-									'is_requested'=>$list['is_requested'],
+									'is_requested'=>$is_requested,
+									'is_invited'=>$is_invited,
 									'tags' =>$tags,
 								);
 							}
 						}
-						                               
 					}else{
 						$error      = "No Record Found.";							 
 					}         
@@ -749,7 +783,9 @@ class GroupsController extends AbstractActionController
 				 if(!empty($userinfo)&&$userinfo->user_id){					 
 					$arrUserGroup      = $this->getUserGroupTable()->getUserGroup($identity->user_id, $intGroupId);
 					if(count($arrUserGroup) > 0){					    
-					   if($this->getUserGroupTable()->deleteOneUserGroup($intGroupId, $identity->user_id)){;}else{	$error = "Some error occured. Please try again"; }			   
+					    if($this->getUserGroupTable()->deleteOneUserGroup($intGroupId, $identity->user_id)){
+						   $this->getGroupQuestionnaireAnswersTable()->deleteUserAnswersOfGroup($intGroupId,$identity->user_id);
+						}else{	$error = "Some error occured. Please try again"; }			   
 				   }else{$error = "Group not exist in the system";}
 				}else{$error = "User not exist in the system";}              
             }else{$error = "Unable to process";}
@@ -841,6 +877,18 @@ class GroupsController extends AbstractActionController
 							$user_data['user_group_group_id'] = $group_id;
 							$user_data['user_group_status'] = "available";							 
 							$this->getUserGroupTable()->AddMembersTOGroup($user_data);
+							$config = $this->getServiceLocator()->get('Config');
+							$base_url = $config['pathInfo']['base_url'];
+							$msg = $identity->user_given_name." Joined in the group ".$group_info->group_title;
+							$subject = 'Group joining Request';
+							$from = 'admin@jeera.com';
+							$process = 'Joined';
+							$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
+							foreach($admin_users as $admins){
+								if($identity->user_id!=$admins->user_group_user_id){
+								$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
+								}
+							}
 						}
 					}
 					if($group_info->group_type == 'public'){ 
@@ -850,6 +898,43 @@ class GroupsController extends AbstractActionController
 							$user_data['user_group_joining_request_group_id'] = $group_id;
 							$user_data['user_group_joining_request_status'] = "active"; 
 							$this->getUserGroupJoiningRequestTable()->AddRequestTOGroup($user_data);
+							$config = $this->getServiceLocator()->get('Config');
+							$base_url = $config['pathInfo']['base_url'];
+							$msg = $identity->user_given_name." requested to join in the group ".$group_info->group_title;
+							$subject = 'Group joining Request';
+							$from = 'admin@jeera.com';
+							$process = 'Requested';
+							$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
+							 
+							foreach($admin_users as $admins){ 
+								if($identity->user_id!=$admins->user_group_user_id){
+								$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
+								}
+							} 
+						}
+					}
+					if($group_info->group_type == 'private'){ 
+						$invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($identity->user_id,$group_id);	
+						$usergroup = $this->getUserGroupTable()->getUserGroup($identity->user_id,$group_id);
+						if(empty($usergroup)&&!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){ 
+							$user_data['user_group_user_id'] = $identity->user_id;
+							$user_data['user_group_group_id'] = $group_id;
+							$user_data['user_group_status'] = "available";							 				 
+							if($this->getUserGroupTable()->AddMembersTOGroup($user_data)){
+								$this->getGroupJoiningInvitationTable()->ChangeStatusTOProcessed($invitedHystory->user_group_joining_invitation_id);
+								$config = $this->getServiceLocator()->get('Config');
+								$base_url = $config['pathInfo']['base_url'];
+								$msg = $identity->user_given_name." Joined in the group ".$group_info->group_title;
+								$subject = 'Group joining Request';
+								$from = 'admin@jeera.com';
+								$process = 'Joined';
+								$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
+								foreach($admin_users as $admins){
+									if($identity->user_id!=$admins->user_group_user_id){
+									$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
+									}
+								}
+							}							
 						}
 					}
 				}else{$error = "Unable to process";}
@@ -865,6 +950,7 @@ class GroupsController extends AbstractActionController
 		));		
 		return $result;
 	}
+	
 	public function joinGroupAction(){
 		$error = '';
 		$auth = new AuthenticationService();		 
@@ -874,9 +960,8 @@ class GroupsController extends AbstractActionController
 			$request   = $this->getRequest();
 			if($request->isPost()){				 
                 $group_id  = $this->getRequest()->getPost('group_id');
-				$group_info = $this->getGroupTable()->getPlanetinfo($group_id);				
-                if(!empty($group_info)&&$group_info->group_id!=''){					 
-					 
+				$group_info = $this->getGroupTable()->getPlanetinfo($group_id);	 
+                if(!empty($group_info)&&$group_info->group_id!=''){				 
 					if($group_info->group_type == 'open'){
 						$usergroup = $this->getUserGroupTable()->getUserGroup($identity->user_id,$group_id);
 						if(empty($usergroup)){
@@ -884,15 +969,64 @@ class GroupsController extends AbstractActionController
 							$user_data['user_group_group_id'] = $group_id;
 							$user_data['user_group_status'] = "available";							 
 							$this->getUserGroupTable()->AddMembersTOGroup($user_data);
+							$config = $this->getServiceLocator()->get('Config');
+							$base_url = $config['pathInfo']['base_url'];
+							$msg = $identity->user_given_name." Joined in the group ".$group_info->group_title;
+							$subject = 'Group joining Request';
+							$from = 'admin@jeera.com';
+							$process = 'Joined';
+							$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
+							foreach($admin_users as $admins){
+								if($identity->user_id!=$admins->user_group_user_id){
+								$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
+								}
+							}
 						}
 					}
 					if($group_info->group_type == 'public'){ 
 						$usergroup = $this->getUserGroupTable()->getUserGroup($identity->user_id,$group_id);
-						if(!empty($usergroup)){
+						if(empty($usergroup)){ 
 							$user_data['user_group_joining_request_user_id'] = $identity->user_id;
 							$user_data['user_group_joining_request_group_id'] = $group_id;
 							$user_data['user_group_joining_request_status'] = "active";							 
 							$this->getUserGroupJoiningRequestTable()->AddRequestTOGroup($user_data);
+							$config = $this->getServiceLocator()->get('Config');
+							$base_url = $config['pathInfo']['base_url'];
+							$msg = $identity->user_given_name." requested to join in the group ".$group_info->group_title;
+							$subject = 'Group joining Request';
+							$from = 'admin@jeera.com';
+							$process = 'Requested';
+							$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
+							//print_r($admin_users);die();
+							foreach($admin_users as $admins){
+								if($identity->user_id!=$admins->user_group_user_id){
+								$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
+								}
+							}
+						}
+					}
+					if($group_info->group_type == 'private'){
+						$invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($identity->user_id,$group_id);	
+						$usergroup = $this->getUserGroupTable()->getUserGroup($identity->user_id,$group_id);
+						if(empty($usergroup)&&!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){ 
+							$user_data['user_group_user_id'] = $identity->user_id;
+							$user_data['user_group_group_id'] = $group_id;
+							$user_data['user_group_status'] = "available";							 				 
+							if($this->getUserGroupTable()->AddMembersTOGroup($user_data)){
+								$this->getGroupJoiningInvitationTable()->ChangeStatusTOProcessed($invitedHystory->user_group_joining_invitation_id);
+								$config = $this->getServiceLocator()->get('Config');
+								$base_url = $config['pathInfo']['base_url'];
+								$msg = $identity->user_given_name." Joined in the group ".$group_info->group_title;
+								$subject = 'Group joining Request';
+								$from = 'admin@jeera.com';
+								$process = 'Joined';
+								$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
+								foreach($admin_users as $admins){
+									if($identity->user_id!=$admins->user_group_user_id){
+									$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
+									}
+								}
+							}
 						}
 					}
 				}else{$error = "Unable to process";}
@@ -970,6 +1104,8 @@ class GroupsController extends AbstractActionController
 		$viewModel = new ViewModel();
 		$config = $this->getServiceLocator()->get('Config');
 		$viewModel->setVariable('image_folders',$config['image_folders']);
+		//$request   = $this->getRequest();
+		$edit = $this->params()->fromQuery('edit');
 		if ($auth->hasIdentity()) {
 			$this->layout('layout/layout_user');
 			$identity = $auth->getIdentity();
@@ -993,10 +1129,19 @@ class GroupsController extends AbstractActionController
 					  if(!empty($group_info)){
 						$tag_category = $this->getGroupTagTable()->getAllGroupTagCategiry($group_info->group_id);
 						$tags = $this->getGroupTagTable()->fetchAllGroupTags($group_info->group_id);
+						$viewModel->setVariable( 'enableEdit',0);
 						$request_count = 0;
 						if($group_info->is_admin){
 							$request_count = $this->getUserGroupJoiningRequestTable()->countGroupMemberRequests($group_info->group_id)->memberCount;
+							if(isset($edit)&&$edit==1){
+								$viewModel->setVariable( 'enableEdit',1);
+							}
 						}
+						$is_invited = 0;
+								$invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($identity->user_id,$group_info->group_id);
+								if(!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){
+									$is_invited = 1;
+								}
 						 $arr_group_info = array(
 							'group_id'=>$group_info->group_id,
 							'group_title'=>$group_info->group_title,
@@ -1007,6 +1152,7 @@ class GroupsController extends AbstractActionController
 							'is_admin'=>$group_info->is_admin,
 							'is_member'=>$group_info->is_member,
 							'is_requested'=>$group_info->is_requested,
+							'is_invited'=>$is_invited,
 							'member_count'=>$group_info->member_count,
 							'friend_count'=>$group_info->friend_count,
 							'country_title'=>$group_info->country_title,
@@ -1127,13 +1273,18 @@ class GroupsController extends AbstractActionController
 				$group_info = $this->getGroupTable()->getPlanetinfo($group_id);	
 				if(!empty($group_info)&&$group_info->group_id!=''){	
 					if($this->getUserGroupTable()->checkOwner($group_info->group_id,$identity->user_id)){
-						$group_data['group_title'] = $group_title;
-						$group_data['group_description'] = $group_description;
-						$group_data['group_type'] = $group_type;
-						if($this->getGroupTable()->updateGroup($group_data,$group_info->group_id)){
-							;					
+						$group_details = $this->getGroupTable()->getGroupByName($group_title);
+						if(!empty($group_details)&& $group_details->group_id!=''&&$group_details->group_id!=$group_info->group_id){							 
+							$error = "Group name already exist";
 						}else{
-							$error = "Some error occured. Please try again";
+							$group_data['group_title'] = $group_title;
+							$group_data['group_description'] = $group_description;
+							$group_data['group_type'] = $group_type;
+							if($this->getGroupTable()->updateGroup($group_data,$group_info->group_id)){
+								;					
+							}else{
+								$error = "Some error occured. Please try again";
+							}
 						}
 					}else{$error = "You don't have the permissions to do this operation";}
 				}else{$error = "Unable to process";}
@@ -1238,6 +1389,8 @@ class GroupsController extends AbstractActionController
 											'user_profile_name'=>$list['user_profile_name'],
 											'country_title'=>$list['country_title'],
 											'country_code'=>$list['country_code'],
+											'user_fbid'=>$list['user_fbid'],
+											'user_register_type'=>$list['user_register_type'],
 											'city'=>$list['city'],
 											'profile_photo'=>$list['profile_icon'],
 											'tag_count' =>count($tag_category),
@@ -1317,6 +1470,13 @@ class GroupsController extends AbstractActionController
 							$user_data['user_group_status'] = "available";							 
 							$this->getUserGroupTable()->AddMembersTOGroup($user_data);
 							$this->getUserGroupJoiningRequestTable()->ChangeStatusTOProcessed($group_id,$user_id);
+							$config = $this->getServiceLocator()->get('Config');
+							$base_url = $config['pathInfo']['base_url'];
+							$msg = $identity->user_given_name." Accept the group joining request to the group ".$group_info->group_title;
+							$subject = 'Group joining Request';
+							$from = 'admin@jeera.com';
+							$process = 'Accepted';
+							$this->UpdateNotifications($user_id,$msg,5,$subject,$from,$identity->user_id,$group_id,$process);					 
 						}
 					}
 				}else{$error = "Unable to process";}
@@ -1346,7 +1506,7 @@ class GroupsController extends AbstractActionController
 					$owner = $this->getUserGroupTable()->checkOwner($group_info->group_id,$identity->user_id);
 					if($owner){
 						if($this->getUserGroupTable()->deleteOneUserGroup($group_info->group_id,$user_id)){
-						;
+						 $this->getGroupQuestionnaireAnswersTable()->deleteUserAnswersOfGroup($group_info->group_id,$user_id);
 						}else{$error = "Some error occured.Please try again";}
 					}
 				}else{$error = "Unable to process";}
@@ -1376,7 +1536,14 @@ class GroupsController extends AbstractActionController
 					$owner = $this->getUserGroupTable()->checkOwner($group_info->group_id,$identity->user_id);
 					if($owner){
 						if($this->getUserGroupTable()->updateUserRoles($user_id,$group_info->group_id,1)){
-						;
+							$config = $this->getServiceLocator()->get('Config');
+							$base_url = $config['pathInfo']['base_url'];
+							$msg = $identity->user_given_name."promoted you as an admin to the group ".$group_info->group_title;
+							$subject = 'Group admin Promoted';
+							$from = 'admin@jeera.com';
+							$process = 'Promoted';
+							$this->UpdateNotifications($user_id,$msg,9,$subject,$from,$identity->user_id,$group_id,$process);
+								 
 						}else{$error = "Some error occured.Please try again";}
 					}
 				}else{$error = "Unable to process";}
@@ -1701,7 +1868,134 @@ class GroupsController extends AbstractActionController
 		));		
 		return $result;	
 	}
-	public function UpdateNotifications($user_notification_user_id,$msg,$type,$subject,$from,$sender,$reference_id){
+	public function removeBannerAction(){
+		$error = '';
+		$arrMembers = array();
+		$auth = new AuthenticationService();
+		if ($auth->hasIdentity()) {
+			$identity = $auth->getIdentity();			  
+			$request   = $this->getRequest();
+			if ($request->isPost()){
+				$post = $request->getPost(); 
+				if(!empty($post)){				 
+					$group_id = $post['group'];
+					$group  = $this->getGroupTable()->getPlanetinfo($group_id);
+					if(!empty($group)){
+						$owner = $this->getUserGroupTable()->checkOwner($group->group_id,$identity->user_id);
+						if($owner){
+							$config = $this->getServiceLocator()->get('Config');
+							$imagePath_dir = $config['pathInfo']['ROOTPATH'].'/public/datagd/group/'.$group->group_id.'/';
+							$mediumimagePath_dir = $config['pathInfo']['ROOTPATH'].'/public/datagd/group/'.$group->group_id.'/medium';
+							$filename = 'group_'.$group->group_id.''.time().'.png';	
+							$imagePath = $config['pathInfo']['ROOTPATH'].'/public/datagd/group/'.$group->group_id.'/'.$filename;
+							$mediumimagePath = $config['pathInfo']['ROOTPATH'].'/public/datagd/group/'.$group->group_id.'/medium/'.$filename;
+							$group_photo =  $this->getGroupPhotoTable()->getGalexyPhoto($group->group_id);
+							$previous_image = '';
+							if(!empty($group_photo)&&$group_photo->group_photo_id!=''){					 
+								$previous_image = $groupphoto->group_photo_photo;
+								$this->getGroupPhotoTable()->RemoveBanner($group_photo->group_photo_id);
+								if($previous_image!=''){	
+									@unlink($config['pathInfo']['ROOTPATH'].'/public/datagd/groups/'.$group->group_id.'/'.$groupphoto->group_photo_photo);
+									@unlink($config['pathInfo']['ROOTPATH'].'/public/datagd/groups/'.$group->group_id.'/medium/'.$groupphoto->group_photo_photo);
+									@unlink($config['pathInfo']['ROOTPATH'].'/public/datagd/groups/'.$group->group_id.'/thumbnail/'.$groupphoto->group_photo_photo);
+								}
+							}						 
+						}else{$error = "You don\'t have the permission to do it";}						
+					}else{$error = "Group not available";}				 
+				}else{$error = "Unable to process";}
+			}else{$error = "Unable to process";} 
+		}else{$error = "Your session has to be expired";}
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error; 	
+		$result = new JsonModel(array(
+		'return_array' => $return_array,      
+		));		
+		return $result;	
+	}
+	public function mediaviewAction(){
+		$error = '';
+		$auth = new AuthenticationService();
+		$viewModel = new ViewModel();
+		$config = $this->getServiceLocator()->get('Config');
+		$viewModel->setVariable('image_folders',$config['image_folders']);
+		if ($auth->hasIdentity()) {
+			$this->layout('layout/layout_user');
+			$identity = $auth->getIdentity();
+			$profile_data = $this->getUserTable()->getProfileDetails($identity->user_id);
+			$viewModel->setVariable( 'profile_data' , $profile_data);	
+			$group_seo = $this->params('group_seo');
+			$this->layout()->identity = $identity;       
+			$groupinfo =  $this->getGroupTable()->getGroupBySeoTitle($group_seo);		
+			if(!empty($groupinfo)&&$groupinfo->group_id){
+				$group_details = $this->getGroupTable()->getGroupDetails($groupinfo->group_id,$identity->user_id);
+				$viewModel->setVariable( 'group_details' , $group_details);
+				$media_id =  $this->params('id');
+				$arr_group_media = array();
+				if(!empty($media_id)){
+					$group_media = $this->getGroupMediaTable()->getOneMedia($media_id);
+					$is_admin = 0;
+					if($this->getUserGroupTable()->checkOwner($group_media->group_id,$group_media->user_id)){
+						$is_admin = 1;
+					}
+					if(!empty($group_media)){
+						if($group_media->media_added_group_id == $groupinfo->group_id){
+							$SystemTypeData = $this->getGroupTable()->fetchSystemType("Media");
+							$like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$media_id,$identity->user_id);
+							$like_count = $like_details->likes_counts;		
+							$arr_likedUsers = array();						
+							if(!empty($like_details)){  
+								$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$media_id,$identity->user_id,2,0);
+								$arr_likedUsers = array();
+								if($like_details['is_liked']==1){
+									$arr_likedUsers[] = 'you';
+								}
+								if($like_details['likes_counts']>0&&!empty($liked_users)){
+									foreach($liked_users as $likeuser){
+										$arr_likedUsers[] = $likeuser['user_given_name'];
+									}
+								}
+								 
+							}	
+							$commet_users = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$media_id,$identity->user_id);
+							$next_item = $this->getGroupMediaTable()->getNextMedia($group_media->group_id,$media_id);
+							$prev_item = $this->getGroupMediaTable()->getPreviousMedia($group_media->group_id,$media_id);
+							$arr_group_media = array(
+											'media_type' => $group_media->media_type,
+											'group_media_id' => $group_media->group_media_id,
+											'media_content' => $group_media->media_content,
+											'media_caption' => $group_media->media_caption,
+											'added_time' =>$this->timeAgo($group_media->media_added_date),
+											'group_id' => $group_media->group_id,
+											'group_title' => $group_media->group_title,
+											'group_seo_title' => $group_media->group_seo_title,
+											'user_id' => $group_media->user_id,
+											'user_given_name' => $group_media->user_given_name,
+											'user_first_name' => $group_media->user_first_name,
+											'user_last_name' => $group_media->user_last_name,
+											'user_profile_name' => $group_media->user_profile_name,
+											'user_fbid' => $group_media->user_fbid,
+											'profile_photo' => $group_media->profile_photo,
+											'arr_likedUsers' => $arr_likedUsers,
+											'like_count' =>$like_details['likes_counts'],
+											'is_liked' =>$like_details['is_liked'],
+											'comment_count' =>$commet_users['comment_counts'],
+											'is_commented' =>$commet_users['is_commented'],
+											'next_id' =>(isset($next_item->group_media_id))?$next_item->group_media_id:'',
+											'prev_id' =>(isset($prev_item->group_media_id))?$prev_item->group_media_id:'',
+											'is_admin'=>$is_admin,
+											'time'=>$this->timeAgo($group_media->media_added_date),
+											);
+								
+							$viewModel->setVariable( 'arr_group_media' , $arr_group_media);
+							return $viewModel;
+						}else{ return $this->redirect()->toRoute('home/404', array('action' => 'nopage')); }								
+					}else{ return $this->redirect()->toRoute('home/404', array('action' => 'nopage')); }							  	
+				}else{ return $this->redirect()->toRoute('home/404', array('action' => 'nopage')); }
+			}else{ return $this->redirect()->toRoute('home/404', array('action' => 'nopage')); }
+		}else{return $this->redirect()->toRoute('home', array('action' => 'nopage'));}
+	}
+	public function UpdateNotifications($user_notification_user_id,$msg,$type,$subject,$from,$sender,$reference_id,$processs){
 		$UserGroupNotificationData = array();						
 		$UserGroupNotificationData['user_notification_user_id'] =$user_notification_user_id;		 
 		$UserGroupNotificationData['user_notification_content']  = $msg;
@@ -1710,7 +2004,7 @@ class GroupsController extends AbstractActionController
 		$UserGroupNotificationData['user_notification_status'] = 'unread';
 		$UserGroupNotificationData['user_notification_sender_id'] = $sender;
 		$UserGroupNotificationData['user_notification_reference_id'] = $reference_id;			
-		
+		$UserGroupNotificationData['user_notification_process'] = $processs;
 		#lets Save the User Notification
 		$UserGroupNotificationSaveObject = new UserNotification();
 		$UserGroupNotificationSaveObject->exchangeArray($UserGroupNotificationData);	

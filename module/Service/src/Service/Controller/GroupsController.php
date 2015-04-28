@@ -29,7 +29,7 @@ use Zend\Mime\Message as MimeMessage;
 use Zend\Mime\Part as MimePart;
 class GroupsController extends AbstractActionController
 {
-                                                
+
     public $form_error ;
     public $flagSuccess;
     public $flagError;
@@ -52,65 +52,70 @@ class GroupsController extends AbstractActionController
     protected $userGroupJoiningRequestTable;
     protected $groupQuestionnaireAnswersTable;
     protected $userNotificationTable;
+
     public function __construct(){
         $this->flagSuccess = "Success";
         $this->flagError = "Failure";
     }
     public function exploregroupsAction(){
-    	$error = '';
-	$request   = $this->getRequest();
-	if ($request->isPost()){ 
+        $error = '';
+	    $request   = $this->getRequest();
+	    if ($request->isPost()){
 		$config = $this->getServiceLocator()->get('Config');
 		$post = $request->getPost();
 		$accToken = (isset($post['accesstoken'])&&$post['accesstoken']!=null&&$post['accesstoken']!=''&&$post['accesstoken']!='undefined')?strip_tags(trim($post['accesstoken'])):'';
 		if (empty($accToken)) {
-                        $dataArr[0]['flag'] = "Failure";
-                        $dataArr[0]['message'] = "Request Not Authorised.";
-                        echo json_encode($dataArr);
-                        exit;
-                }
-                $user_details = $this->getUserTable()->getUserByAccessToken($accToken);
-                if(empty($user_details)){
-                    $dataArr[0]['flag'] = "Failure";
-                    $dataArr[0]['message'] = "Invalid Access Token.";
-                    echo json_encode($dataArr);
-                    exit;
-                }
-                $user_id = $user_details->user_id;
-                $city = (isset($post['city'])&&$post['city']!=null&&$post['city']!=''&&$post['city']!='undefined')?strip_tags(trim($post['city'])):'';
-                $country = (isset($post['country'])&&$post['country']!=null&&$post['country']!=''&&$post['country']!='undefined')?strip_tags(trim($post['country'])):'';	
-                $category = (isset($post['categories'])&&$post['categories']!=null&&$post['categories']!=''&&$post['categories']!='undefined')?$post['categories']:'';
-                $myfriends = (isset($post['myfriends'])&&$post['myfriends']!=null&&$post['myfriends']!=''&&$post['myfriends']!='undefined'&&$post['myfriends']==true)?strip_tags(trim($post['myfriends'])):'';
-                $offset = (isset($post['nparam'])&&$post['nparam']!=null&&$post['nparam']!=''&&$post['nparam']!='undefined')?trim($post['nparam']):0;
-                $limit = (isset($post['countparam'])&&$post['countparam']!=null&&$post['countparam']!=''&&$post['countparam']!='undefined')?trim($post['countparam']):30;
-                if(!empty($country) && !is_numeric($country)){
-                    $dataArr[0]['flag'] = "Failure";
-                    $dataArr[0]['message'] = "Enter a valid country id.";
-                    echo json_encode($dataArr);
-                    exit;
-                } 
-                if(!empty($city) && !is_numeric($city)){
-                    $dataArr[0]['flag'] = "Failure";
-                    $dataArr[0]['message'] = "Enter a valid city id.";
-                    echo json_encode($dataArr);
-                    exit;
-                }
-                if (isset($limit) && !is_numeric($limit)) {
-                    $dataArr[0]['flag'] = "Failure";
-                    $dataArr[0]['message'] = "Please input a Valid Count Field.";
-                    echo json_encode($dataArr);
-                    exit;		
-                }
-                if (isset($offset) && !is_numeric($offset)) {
-                    $dataArr[0]['flag'] = "Failure";
-                    $dataArr[0]['message'] = "Please input a Valid N Field.";
-                    echo json_encode($dataArr);
-                    exit;
-                }
-                $arr_group_list = '';
-                $user_tag_available_status = '';
-                $user_tag_status = $this->getUserTagTable()->checkTagExistForUser($user_id);
-                if ($user_tag_status[0]['tag_exists']) $user_tag_available_status = 1;
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = "Request Not Authorised.";
+            echo json_encode($dataArr);
+            exit;
+        }
+        $user_details = $this->getUserTable()->getUserByAccessToken($accToken);
+        if(empty($user_details)){
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = "Invalid Access Token.";
+            echo json_encode($dataArr);
+            exit;
+        }
+        $user_id = $user_details->user_id;
+        $city = (isset($post['city'])&&$post['city']!=null&&$post['city']!=''&&$post['city']!='undefined')?strip_tags(trim($post['city'])):'';
+        $country = (isset($post['country'])&&$post['country']!=null&&$post['country']!=''&&$post['country']!='undefined')?strip_tags(trim($post['country'])):'';
+        $category = (isset($post['categories'])&&$post['categories']!=null&&$post['categories']!=''&&$post['categories']!='undefined')?$post['categories']:'';
+        $myfriends = (isset($post['myfriends'])&&$post['myfriends']!=null&&$post['myfriends']!=''&&$post['myfriends']!='undefined'&&$post['myfriends']==true)?strip_tags(trim($post['myfriends'])):'';
+        $offset = (isset($post['nparam'])&&$post['nparam']!=null&&$post['nparam']!=''&&$post['nparam']!='undefined')?trim($post['nparam']):0;
+        $limit = (isset($post['countparam'])&&$post['countparam']!=null&&$post['countparam']!=''&&$post['countparam']!='undefined')?trim($post['countparam']):30;
+        if(!empty($country) && !is_numeric($country)){
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = "Enter a valid country id.";
+            echo json_encode($dataArr);
+            exit;
+        }
+        if(!empty($city) && !is_numeric($city)){
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = "Enter a valid city id.";
+            echo json_encode($dataArr);
+            exit;
+        }
+        if (isset($limit) && !is_numeric($limit)) {
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = "Please input a Valid Count Field.";
+            echo json_encode($dataArr);
+            exit;
+        }
+        if (isset($offset) && !is_numeric($offset)) {
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = "Please input a Valid N Field.";
+            echo json_encode($dataArr);
+            exit;
+        }
+        $arr_group_list = '';
+        $user_tag_available_status = '';
+        $user_tag_status = $this->getUserTagTable()->checkTagExistForUser($user_id);
+        $offset = (int) $offset;
+        $limit = (int) $limit;
+        $offset =($offset>0)?$offset-1:0;
+        $offset = $offset*$limit;
+        if ($user_tag_status[0]['tag_exists']) $user_tag_available_status = 1;
 			$groups = $this->getUserGroupTable()->getMatchGroupsByUserTagsForRestApi($user_id,$user_tag_available_status,$city,$country,$myfriends,$category,(int) $limit,(int) $offset);
 			if(!empty($groups)){
 				foreach($groups as $list){
@@ -197,6 +202,131 @@ class GroupsController extends AbstractActionController
 		}
 		return;
     }
+    public function groupslistAction()
+    {
+        $error = '';
+        $request = $this->getRequest();
+        if ($request->isPost()) {
+            $config = $this->getServiceLocator()->get('Config');
+            $post = $request->getPost();
+            $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+            if (empty($accToken)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Request Not Authorised.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $myinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            if (empty($myinfo)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Invalid Access Token.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $offset = trim($post['nparam']);
+            $limit = trim($post['countparam']);
+
+            $user_id = $myinfo->user_id;
+            $userIdentity = (empty($this->getRequest()->getPost('otheruserID'))) ? $user_id : $this->getRequest()->getPost('otheruserID');
+            $strType = $this->getRequest()->getPost('type');
+
+            $offset = (int)$offset;
+            $limit = (int)$limit;
+            $offset = ($offset > 0) ? $offset - 1 : 0;
+            $offset = $offset * $limit;
+
+            $userinfo = $this->getUserTable()->getUser($userIdentity);
+            $arr_group_list = array();
+            if (!empty($userinfo) && $userinfo->user_id && !empty($myinfo) && $myinfo->user_id) {
+                $profile_type = 'mine';
+                if ($userinfo->user_id != $user_id) {
+                    $profile_type = 'others';
+                }
+                $intTotalGroups = $this->getUserGroupTable()->fetchAllUserGroupCount($userinfo->user_id, $user_id, $strType, $profile_type);
+                if ($intTotalGroups['group_count'] > 0) {
+                    $arrGroups = $this->getUserGroupTable()->fetchUserGroupList($userinfo->user_id, $user_id, $strType, $profile_type, $limit, $offset);
+                    $group_list = array();
+                    if (!empty($arrGroups)){
+                        $loadtagslist = array();
+                        $loadtagcatslist = array();
+                        foreach ($arrGroups as $list) {
+                            $tag_category = $this->getGroupTagTable()->getAllGroupTagCategiry($list['group_id']);
+
+                            if (!empty($tag_category)) {
+                                foreach ($tag_category as $index => $tagcatslist) {
+                                    if (!empty($tagcatslist['tag_category_icon']))
+                                        $tagcatslist['tag_category_icon'] = $config['pathInfo']['absolute_img_path'] . $config['image_folders']['tag_category'] . $tagcatslist['tag_category_icon'];
+                                    else
+                                        $tagcatslist['tag_category_icon'] = $config['pathInfo']['absolute_img_path'] . '/images/category-icon.png';
+                                    $loadtagcatslist[] = array(
+                                        'tag_category_icon' =>  $tagcatslist['tag_category_icon'],
+                                        'tag_category_id' => $tagcatslist['tag_category_id'],
+                                        'tag_category_title' => $tagcatslist['tag_category_title'],
+                                    );
+                                }
+                            }
+                            $tags = $this->getGroupTagTable()->fetchAllGroupTags($list['group_id']);
+                            if (!empty($tags)) {
+                                foreach ($tags as $index => $tagslist) {
+                                    $loadtagslist[] = array(
+                                        'tag_id' => $tagslist['tag_id'],
+                                        'tag_title' => $tagslist['tag_title'],
+                                    );
+                                }
+                            }
+                            $request_count = 0;
+                            if ($list['is_admin']) {
+                                $request_count = $this->getUserGroupJoiningRequestTable()->countGroupMemberRequests($list['group_id'])->memberCount;
+                            }
+                            $is_requested = 0;
+                            $requestedHystory = $this->getUserGroupJoiningRequestTable()->checkActiveRequestExist($list['group_id'], $user_id);
+                            if (!empty($requestedHystory) && $requestedHystory->user_group_joining_request_id != '') {
+                                $is_requested = 1;
+                            }
+                            $is_invited = 0;
+                            $invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($user_id, $list['group_id']);
+                            if (!empty($invitedHystory) && $invitedHystory->user_group_joining_invitation_id != '') {
+                                $is_invited = 1;
+                            }
+                            if (!empty($list['group_photo_photo']))
+                                $list['group_photo_photo'] = $config['pathInfo']['absolute_img_path'] . $config['image_folders']['group'] . $list['group_id'] . '/medium/' . $list['group_photo_photo'];
+                            else
+                                $list['group_photo_photo'] = $config['pathInfo']['absolute_img_path'] . '/images/group-img_def.jpg';
+
+                            $arr_group_list[] = array(
+                                'group_id' => $list['group_id'],
+                                'group_title' => $list['group_title'],
+                                'group_seo_title' => $list['group_seo_title'],
+                                'group_type' => $list['group_type'],
+                                'group_status' => $list['group_status'],
+                                'group_photo_photo' => $list['group_photo_photo'],
+                                'country_title' => $list['country_title'],
+                                'country_code' => $list['country_code'],
+                                'member_count' => $list['member_count'],
+                                'friend_count' => $list['friend_count'],
+                                'city' => $list['city'],
+                                'is_admin' => $list['is_admin'],
+                                'is_member' => $list['is_member'],
+                                'tag_category_count' => count($tag_category),
+                                'tag_category' => $loadtagcatslist,
+                                'request_count' => $request_count,
+                                'is_requested' => $is_requested,
+                                'is_invited' => $is_invited,
+                                'tags' => $loadtagslist,
+                            );
+                        }
+                }
+            } else {
+                $error = "No Record Found.";
+            }
+        }
+
+        $dataArr[0]['flag'] = (empty($error))?'success':'failed';
+        $dataArr[0]['message'] = $error;
+        $dataArr[0]['groups'] = $arr_group_list;
+        echo json_encode($dataArr);
+        exit;
+    }
 	public function groupdetailsAction(){
 		$request = $this->getRequest();
 		if($this->getRequest()->getMethod() == 'POST') {
@@ -249,6 +379,10 @@ class GroupsController extends AbstractActionController
 				exit;
 			}
 			$user_id = $user_details->user_id;
+			$offset = (int) $offset;
+			$limit = (int) $limit;
+			$offset =($offset>0)?$offset-1:0;
+			$offset = $offset*$limit;
 			$newsfeedsList = $this->getGroupsTable()->getGroupNewsFeeds($user_id,$type,$group_id,$activity,(int) $limit,(int) $offset);
 			$groupdetailslist  = $this->getGroupsTable()->getGroupDetails($group_id,$user_id);	
 			$arr_group_list = array();
@@ -558,6 +692,10 @@ class GroupsController extends AbstractActionController
 				echo json_encode($dataArr);
 				exit;
 			}		 
+			$offset = (int) $offset;
+			$limit = (int) $limit;
+			$offset =($offset>0)?$offset-1:0;
+			$offset = $offset*$limit;
 			$members_list = $this->getUserGroupTable()->getMembers($group_id,$myinfo->user_id,$type,(int) $offset,(int) $limit);			
 			if(!empty($members_list)){
 				foreach($members_list as $list){
@@ -735,7 +873,7 @@ class GroupsController extends AbstractActionController
         exit;
 
     }	  
-    public function joinGroupAction() {
+      public function joinGroupAction() {
         $dataArr                                                    = array();               // declare array for response data
         $arrQuestions                                               = array();              // declare array for questions/answer
         $request                                                    = $this->getRequest(); // create request object
@@ -884,6 +1022,7 @@ class GroupsController extends AbstractActionController
         echo json_encode($dataArr);
         exit;
      }
+                                                
     public function fncSaveQuestionAnswer($intGroupId, $intUserId, $jsonQuestionAnswer){
         if($jsonQuestionAnswer != ''){
              $arrQuestionList                 = json_decode($jsonQuestionAnswer, TRUE);
@@ -915,6 +1054,7 @@ class GroupsController extends AbstractActionController
              }
         }
     }
+
     // fucntion to validate question and answer
     public function fncValidateQuestionAnswer($intGroupId, $jsonQuestionAnswer){
         $questionError  = 0;
@@ -1029,7 +1169,11 @@ class GroupsController extends AbstractActionController
                 echo json_encode($dataArr);
                 exit;
             } 
-            $arrRequestslist    = $this->getUserGroupJoiningRequestTable()->getGroupJoinRequestList($group_id, 'active', $nparam, $countparam);                                                
+			$offset = (int) $nparam;
+			$limit = (int) $countparam;
+			$offset =($offset>0)?$offset-1:0;
+			$offset = $offset*$limit;
+            $arrRequestslist    = $this->getUserGroupJoiningRequestTable()->getGroupJoinRequestList($group_id, 'active', $offset, $limit);                                                
             if(!empty($arrRequestslist)) {
                 $ctr = 0;
                 // loop through the array for creating response array
@@ -1360,7 +1504,7 @@ class GroupsController extends AbstractActionController
 			}
 		}
 	}
-	public function get_youtube_id_from_url($url){
+	public function  get_youtube_id_from_url($url){
 		if (stristr($url,'youtu.be/'))
 			{preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return $final_ID[4]; }
 		else 

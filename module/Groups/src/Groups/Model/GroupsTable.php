@@ -192,13 +192,13 @@ class GroupsTable extends AbstractTableGateway
 			
 		}
 		//echo $sql;die();
-        $sql .= ' ORDER BY update_time DESC LIMIT ' . $offset . ',' . $limit;
-		$statement = $this->adapter-> query($sql);
+		$sql.=' ORDER BY update_time DESC LIMIT '.$offset.','.$limit; 		 
+		$statement = $this->adapter-> query($sql); 		 
 		$resultSet = new ResultSet();
 		$resultSet->initialize($statement->execute());
 		return $resultSet->toArray();
 	}
-    public function getNewsFeedsAPI($user_id,$type="",$group_id="",$activity="",$limit="",$offset=""){
+	public function getNewsFeedsAPI($user_id,$type="",$group_id="",$activity="",$limit="",$offset=""){
 
         $result = new ResultSet();
         if($activity=='goingto'){
@@ -536,7 +536,7 @@ class GroupsTable extends AbstractTableGateway
     }
 	public function getGroup($group_id){
         $group_id  = (int) $group_id;
-        $rowset = $this->select(array('group_id' => $group_id,'group_parent_group_id' => '0'));
+        $rowset = $this->select(array('group_id' => $group_id));
         $row = $rowset->current();
         return $row;
     }
@@ -559,11 +559,12 @@ class GroupsTable extends AbstractTableGateway
 		$sub_select->group('y2m_group.group_id');
 		$select = new Select;
 		$select->from('y2m_group')
-			   ->columns(array("group_id"=>"group_id","group_status"=>"group_status","group_title"=>"group_title","group_seo_title"=>"group_seo_title","group_description"=>"group_description","group_location"=>"group_location","group_web_address"=>"group_web_address","group_added_timestamp"=>"group_added_timestamp","group_welcome_message_members"=>"group_welcome_message_members","group_location_lat"=>"group_location_lat","group_location_lng"=>"group_location_lng",'is_member'=>new Expression('IF(EXISTS(SELECT * FROM y2m_user_group WHERE y2m_user_group.user_group_user_id = '.$user_id.' AND y2m_user_group.user_group_group_id = y2m_group.group_id AND y2m_user_group.user_group_status=1),1,0)'),'is_admin'=>new Expression('IF(EXISTS(SELECT * FROM y2m_user_group WHERE y2m_user_group.user_group_user_id = '.$user_id.' AND y2m_user_group.user_group_group_id = y2m_group.group_id AND y2m_user_group.user_group_is_owner = 1),1,0)')))
-			   ->join(array("galexy"=>"y2m_group"),"y2m_group.group_id = galexy.group_id",array("galexy_title"=>"group_title","galexy_seo_title"=>"group_seo_title"))			    
+			   ->columns(array("group_id"=>"group_id","group_status"=>"group_status","group_title"=>"group_title","group_seo_title"=>"group_seo_title","group_description"=>"group_description","group_location"=>"group_location","group_web_address"=>"group_web_address","group_added_timestamp"=>"group_added_timestamp","group_welcome_message_members"=>"group_welcome_message_members","group_location_lat"=>"group_location_lat","group_location_lng"=>"group_location_lng","group_type"=>"group_type",'is_member'=>new Expression('IF(EXISTS(SELECT * FROM y2m_user_group WHERE y2m_user_group.user_group_user_id = '.$user_id.' AND y2m_user_group.user_group_group_id = y2m_group.group_id AND y2m_user_group.user_group_status=1),1,0)'),'is_admin'=>new Expression('IF(EXISTS(SELECT * FROM y2m_user_group WHERE y2m_user_group.user_group_user_id = '.$user_id.' AND y2m_user_group.user_group_group_id = y2m_group.group_id AND y2m_user_group.user_group_is_owner = 1),1,0)')))
+                            
 			   ->join(array('temp_member' => $sub_select), 'temp_member.group_id = y2m_group.group_id',array('member_count'),'left')
 			   ->join("y2m_country","y2m_country.country_id = y2m_group.group_country_id",array("country_code_googlemap","country_title"),'left')
 			   ->join("y2m_city","y2m_city.city_id = y2m_group.group_city_id",array("city"=>"name"),'left')
+                            ->join("y2m_group_photo","y2m_group_photo.group_photo_group_id= y2m_group.group_id",array("data_content"=>"group_photo_photo"),'left')
 			   ->where(array("y2m_group.group_id"=>$planet_id));
 		$statement = $this->adapter->createStatement();
 		//echo $select->getSqlString();exit;

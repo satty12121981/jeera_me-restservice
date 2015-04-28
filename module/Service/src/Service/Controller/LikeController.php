@@ -68,6 +68,9 @@ class LikeController extends AbstractActionController
                     if($refer_id!=''){
                         $discussion_data = $this->getDiscussionTable()->getDiscussion($refer_id);
                         if(!empty($discussion_data)){
+                            $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($discussion_data->group_discussion_group_id,$userinfo->user_id);
+                            $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group post to like.":$error;
+                            $this->checkError($error);
                             if($this->addLike($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id)){
                                 $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                 $like_count = $like_details->likes_counts;
@@ -88,6 +91,9 @@ class LikeController extends AbstractActionController
                     if($refer_id!=''){
                         $media_data = $this->getGroupMediaTable()->getMedia($refer_id);
                         if(!empty($media_data)){
+                            $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($media_data->media_added_group_id,$userinfo->user_id);
+                            $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group post to like.":$error;
+                            $this->checkError($error);
                             if($this->addLike($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id)){
                                 $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                 $like_count = $like_details->likes_counts;
@@ -108,6 +114,9 @@ class LikeController extends AbstractActionController
                     if($refer_id!=''){
                         $activity_data = $this->getActivityTable()->getActivity($refer_id);
                         if(!empty($activity_data)){
+                            $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($activity_data->group_activity_group_id,$userinfo->user_id);
+                            $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group post to like.":$error;
+                            $this->checkError($error);
                             if($this->addLike($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id)){
                                 $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                 $like_count = $like_details->likes_counts;
@@ -128,6 +137,21 @@ class LikeController extends AbstractActionController
                     if($refer_id!=''){
                         $comment_data = $this->getCommentTable()->getComment($refer_id);
                         if(!empty($comment_data)){
+                            $groupInfoComment = $this->getCommentTable()->getGroupInfoByComment($comment_data->comment_system_type_id,$refer_id);
+                            print_r($groupInfoComment);
+                            exit;
+                            if($comment_data->comment_system_type_id == 1){
+                                $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($groupInfoComment->group_activity_group_id,$userinfo->user_id);
+                            }
+                            else if($comment_data->comment_system_type_id == 2) {
+                                $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($groupInfoComment->group_discussion_group_id,$userinfo->user_id);
+                            }
+                            else if($comment_data->comment_system_type_id == 4){
+                                $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($groupInfoComment->media_added_group_id,$userinfo->user_id);
+                            }
+
+                            $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group post to like.":$error;
+                            $this->checkError($error);
                             if($this->addLike($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id)){
                                 $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                 $like_count = $like_details->likes_counts;

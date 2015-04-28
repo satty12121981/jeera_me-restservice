@@ -420,12 +420,12 @@ class CommentTable extends AbstractTableGateway
 
 		$select->from("y2m_comment")
 
-				->columns(array("islike"=>new Expression('IF(EXISTS(SELECT * FROM y2m_like WHERE y2m_like.like_by_user_id = '.$LikeUserId.' AND y2m_like.like_refer_id = y2m_comment.comment_id AND  y2m_like.like_system_type_id  = '.$commentType.'),1,0)'),"comment_content"=>'comment_content',"comment_id"=>'comment_id',"comment_added_timestamp"=>"comment_added_timestamp"))
+				->columns(array("islike"=>new Expression('IF(EXISTS(SELECT * FROM y2m_like WHERE y2m_like.like_by_user_id = '.$LikeUserId.' AND y2m_like.like_refer_id = y2m_comment.comment_id AND  y2m_like.like_system_type_id  = '.$commentType.'),1,0)'),"comment_content"=>'comment_content',"comment_id"=>'comment_id',"comment_added_timestamp"=>"comment_added_timestamp","comment_refer_id"=>'comment_refer_id'))
 
 				->join("y2m_like","y2m_like.like_refer_id = y2m_comment.comment_id ",array(),'left')
 
 				->join("y2m_user","y2m_user.user_id = y2m_comment.comment_by_user_id",array('user_given_name','user_id','user_profile_name','user_register_type','user_fbid'))
-
+				->join("y2m_system_type",'y2m_comment.comment_system_type_id = y2m_system_type.system_type_id',array("system_type_id","system_type_title"))
 				->join('y2m_user_profile_photo','y2m_user.user_profile_photo_id = y2m_user_profile_photo.profile_photo_id',array('profile_photo'),'left')
 
 				->where('y2m_comment.comment_refer_id ='. $ReferenceId)
@@ -435,12 +435,11 @@ class CommentTable extends AbstractTableGateway
 		$select->group('y2m_comment.comment_id');			   
 
 		$select->order(array('y2m_comment.comment_added_timestamp DESC'));
+		if($limit){
+			$select->limit($limit);
 
-        if($limit){
-            $select->limit($limit);
-            $select->offset($offset);
-        }
-
+			$select->offset($offset);		
+		}
 		$statement = $this->adapter->createStatement();
 
 		
@@ -541,4 +540,51 @@ class CommentTable extends AbstractTableGateway
 
 		return $resultSet->current();
 	}
+
+    public function getGroupInfoByComment($system_type_id,$comment_refer_id){
+         if ($system_type_id && $comment_refer_id){
+
+            $select = new Select;
+            $select->from('y2m_system_type')
+            ->columns(array("system_type_title"=>"system_type_title"))
+            ->where(array('y2m_system_type.system_type_id'=>$system_type_id));
+            $statement = $this->adapter->createStatement();
+            $select->prepareStatement($this->adapter, $statement);
+            $resultSet = new ResultSet();
+            $resultSet->initialize($statement->execute());
+            $system_result = $resultSet->current();
+            switch($system_result->system_type_title){
+                case "Discussion":
+                    $table = "y2m_group_discussion";
+                    $col = "group_discussion_id";
+                    $col1 = "group_discussion_group_id";
+                break;
+                case "Activity":
+                    $table = "y2m_group_activity";
+                    $col = "group_activity_id";
+                    $col1 = "group_activity_group_id";
+                break;
+                case "Media":
+                    $table = "y2m_group_media";
+                    $col = "group_media_id";
+                    $col1 = "media_added_group_id";
+                break;
+                default:
+                break;
+            }
+            if ($table && $col){
+                $select = new Select;
+                $select->from($table)
+                    ->columns(array($col1=>$col1))
+                    ->where(array($col=>$comment_refer_id));
+                $statement = $this->adapter->createStatement();
+                $select->prepareStatement($this->adapter, $statement);
+                echo $select->getSqlString();
+                $resultSet = new ResultSet();
+                $resultSet->initialize($statement->execute());
+                return $resultSet->current();
+            }
+        }
+        return;
+    }
 }

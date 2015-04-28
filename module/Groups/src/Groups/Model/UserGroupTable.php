@@ -65,7 +65,7 @@ class UserGroupTable extends AbstractTableGateway
 		}
 		$statement = $this->adapter->createStatement();
 		$select->prepareStatement($this->adapter, $statement);
-		//echo $select->getSqlString();
+		//echo $select->getSqlString();exit;
 		$resultSet = new ResultSet();
 		$resultSet->initialize($statement->execute());	  
 	  	return $resultSet; 
@@ -566,7 +566,7 @@ class UserGroupTable extends AbstractTableGateway
 		$select->prepareStatement($this->adapter, $statement);
 		$resultSet = new ResultSet();
 		$resultSet->initialize($statement->execute());
-        return $resultSet->toArray();
+        	return $resultSet->toArray();
 	}
 	public function fetchAllUserGroupCount($user_id,$visitor_id, $strType,$profile_type){ 
         // creating condition for gropu navigations
@@ -599,54 +599,56 @@ class UserGroupTable extends AbstractTableGateway
 		$resultSet->initialize($statement->execute());
 		return $resultSet->current();
     }
-	public function fetchUserGroupList($user_id,$visitor_id,$strType,$profile,$limit,$offset){ 
-		$select = new Select;
-		$sub_select = new Select;
-		$sub_select2 = new Select;
-		$sub_select3 = new Select;
-		$sub_select->from('y2m_group')
-				   ->columns(array(new Expression('COUNT(y2m_group.group_id) as member_count'),"group_id"))
-				   ->join(array('y2m_user_group'=>'y2m_user_group'),'y2m_group.group_id = y2m_user_group.user_group_group_id',array());
-		$sub_select->group('y2m_group.group_id');		
-		$sub_select2->from('y2m_user_friend')
-				  ->columns(array('friend_user'=>new Expression('IF(user_friend_sender_user_id='.$visitor_id.',user_friend_friend_user_id,user_friend_sender_user_id)')))
-				  ->where->equalTo('user_friend_sender_user_id',$visitor_id)->OR->equalTo('user_friend_friend_user_id',$visitor_id)
-				 ;
-		$sub_select3->from('y2m_group')
-				   ->columns(array(new Expression('COUNT(y2m_group.group_id) as friend_count'),"group_id"))
-				   ->join(array('y2m_user_group'=>'y2m_user_group'),'y2m_group.group_id = y2m_user_group.user_group_group_id',array())
-				   ->where->in("user_group_user_id",$sub_select2);
-		$sub_select3->group('y2m_group.group_id');
-		$select->from('y2m_group')
-			   ->columns(array("group_id","group_title","group_seo_title","group_status","group_type",'is_admin'=>new Expression('IF(EXISTS(SELECT * FROM y2m_user_group WHERE  (y2m_user_group.user_group_group_id = y2m_group.group_id AND y2m_user_group.user_group_user_id = '.$visitor_id.' AND y2m_user_group.user_group_is_owner = 1)),1,0)'),
-			   'is_member'=>new Expression('IF(EXISTS(SELECT * FROM y2m_user_group WHERE  (y2m_user_group.user_group_group_id = y2m_group.group_id AND y2m_user_group.user_group_user_id = '.$visitor_id.' AND y2m_user_group.user_group_is_owner = 0)),1,0)'),
-			   'is_requested'=>new Expression('IF(EXISTS(SELECT * FROM y2m_user_group_joining_request WHERE  (y2m_user_group_joining_request.user_group_joining_request_group_id = y2m_group.group_id AND y2m_user_group_joining_request.user_group_joining_request_user_id = '.$visitor_id.' AND y2m_user_group_joining_request.user_group_joining_request_status = "active")),1,0)')
-			   ))
-			   ->join('y2m_user_group', 'y2m_group.group_id = y2m_user_group.user_group_group_id')
-			   ->join("y2m_country","y2m_country.country_id = y2m_group.group_country_id",array("country_code_googlemap","country_title","country_code"),'left')
-			   ->join("y2m_city","y2m_city.city_id = y2m_group.group_city_id",array("city"=>"name"),'left')
-			   ->join("y2m_group_photo","y2m_group_photo.group_photo_group_id = y2m_group.group_id",array("group_photo_photo"=>"group_photo_photo"),'left')
-			   ->join(array('temp_member' => $sub_select), 'temp_member.group_id = y2m_group.group_id',array('member_count'),'left')
-			   ->join(array('temp_friends' => $sub_select3), 'temp_friends.group_id = y2m_group.group_id',array('friend_count'),'left')			  
-			   ->where(array("y2m_user_group.user_group_user_id = $user_id"));
-		if($strType == 'created'){
-			$select->where(array("y2m_user_group.user_group_is_owner = 1"));
-		}
-		if($strType == 'joined'){
-			$select->where(array("y2m_user_group.user_group_is_owner = 0"));
-		}
-		if($strType == 'pending'){
-			$select->where(array("y2m_group.group_status = 'pending'"));
-			$select->where(array("y2m_user_group.user_group_is_owner = 1"));
-		}
-		if($strType == 'mutual'){
-			$select->where(array("y2m_group.group_id IN (SELECT user_group_group_id FROM y2m_user_group WHERE user_group_user_id = ".$visitor_id." GROUP BY(user_group_group_id))")); 
-		}
-		if($profile!='mine'){
-			$select->where(array("y2m_group.group_status = 'active'"));
-		}
-		$select->limit($limit);
-		$select->offset($offset);
+	public function fetchUserGroupList($user_id,$visitor_id,$strType,$profile,$limit,$offset)
+    {
+        $select = new Select;
+        $sub_select = new Select;
+        $sub_select2 = new Select;
+        $sub_select3 = new Select;
+        $sub_select->from('y2m_group')
+            ->columns(array(new Expression('COUNT(y2m_group.group_id) as member_count'), "group_id"))
+            ->join(array('y2m_user_group' => 'y2m_user_group'), 'y2m_group.group_id = y2m_user_group.user_group_group_id', array());
+        $sub_select->group('y2m_group.group_id');
+        $sub_select2->from('y2m_user_friend')
+            ->columns(array('friend_user' => new Expression('IF(user_friend_sender_user_id=' . $visitor_id . ',user_friend_friend_user_id,user_friend_sender_user_id)')))
+            ->where->equalTo('user_friend_sender_user_id', $visitor_id)->OR->equalTo('user_friend_friend_user_id', $visitor_id);
+        $sub_select3->from('y2m_group')
+            ->columns(array(new Expression('COUNT(y2m_group.group_id) as friend_count'), "group_id"))
+            ->join(array('y2m_user_group' => 'y2m_user_group'), 'y2m_group.group_id = y2m_user_group.user_group_group_id', array())
+            ->where->in("user_group_user_id", $sub_select2);
+        $sub_select3->group('y2m_group.group_id');
+        $select->from('y2m_group')
+            ->columns(array("group_id", "group_title", "group_seo_title", "group_status", "group_type", 'is_admin' => new Expression('IF(EXISTS(SELECT * FROM y2m_user_group WHERE  (y2m_user_group.user_group_group_id = y2m_group.group_id AND y2m_user_group.user_group_user_id = ' . $visitor_id . ' AND y2m_user_group.user_group_is_owner = 1)),1,0)'),
+                'is_member' => new Expression('IF(EXISTS(SELECT * FROM y2m_user_group WHERE  (y2m_user_group.user_group_group_id = y2m_group.group_id AND y2m_user_group.user_group_user_id = ' . $visitor_id . ' AND y2m_user_group.user_group_is_owner = 0)),1,0)'),
+                'is_requested' => new Expression('IF(EXISTS(SELECT * FROM y2m_user_group_joining_request WHERE  (y2m_user_group_joining_request.user_group_joining_request_group_id = y2m_group.group_id AND y2m_user_group_joining_request.user_group_joining_request_user_id = ' . $visitor_id . ' AND y2m_user_group_joining_request.user_group_joining_request_status = "active")),1,0)')
+            ))
+            ->join('y2m_user_group', 'y2m_group.group_id = y2m_user_group.user_group_group_id')
+            ->join("y2m_country", "y2m_country.country_id = y2m_group.group_country_id", array("country_code_googlemap", "country_title", "country_code"), 'left')
+            ->join("y2m_city", "y2m_city.city_id = y2m_group.group_city_id", array("city" => "name"), 'left')
+            ->join("y2m_group_photo", "y2m_group_photo.group_photo_group_id = y2m_group.group_id", array("group_photo_photo" => "group_photo_photo"), 'left')
+            ->join(array('temp_member' => $sub_select), 'temp_member.group_id = y2m_group.group_id', array('member_count'), 'left')
+            ->join(array('temp_friends' => $sub_select3), 'temp_friends.group_id = y2m_group.group_id', array('friend_count'), 'left')
+            ->where(array("y2m_user_group.user_group_user_id = $user_id"));
+        if ($strType == 'created') {
+            $select->where(array("y2m_user_group.user_group_is_owner = 1"));
+        }
+        if ($strType == 'joined') {
+            $select->where(array("y2m_user_group.user_group_is_owner = 0"));
+        }
+        if ($strType == 'pending') {
+            $select->where(array("y2m_group.group_status = 'pending'"));
+            $select->where(array("y2m_user_group.user_group_is_owner = 1"));
+        }
+        if ($strType == 'mutual') {
+            $select->where(array("y2m_group.group_id IN (SELECT user_group_group_id FROM y2m_user_group WHERE user_group_user_id = " . $visitor_id . " GROUP BY(user_group_group_id))"));
+        }
+        if ($profile != 'mine') {
+            $select->where(array("y2m_group.group_status = 'active'"));
+        }
+        if ($limit) {
+        $select->limit($limit);
+        $select->offset($offset);
+        }
 		$statement = $this->adapter->createStatement();
 		//echo $select->getSqlString($this->adapter->getPlatform());exit;
 		$select->prepareStatement($this->adapter, $statement);
@@ -789,4 +791,23 @@ class UserGroupTable extends AbstractTableGateway
 		$row =  $resultSet->current();
 		return $row;
 	}
+        public function UpdateUserGroup(UserGroup $userGroup){
+            $data = array(
+                 'user_group_user_id'                => $userGroup->user_group_user_id,
+                 'user_group_group_id'               => $userGroup->user_group_group_id,
+                 'user_group_added_timestamp'        => $userGroup->user_group_added_timestamp,
+                 'user_group_added_ip_address'       => $userGroup->user_group_added_ip_address,
+                 'user_group_status'                 => $userGroup->user_group_status,
+                 'user_group_is_owner'               => $userGroup->user_group_is_owner,
+                 'user_group_role'                   => $userGroup->user_group_role //Added by Kiran Singh Date 16-03-2015 to add role for add group form
+                 );
+            $user_group_id = (int)$userGroup->user_group_id;
+            if ($user_group_id == 0) {
+                $this->insert($data);
+                    return $this->adapter->getDriver()->getConnection()->getLastGeneratedValue();
+            } else {  //  print_r($data); echo "--"; die;      
+                 $this->update($data, array('user_group_id' => $user_group_id));
+
+            }
+        }
 }
