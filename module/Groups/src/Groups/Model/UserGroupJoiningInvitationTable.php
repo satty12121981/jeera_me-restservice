@@ -53,5 +53,9 @@ class UserGroupJoiningInvitationTable extends AbstractTableGateway
 		$resultSet = new ResultSet();
 		$resultSet->initialize($statement->execute());	  
 	  	return $resultSet->current();	
-	}	 
+	}
+	 public function ChangeStatusTOProcessed($user_group_joining_invitation_id){
+		$data['user_group_joining_invitation_status'] = 'processed';
+		return $this->update($data, array('user_group_joining_invitation_id' => $user_group_joining_invitation_id));
+	 }
 }

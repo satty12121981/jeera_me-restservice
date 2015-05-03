@@ -617,17 +617,10 @@ class IndexController extends AbstractActionController
 		$user_details = array();
 
 		$profileDetails = $this->getUserTable()->getProfileDetails($user_id);
-		$usertags = $this->getUserTagTable()->getAllUserTags($user_id);
-
-		if (isset($usertags)&& !empty($usertags)){
-			foreach ($usertags as $key => $tags) {
-				$swapusertags[$key]['tag_category_icon']= 'public/'.$config['image_folders']['tag_category'].$tags['tag_category_icon'];
-				$swapusertags[$key]['tag_category_title']= $tags['tag_category_title'];
-				$swapusertags[$key]['tag_title']= $tags['tag_title'];
-				$swapusertags[$key]['category_id']= $tags['category_id'];
-				$swapusertags[$key]['tag_id']= $tags['tag_id'];
-			}
-		}			
+        $tags = $this->getUserTagTable()->getAllUserTagsForAPI($user_id);
+        if(!empty($tags)){
+            $tags = $this->formatTagsWithCategory($tags,"|");
+        }
 		$groupCountDetails = $this->getUserGroupTable()->getUserGroupCount($user_id);
 		unset($profileDetails->user_register_type);
 		unset($profileDetails->user_profile_city_id);
@@ -685,7 +678,7 @@ class IndexController extends AbstractActionController
 		$dataArr[0]['flag'] = "Success";
 		$dataArr[0]['accesstoken'] = $set_secretcode;
 		$dataArr[0]['userfriends'] = $moveuserfriends;
-		$dataArr[0]['userinterests'] = $swapusertags;
+		$dataArr[0]['usertags'] = $tags;
 		$dataArr[0]['userprofiledetails'] = $userprofileDetails;
 		
 		if (!empty($groupCountDetails->group_count))
@@ -700,7 +693,40 @@ class IndexController extends AbstractActionController
 
 		return $dataArr;
 	}
-	
+    public function formatTagsWithCategory($taglistdata,$char){
+        $config = $this->getServiceLocator()->get('Config');
+        $loadtagslist = array();
+        if (!empty($taglistdata)){
+            $objarr_tags = array();
+
+            foreach($taglistdata as $index => $tagslist){
+                $temptags = explode(",", $tagslist['tag_title']);
+                $arr_tags[0] = array();
+                foreach($temptags as $indexes => $splitlist){
+                    $arr_tags = array();
+                    $arr_tags = explode($char, $splitlist);
+                    $objarr_tags[] = array('tag_id'=>$arr_tags[0],'tag_title'=>$arr_tags[1]);
+                }
+
+                if (!empty($tagslist['tag_category_icon']))
+                    $tagslist['tag_category_icon'] = $config['pathInfo']['absolute_img_path'].$config['image_folders']['tag_category'].$tagslist['tag_category_icon'];
+                else
+                    $tagslist['tag_category_icon'] = $config['pathInfo']['absolute_img_path'].'/images/category-icon.png';
+
+                $loadtagslist[] = array(
+                    'tag_category_id' =>$tagslist['category_id'],
+                    'tag_category_title' =>$tagslist['tag_category_title'],
+                    'tag_category_icon' =>$tagslist['tag_category_icon'],
+                    'tag_category_desc' =>$tagslist['tag_category_desc'],
+                    'tagslist' =>$objarr_tags,
+                );
+
+                unset($objarr_tags);
+            }
+            return $loadtagslist;
+        }
+        return;
+    }
 	public function make_url_friendly($string){
 		
 		$string = trim($string); 

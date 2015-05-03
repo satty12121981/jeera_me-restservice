@@ -252,6 +252,10 @@ class TagsController extends AbstractActionController
                 echo json_encode($dataArr);
                 exit;
             }
+			$offset = (int) $offset;
+			$limit = (int) $limit;
+			$offset =($offset>0)?$offset-1:0;
+			$offset = $offset*$limit;
 			$taglistdata = $this->getTagTable()->getAllTagsWithCategories((int) $limit,(int) $offset,$categoryId,'category_id','ASC',$search_string);
 			
 			if(!empty($taglistdata)){
@@ -554,6 +558,10 @@ class TagsController extends AbstractActionController
                 exit;
             }
             $tagcategoriesdata = array();
+			$offset = (int) $offset;
+			$limit = (int) $limit;
+			$offset =($offset>0)?$offset-1:0;
+			$offset = $offset*$limit;
             $tagcategoriesdata = $this->getTagCategoryTable()->getAllTagCategoriesForRestAPI((int) $limit,(int) $offset,'tag_category_id','ASC',$search_string);
             if(!empty($tagcategoriesdata)){
                 foreach($tagcategoriesdata as $index => $splitlist){
@@ -563,13 +571,13 @@ class TagsController extends AbstractActionController
                         $splitlist['tag_category_icon'] = $config['pathInfo']['absolute_img_path'].'/images/category-icon.png';
                     $loadtagcatslist[] = array(
                         'tag_category_id' =>$splitlist['tag_category_id'],
-                        'category_title' =>$splitlist['tag_category_title'],
+                        'tag_category_title' =>$splitlist['tag_category_title'],
                         'tag_category_icon' =>$splitlist['tag_category_icon'],
                         'tag_category_desc' =>$splitlist['tag_category_desc'],
                     );
                 }
                 $dataArr[0]['flag'] = "Success";
-                $dataArr[0]['categories'] = $loadtagcatslist;
+                $dataArr[0]['tag_categories'] = $loadtagcatslist;
                 echo json_encode($dataArr);
                 exit;
             }else{
@@ -626,6 +634,10 @@ class TagsController extends AbstractActionController
                 echo json_encode($dataArr);
                 exit;
             }
+			$offset = (int) $offset;
+			$limit = (int) $limit;
+			$offset =($offset>0)?$offset-1:0;
+			$offset = $offset*$limit;
             $taglistdata = $this->getTagTable()->getAllTagsByCategory($categoryId,'category_id','ASC',(int) $limit,(int) $offset);
 
             if(!empty($taglistdata)){
@@ -699,8 +711,8 @@ class TagsController extends AbstractActionController
 				$tagslist['tag_category_icon'] = $config['pathInfo']['absolute_img_path'].'/images/category-icon.png';
 
     			$loadtagslist[] = array(
-					'category_id' =>$tagslist['category_id'],
-					'category_title' =>$tagslist['tag_category_title'],
+					'tag_category_id' =>$tagslist['category_id'],
+					'tag_category_title' =>$tagslist['tag_category_title'],
 					'tag_category_icon' =>$tagslist['tag_category_icon'],
 					'tag_category_desc' =>$tagslist['tag_category_desc'],
 					'tagslist' =>$objarr_tags,

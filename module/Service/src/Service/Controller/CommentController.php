@@ -76,13 +76,17 @@ class CommentController extends AbstractActionController
                 echo json_encode($dataArr);
                 exit;
             }
+			$offset = (int) $offset;
+			$limit = (int) $limit;
+			$offset =($offset>0)?$offset-1:0;
+			$offset = $offset*$limit;
             $comments_details = $this->getCommentTable()->getAllCommentsWithLike($SystemTypeData->system_type_id,$commentSystemType->system_type_id,$refer_id,$userinfo->user_id,(int) $limit, (int) $offset);
             if(!empty($comments_details) & count($comments_details) > 0){
                 foreach($comments_details as $list){
                     $arrLikeMembers = array();
                     $like_details = $this->getLikeTable()->fetchLikesCountByReference($commentSystemType->system_type_id,$list->comment_id,$userinfo->user_id);
                     if(!empty($like_details)){
-                        $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id, $refer_id, $userinfo->user_id, (int) $limit, (int) $offset);
+                        $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id, $refer_id, $userinfo->user_id, 5, 0);
                         if($like_details['likes_counts']>0&&!empty($liked_users)){
                             foreach ($liked_users as $f_list) {
                                 $profile_photo = $this->manipulateProfilePic($f_list['user_id'], $f_list['profile_photo'], $f_list['user_fbid']);
@@ -139,7 +143,7 @@ class CommentController extends AbstractActionController
             $this->checkError($error);
             $error = (isset($post['content_id']) && $post['content_id'] != null && $post['content_id'] != '' && $post['content_id'] != 'undefined' && is_numeric($post['content_id'])) ? '' : 'please input a valid content id';
             $this->checkError($error);
-            $refer_id = $post['content_id'];;
+            $refer_id = $post['content_id'];
             $error = (isset($post['txt_comment']) && $post['txt_comment'] != null && $post['txt_comment'] != '' && $post['txt_comment'] != 'undefined' ) ? '' : 'please input a valid comment';
             $this->checkError($error);
             $comment = $post['txt_comment'];

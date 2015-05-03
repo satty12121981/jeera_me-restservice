@@ -60,4 +60,14 @@ class GroupQuestionnaireOptionsTable extends AbstractTableGateway
 		$resultSet->initialize($statement->execute());	
 		return $resultSet->toArray();
 	}
+         public function getSelectedOptionDetails($option_id){
+		$select = new Select;
+		$select->from('y2m_group_questionnaire_options');
+		$select->where(array("option_id"=>$option_id));
+		$statement = $this->adapter->createStatement();
+		$select->prepareStatement($this->adapter, $statement);
+		$resultSet = new ResultSet();
+		$resultSet->initialize($statement->execute());
+		return $resultSet->toArray();
+	}
 }

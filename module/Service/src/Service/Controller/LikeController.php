@@ -274,7 +274,7 @@ class LikeController extends AbstractActionController
                                     if(!empty($like_details)){
                                         $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
                                     }
-                                    $error = "Content UnLiked By User";
+                                    $message = "Content UnLiked By User";
                                 }
                             }else {$error = "Content Not Liked By User to unlike";}
                         }else{$error = "Content Not exist";}
@@ -292,7 +292,7 @@ class LikeController extends AbstractActionController
                                         $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
                                     }
                                     $like_count = $like_details->likes_counts;
-                                    $error = "Content UnLiked By User";
+                                    $message = "Content UnLiked By User";
                                 }
                             }else {$error = "Content Not Liked By User to unlike";}
                         }else{$error = "Content Not exist";}
@@ -310,7 +310,7 @@ class LikeController extends AbstractActionController
                                         $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
                                     }
                                     $like_count = $like_details->likes_counts;
-                                    $error = "Content UnLiked By User";
+                                    $message = "Content UnLiked By User";
                                 }
                             }else {$error = "Content Not Liked By User to unlike";}
                         }else{$error = "Content Not exist";}
@@ -328,7 +328,7 @@ class LikeController extends AbstractActionController
                                         $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
                                     }
                                     $like_count = $like_details->likes_counts;
-                                    $error = "Content UnLiked By User";
+                                    $message = "Content UnLiked By User";
                                 }
                             }else {$error = "Content Not Liked By User to unlike";}
                         }else{$error = "Content Not exist";}
@@ -350,7 +350,7 @@ class LikeController extends AbstractActionController
             }
         }
         $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
-        $dataArr[0]['message'] = $error;
+        $dataArr[0]['message'] = (empty($error))?$message:$error;
         $dataArr[0]['like_count'] = $like_count;
         $dataArr[0]['liked_users'] = $arrLikeMembers;
         echo json_encode($dataArr);
@@ -378,6 +378,10 @@ class LikeController extends AbstractActionController
             $refer_id = trim($post['content_id']);
             $offset = (isset($post['nparam']))?trim($post['nparam']):'';
             $limit = (isset($post['countparam']))?trim($post['countparam']):'';
+			$offset = (int) $offset;
+			$limit = (int) $limit;
+			$offset =($offset>0)?$offset-1:0;
+			$offset = $offset*$limit;
             $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id, $refer_id, $userinfo->user_id, (int) $limit, (int) $offset);
         }
         if (!empty($liked_users)) {

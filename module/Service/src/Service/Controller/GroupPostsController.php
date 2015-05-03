@@ -77,12 +77,35 @@ class GroupPostsController extends AbstractActionController
                 echo json_encode($dataArr);
                 exit;
             }
-            $feeds_list = $this->getGroupTable()->getNewsFeedsAPI($userinfo->user_id,$type,$group_id,$activity,(int) $limit,(int) $offset);
+			$offset = (int) $offset;
+			$limit = (int) $limit;
+			$offset =($offset>0)?$offset-1:0;
+			$offset = $offset*$limit;
+            $feeds_list = $this->getGroupTable()->getNewsFeedsAPI($userinfo->user_id,$type,$group_id,$activity,(int) $limit, (int) $offset);
             foreach($feeds_list as $list){
                 $is_admin = 0;
                 if($this->getUserGroupTable()->checkOwner($list['group_id'],$list['user_id'])){
                     $is_admin = 1;
                 }
+                $profileDetails = $this->getUserTable()->getProfileDetails($list['user_id']);
+                $userprofiledetails = array();
+                $profile_details_photo = $this->manipulateProfilePic($profileDetails->user_id, $profileDetails->profile_photo, $profileDetails->user_fbid);
+                $userprofiledetails[] = array('user_id'=>$profileDetails->user_id,
+                    'user_given_name'=>$profileDetails->user_given_name,
+                    'user_profile_name'=>$profileDetails->user_profile_name,
+                    'user_email'=>$profileDetails->user_email,
+                    'user_status'=>$profileDetails->user_status,
+                    'user_fbid'=>$profileDetails->user_fbid,
+                    'user_profile_about_me'=>$profileDetails->user_profile_about_me,
+                    'user_profile_current_location'=>$profileDetails->user_profile_current_location,
+                    'user_profile_phone'=>$profileDetails->user_profile_phone,
+                    'country_title'=>$profileDetails->country_title,
+                    'country_code'=>$profileDetails->country_code,
+                    'country_id'=>$profileDetails->country_id,
+                    'city_name'=>$profileDetails->city_name,
+                    'city_id'=>$profileDetails->city_id,
+                    'profile_photo'=>$profile_details_photo,
+                );
                 switch($list['type']){
                     case "New Activity":
                         $activity_details = array();
@@ -114,7 +137,7 @@ class GroupPostsController extends AbstractActionController
                         }
 
                         $allow_join = (strtotime($activity->group_activity_start_timestamp)>strtotime("now"))?1:0;
-                        $activity_details = array(
+                        $activity_details[] = array(
                             "group_activity_id" => $activity->group_activity_id,
                             "group_activity_title" => $activity->group_activity_title,
                             "group_activity_location" => $activity->group_activity_location,
@@ -122,19 +145,13 @@ class GroupPostsController extends AbstractActionController
                             "group_activity_location_lng" => $activity->group_activity_location_lng,
                             "group_activity_content" => $activity->group_activity_content,
                             "group_activity_start_timestamp" => date("M d,Y H:s a",strtotime($activity->group_activity_start_timestamp)),
-                            "user_given_name" => $list['user_given_name'],
                             "group_title" =>$list['group_title'],
                             "group_seo_title" =>$list['group_seo_title'],
                             "group_id" =>$list['group_id'],
-                            "user_id" => $list['user_id'],
-                            "user_profile_name" => $list['user_profile_name'],
-                            "profile_photo" => $this->manipulateProfilePic($list['user_id'], $list['profile_photo'], $list['user_fbid']),
-                            "user_fbid" => $list['user_fbid'],
                             "like_count"	=>$like_details['likes_counts'],
                             "is_liked"	=>$like_details['is_liked'],
                             "comment_counts"	=>$comment_details['comment_counts'],
                             "is_commented"	=>$comment_details['is_commented'],
-                            "liked_users"	=>$arrLikedUsers,
                             "rsvp_count" =>($activity->rsvp_count)?$activity->rsvp_count:0,
                             "rsvp_friend_count" =>($activity->friend_count)?$activity->friend_count:0,
                             "is_going"=>$activity->is_going,
@@ -145,6 +162,7 @@ class GroupPostsController extends AbstractActionController
                         $feeds[] = array('content' => $activity_details,
                             'type'=>$list['type'],
                             'time'=>$this->timeAgo($list['update_time']),
+                            'postedby'=>$userprofiledetails,
                         );
                         break;
                     case "New Status":
@@ -156,20 +174,14 @@ class GroupPostsController extends AbstractActionController
                         $str_liked_users = '';
                         $arrLikedUsers = array();
                         $arrLikedUsers = $this->formatLikedUsers($like_details,$SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
-                        $discussion_details = array(
+                        $discussion_details[] = array(
                             "group_discussion_id" => $discussion->group_discussion_id,
                             "group_discussion_content" => $discussion->group_discussion_content,
                             "group_title" =>$list['group_title'],
                             "group_seo_title" =>$list['group_seo_title'],
                             "group_id" =>$list['group_id'],
-                            "user_given_name" => $list['user_given_name'],
-                            "user_id" => $list['user_id'],
-                            "user_profile_name" => $list['user_profile_name'],
-                            "profile_photo" => $this->manipulateProfilePic($list['user_id'], $list['profile_photo'], $list['user_fbid']),
-                            "user_fbid" => $list['user_fbid'],
                             "like_count"	=>$like_details['likes_counts'],
                             "is_liked"	=>$like_details['is_liked'],
-                            "liked_users"	=>$arrLikedUsers,
                             "comment_counts"	=>$comment_details['comment_counts'],
                             "is_commented"	=>$comment_details['is_commented'],
                             'is_admin'=>$is_admin,
@@ -177,6 +189,7 @@ class GroupPostsController extends AbstractActionController
                         $feeds[] = array('content' => $discussion_details,
                             'type'=>$list['type'],
                             'time'=>$this->timeAgo($list['update_time']),
+                            'postedby'=>$userprofiledetails,
                         );
                         break;
                     case "New Media":
@@ -198,7 +211,7 @@ class GroupPostsController extends AbstractActionController
                                 $media->media_content = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$list['group_id'].'/media/medium/'.$media->media_content;
                             }
                         }
-                        $media_details = array(
+                        $media_details[] = array(
                             "group_media_id" => $media->group_media_id,
                             "media_type" => $media->media_type,
                             "media_content" => $media->media_content,
@@ -207,21 +220,17 @@ class GroupPostsController extends AbstractActionController
                             "group_title" =>$list['group_title'],
                             "group_seo_title" =>$list['group_seo_title'],
                             "group_id" =>$list['group_id'],
-                            "user_given_name" => $list['user_given_name'],
-                            "user_id" => $list['user_id'],
-                            "user_profile_name" => $list['user_profile_name'],
-                            "profile_photo" => $this->manipulateProfilePic($list['user_id'], $list['profile_photo'], $list['user_fbid']),
-                            "user_fbid" => $list['user_fbid'],
                             "like_count"	=>$like_details['likes_counts'],
                             "is_liked"	=>$like_details['is_liked'],
-                            "liked_users"	=>$arrLikedUsers,
                             "comment_counts"	=>$comment_details['comment_counts'],
                             "is_commented"	=>$comment_details['is_commented'],
                             'is_admin'=>$is_admin,
                         );
-                        $feeds[] = array('content' => $media_details,
+                        $feeds[] = array(
+                            'content' => $media_details,
                             'type'=>$list['type'],
                             'time'=>$this->timeAgo($list['update_time']),
+                            'postedby'=>$userprofiledetails,
                         );
                         break;
                 }
@@ -442,13 +451,13 @@ class GroupPostsController extends AbstractActionController
         }
         return;
     }
-    public function manipulateProfilePic($user_id, $profile_photo = null, $fb_id = null){
+    public function manipulateProfilePic($user_path_id, $profile_path_photo = null, $fb_path_id = null){
         $config = $this->getServiceLocator()->get('Config');
         $return_photo = null;
-        if (!empty($profile_photo))
-            $return_photo = $config['pathInfo']['absolute_img_path'].$config['image_folders']['profile_path'].$user_id.'/'.$profile_photo;
-        else if(isset($fb_id) && !empty($fb_id))
-            $return_photo = 'http://graph.facebook.com/'.$fb_id.'/picture?type=normal';
+        if (!empty($profile_path_photo))
+            $return_photo = $config['pathInfo']['absolute_img_path'].$config['image_folders']['profile_path'].$user_path_id.'/'.$profile_path_photo;
+        else if(isset($fb_path_id) && !empty($fb_path_id))
+            $return_photo = 'http://graph.facebook.com/'.$fb_path_id.'/picture?type=normal';
         else
             $return_photo = $config['pathInfo']['absolute_img_path'].'/images/noimg.jpg';
         return $return_photo;

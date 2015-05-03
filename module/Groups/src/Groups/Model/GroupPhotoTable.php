@@ -56,4 +56,7 @@ class GroupPhotoTable extends AbstractTableGateway
         $row = $resultSet->current();
         return $row;
 	}
+	public function RemoveBanner($group_photo_id){
+		return $this->delete(array('group_photo_id' => $group_photo_id));
+	}
 }
