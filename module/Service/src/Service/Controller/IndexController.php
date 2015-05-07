@@ -33,6 +33,8 @@ use User\Form\LoginFilter;
 use User\Form\ResetPassword;
 use Facebook\Controller\Facebook;
 use Facebook\Controller\FacebookApiException;
+use Application\Controller\Plugin\ServiceUploadHandler;
+use Application\Controller\Plugin\ResizeImage;
 
 class IndexController extends AbstractActionController
 {
@@ -43,6 +45,7 @@ class IndexController extends AbstractActionController
 	protected $userGroupTable;
 	protected $userTagTable;
 	protected $RecoveryemailsTable;
+    protected $userProfilePhotoTable;
 	protected $WEB_STAMPTIME;
 	public function  __construct() {
 
@@ -542,7 +545,131 @@ class IndexController extends AbstractActionController
 			exit;
 		}
 	}
-	
+
+    public function editProfileAction(){
+        $error = '';
+        $request   = $this->getRequest();
+        if ($request->isPost()){
+            $post = $request->getPost();
+            $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+            $error = (empty($accToken)) ? "Request Not Authorised." : $error;
+            $this->checkError($error);
+            $myinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            $userinfo = array();
+            if(!empty($myinfo)){
+                $data_profile = array();
+                $data = array();
+                if($post['username']!=''&&$post['countryID']!=''&&$post['cityID']!=''){
+                    $data['user_given_name'] = trim(strip_tags($post['username']));
+                    $data_profile['user_profile_user_id'] = $myinfo->user_id;
+                    if (!empty($post['cityID']) && !is_numeric($post['cityID'])) {
+                        $dataArr[0]['flag'] = "Failure";
+                        $dataArr[0]['message'] = "Please input a Valid City ID.";
+                        echo json_encode($dataArr);
+                        exit;
+                    }
+                    if (!empty($post['countryID']) && !is_numeric($post['countryID'])) {
+                        $dataArr[0]['flag'] = "Failure";
+                        $dataArr[0]['message'] = "Please input a Valid Country ID.";
+                        echo json_encode($dataArr);
+                        exit;
+                    }
+                    $data_profile['user_profile_city_id'] = $post['cityID'];
+                    $data_profile['user_profile_country_id'] = $post['countryID'];
+
+                    $data_profile['user_profile_about_me'] = trim(strip_tags($post['aboutme']));
+                    if($this->getUserTable()->updateUser($data,$myinfo->user_id)){
+                        $this->getUserProfileTable()->updateUserProfile($data_profile,$myinfo->user_id);
+                        $userinfo = $this->getAllUserRelatedDetails($myinfo->user_id,$myinfo->user_accessToken);
+                    }else{$error = "Some error occured. Please try again";}
+                }else{$error = "Name, country and city fields are mandatory";}
+            }else{$error = "User not exist in the system";}
+        }else{$error = "Request Not Authorized";}
+
+        $dataArr[0]['flag'] = (empty($error))?'success':'failure';
+        $dataArr[0]['message'] = (empty($error))?"Profile edited successfully":$error;
+        $dataArr[0]['userdetails'] = $userinfo;
+        echo json_encode($dataArr);
+        exit;
+    }
+
+    public function editProfilePicAction(){
+        $error = '';
+        $request   = $this->getRequest();
+        if ($request->isPost()){
+            $post = $request->getPost();
+            $file = $request->getFiles();
+            $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+            $error = (empty($accToken)) ? "Request Not Authorised." : $error;
+            $this->checkError($error);
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            if(!empty($userinfo)&&$userinfo->user_id){
+                if(!empty($post)){
+                    if(isset($file)&&isset($file['profilepic']['name'])&&$file['profilepic']['name']!='') {
+                        if (@is_array(getimagesize($file['profilepic']['tmp_name']))) {
+                            $config = $this->getServiceLocator()->get('Config');
+                            $upload_path = $config['pathInfo']['ROOTPATH'].'/public/';
+                            $filename = 'profile_' . $userinfo->user_id . '' . time() . '.png';
+                            $options['script_url'] = $config['pathInfo']['base_url'];
+                            $options['upload_dir'] = $upload_path . $config['image_folders']['profile_path'] . $userinfo->user_id . '/';
+                            $options['upload_url'] = $config['pathInfo']['absolute_img_path'] . $config['image_folders']['profile_path'] . $userinfo->user_id . '/' . $filename;
+                            $options['param_name'] = 'profilepic';
+                            $options['min_width'] = 50;
+                            $options['min_height'] = 50;
+                            if (!is_dir($upload_path . $config['image_folders']['profile_path'] . $userinfo->user_id)) {
+                                mkdir($upload_path . $config['image_folders']['profile_path'] . $userinfo->user_id);
+                            }
+
+                            $upload_handler = new ServiceUploadHandler($options);
+                            if (isset($upload_handler->image_objects['filename']) && $upload_handler->image_objects['filename'] != '') {
+                                if ($error == '') {
+                                    rename($options['upload_dir'] . $upload_handler->image_objects['filename'], $options['upload_dir'].$filename);
+                                    $photodata['profile_user_id'] = $userinfo->user_id;
+                                    $photodata['profile_photo'] = $filename;
+                                    $photodata['user_profile_photo_status'] = 'available';
+                                    $insert_id = $this->getUserProfilePhotoTable()->addUserProfilePic($photodata);
+                                    $user_data = array();
+                                    if ($insert_id) {
+                                        $user_data['user_profile_photo_id'] = $insert_id;
+                                        $this->getUserTable()->updateUser($user_data, $userinfo->user_id);
+                                    } else {
+                                        $error = "Some error occured. Please try again";
+                                    }
+                                    $userdetails = $this->getAllUserRelatedDetails($userinfo->user_id,$userinfo->user_accessToken);
+                                }
+                            } else {
+                                $dataArr[0]['flag'] = "Failure";
+                                $error = "Some error occured, during file upload. Please try again";
+                            }
+                        } else {
+                            $dataArr[0]['flag'] = "Failure";
+                            $error = "Please upload a valid image";
+                        }
+                    }
+                    else {
+                        $dataArr[0]['flag'] = "Failure";
+                        $error = "Select a image to upload and continue";
+                    }
+                    //----
+                }else{$error = "Unable to process";}
+            }else{$error = "User not exist in the system";}
+        }else{$error = "Request Not Authorized";}
+        $dataArr[0]['flag'] = (empty($error))?'success':'failure';
+        $dataArr[0]['message'] = (empty($error))?"Profile picture updated successfully":$error;
+        if (empty($error)) $dataArr[0]['userdetails'] = $userdetails;
+        echo json_encode($dataArr);
+        exit;
+    }
+
+    public function checkError($error){
+        if (!empty($error)){
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = $error;
+            echo json_encode($dataArr);
+            exit;
+        }
+    }
+
 	public function sendPasswordResetMail($user_verification_key,$insertedRecoveryid,$emailId){
 
 		$this->renderer = $this->getServiceLocator()->get('ViewRenderer');	 
@@ -772,6 +899,11 @@ class IndexController extends AbstractActionController
 		$sm = $this->getServiceLocator();
 		return  $this->userProfileTable = (!$this->userProfileTable)?$sm->get('User\Model\UserProfileTable'):$this->userProfileTable;    
 	}
+
+    public function getUserProfilePhotoTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->userProfilePhotoTable = (!$this->userProfilePhotoTable)?$sm->get('User\Model\UserProfilePhotoTable'):$this->userProfilePhotoTable;
+    }
 
 	public function getUserFriendTable(){
 		$sm = $this->getServiceLocator();

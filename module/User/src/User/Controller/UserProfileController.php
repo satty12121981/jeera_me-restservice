@@ -42,6 +42,7 @@ class UserProfileController extends AbstractActionController
     	return $this->getServiceLocator()->get('viewhelpermanager')->get($helperName);
 	}	 
     public function memberprofileAction(){
+		 			 
 		$error = '';
 		$auth = new AuthenticationService();
 		$viewModel = new ViewModel();
@@ -88,7 +89,7 @@ class UserProfileController extends AbstractActionController
 			}
 		}else{return $this->redirect()->toRoute('home', array('action' => 'index'));}
 	}
-	public function profileAction(){
+	public 	function profileAction(){
 		$error = '';
 		$auth = new AuthenticationService();
 		$viewModel = new ViewModel();

@@ -62,8 +62,8 @@ class UserController extends AbstractActionController
         if ($user) { 
 			 try {
             // Proceed knowing you have a logged in user who's authenticated.
-                $access_token = $this->facebook->getAccessToken();
-                $user_profile = $this->facebook->api('/me?access_token='.$access_token);		 
+                $access_token = $this->facebook->getAccessToken(); 
+                $user_profile = $this->facebook->api('/me?access_token='.$access_token);	
                 $this->userTable = $sm->get('User\Model\UserTable');
                 $this->userProfileTable = $sm->get('User\Model\UserProfileTable');
 				$UserData = $this->userTable->getUserByFbid($user_profile['id']);
@@ -385,6 +385,17 @@ class UserController extends AbstractActionController
 						$auth = new AuthenticationService();
 						$storage = $auth->getStorage();
 						$storage->write($authAdapter->getResultRowObject(null,'user_password'));
+						//get cookie
+						$headCookie = $this->getRequest()->getHeaders()->get('Cookie');
+
+						if(array_key_exists('cc_data', get_object_vars($headCookie))){
+								$user_id = $headCookie->cc_data;
+							}else{
+								$user_id = $user_details->user_id;
+						//set cookie
+								$cookie = new  \Zend\Http\Header\SetCookie('cc_data',$user_id,time() + 365 * 60 * 60 * 24,'/');
+								$this->getResponse()->getHeaders()->addHeader($cookie);
+						}
 						if($this->params()->fromPost('rememberme')){ 
 							$authNamespace = new Container(Session::NAMESPACE_DEFAULT);
 							$authNamespace->getManager()->rememberMe(200000);
@@ -586,7 +597,7 @@ class UserController extends AbstractActionController
 									$data_expry['status'] = 1;
 									$request_record = $this->getRecoveremailsTable()->updateRecovery($data_expry,$request_record->id);
 									return $this->redirect()->toRoute('home', array('action' => 'index'));	
-								}else{$this->flashmessenger()->addMessage("Some error occured.Please try again");}
+								}else{$this->flashmessenger()->addMessage("Some error occurred.Please try again");}
 							}							
 						}						 
 						$vm->setVariable('key', $key);
@@ -632,6 +643,13 @@ class UserController extends AbstractActionController
 	  	$auth->clearIdentity();
 		unset($_SESSION);	  
 		$this->flashmessenger()->addMessage("You've been logged out");
+		
+		$cookie= $this->getRequest()->getCookie();
+		if ($cookie->offsetExists('cc_data')) {
+		$new_cookie= new SetCookie('cc_data', '');//<---empty value and the same 'name'
+		$new_cookie->setExpires(-(time() + 365 * 60 * 60 * 24));
+		$headers->addHeader($new_cookie);
+		}
 		//if($user){
          // $logoutUrl = $this->facebook->getLogoutUrl();
         //  $this->redirect()->toUrl($logoutUrl);

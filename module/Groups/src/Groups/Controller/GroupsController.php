@@ -755,6 +755,7 @@ class GroupsController extends AbstractActionController
 								);
 							}
 						}
+						                               
 					}else{
 						$error      = "No Record Found.";							 
 					}         
