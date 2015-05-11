@@ -810,4 +810,50 @@ class UserGroupTable extends AbstractTableGateway
 
             }
         }
+public function getFriendsNotMemberOfGroup($group_id,$user_id,$search_string,$offset=0,$limit=0){
+		$group_select = new Select;
+		$subselect = new Select;
+		$expression = new Expression(
+            "IF (`user_friend_sender_user_id`= $user_id , `user_friend_friend_user_id`, `user_friend_sender_user_id`)"
+        );
+        $subselect->from('y2m_user_friend')
+            ->columns(array('friend_id'=>$expression))
+            ->where->equalTo('user_friend_sender_user_id', $user_id)->OR->equalTo('user_friend_friend_user_id', $user_id)
+           ;
+		$group_select->from('y2m_user')
+					->columns(array('user_id','user_given_name','user_profile_name','user_register_type','user_fbid'))
+					->join(array('temp_member' => $subselect), 'temp_member.friend_id = y2m_user.user_id',array())
+					->join("y2m_user_profile_photo","y2m_user_profile_photo.profile_photo_id = y2m_user.user_profile_photo_id",array("profile_photo"=>"profile_photo"),'left')
+					->where(array("y2m_user.user_id NOT IN (SELECT 	user_group_user_id FROM y2m_user_group WHERE user_group_group_id =  $group_id)"));
+		if($search_string!=''){
+				$group_select->where->like('y2m_user.user_given_name','%'.$search_string.'%');	
+			}
+		if($limit>0){
+			$group_select->limit($limit);
+			$group_select->offset($offset);
+		}
+		 
+		$statement = $this->adapter->createStatement();
+		$group_select->prepareStatement($this->adapter, $statement);		 
+		$resultSet = new ResultSet();
+		//echo $group_select->getSqlString();exit;
+		$resultSet->initialize($statement->execute());	
+		return $resultSet->toArray();
+	
+	}
+	public function is_member($user_id,$group_id){
+		$select = new Select;
+		$select->from('y2m_user_group')			    	 	    
+			   ->where(array("y2m_user_group.user_group_group_id"=>$group_id))
+			   ->where(array("y2m_user_group.user_group_user_id"=>$user_id));
+		$statement = $this->adapter->createStatement();
+		//echo $select->getSqlString();exit;
+		$select->prepareStatement($this->adapter, $statement);		 
+		$resultSet = new ResultSet();
+		$resultSet->initialize($statement->execute());	
+		$row =  $resultSet->current();
+		if(!empty($row)&&isset($row->user_group_id)&&$row->user_group_id!=''){
+			return true;
+		}else{return false;}
+	}
 }
