@@ -791,26 +791,26 @@ class UserGroupTable extends AbstractTableGateway
 		$row =  $resultSet->current();
 		return $row;
 	}
-        public function UpdateUserGroup(UserGroup $userGroup){
-            $data = array(
-                 'user_group_user_id'                => $userGroup->user_group_user_id,
-                 'user_group_group_id'               => $userGroup->user_group_group_id,
-                 'user_group_added_timestamp'        => $userGroup->user_group_added_timestamp,
-                 'user_group_added_ip_address'       => $userGroup->user_group_added_ip_address,
-                 'user_group_status'                 => $userGroup->user_group_status,
-                 'user_group_is_owner'               => $userGroup->user_group_is_owner,
-                 'user_group_role'                   => $userGroup->user_group_role //Added by Kiran Singh Date 16-03-2015 to add role for add group form
-                 );
-            $user_group_id = (int)$userGroup->user_group_id;
-            if ($user_group_id == 0) {
-                $this->insert($data);
-                    return $this->adapter->getDriver()->getConnection()->getLastGeneratedValue();
-            } else {  //  print_r($data); echo "--"; die;      
-                 $this->update($data, array('user_group_id' => $user_group_id));
+	public function UpdateUserGroup(UserGroup $userGroup){
+		$data = array(
+			 'user_group_user_id'                => $userGroup->user_group_user_id,
+			 'user_group_group_id'               => $userGroup->user_group_group_id,
+			 'user_group_added_timestamp'        => $userGroup->user_group_added_timestamp,
+			 'user_group_added_ip_address'       => $userGroup->user_group_added_ip_address,
+			 'user_group_status'                 => $userGroup->user_group_status,
+			 'user_group_is_owner'               => $userGroup->user_group_is_owner,
+			 'user_group_role'                   => $userGroup->user_group_role //Added by Kiran Singh Date 16-03-2015 to add role for add group form
+			 );
+		$user_group_id = (int)$userGroup->user_group_id;
+		if ($user_group_id == 0) {
+			$this->insert($data);
+				return $this->adapter->getDriver()->getConnection()->getLastGeneratedValue();
+		} else {  //  print_r($data); echo "--"; die;      
+			 $this->update($data, array('user_group_id' => $user_group_id));
 
-            }
-        }
-public function getFriendsNotMemberOfGroup($group_id,$user_id,$search_string,$offset=0,$limit=0){
+		}
+	}
+	public function getFriendsNotMemberOfGroup($group_id,$user_id,$search_string,$offset=0,$limit=0){
 		$group_select = new Select;
 		$subselect = new Select;
 		$expression = new Expression(

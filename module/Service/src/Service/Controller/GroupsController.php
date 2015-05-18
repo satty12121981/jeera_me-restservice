@@ -198,6 +198,8 @@ class GroupsController extends AbstractActionController
         $request = $this->getRequest();
         if ($request->isPost()) {
             $post = $request->getPost();
+            $offset = trim($post['nparam']);
+            $limit = trim($post['countparam']);
             $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
             if (empty($accToken)) {
                 $dataArr[0]['flag'] = "Failure";
@@ -216,14 +218,31 @@ class GroupsController extends AbstractActionController
                 $group_id = (isset($post['groupid']) && $post['groupid'] != null && $post['groupid'] != '' && $post['groupid'] != 'undefined' && is_numeric($post['groupid'])) ? strip_tags(trim($post['groupid'])) : '';
                 if ((empty($group_id))) {
                     $dataArr[0]['flag'] = "Failure";
-                    $dataArr[0]['message'] = "Request Not Authorised.";
+                    $dataArr[0]['message'] = "Please input a valid group id.";
                     echo json_encode($dataArr);
                     exit;
                 }
+                if (isset($limit) && !is_numeric($limit)) {
+                    $dataArr[0]['flag'] = "Failure";
+                    $dataArr[0]['message'] = "Please input a Valid Count Field.";
+                    echo json_encode($dataArr);
+                    exit;
+                }
+                if (isset($offset) && !is_numeric($offset)) {
+                    $dataArr[0]['flag'] = "Failure";
+                    $dataArr[0]['message'] = "Please input a Valid N Field.";
+                    echo json_encode($dataArr);
+                    exit;
+                }
+                $offset = (int) $offset;
+                $limit = (int) $limit;
+                $offset =($offset>0)?$offset-1:0;
+                $offset = $offset*$limit;
+
                 $group = $this->getGroupTable()->getPlanetinfo($group_id);
                 if (!empty($group)) {
                     $search_string = $post['searchstr'];
-                    $arrMembers = $this->getUserGroupTable()->getFriendsNotMemberOfGroup($group_id, $userinfo->user_id, $search_string, 0, 250);
+                    $arrMembers = $this->getUserGroupTable()->getFriendsNotMemberOfGroup($group_id, $userinfo->user_id, $search_string, $offset, $limit);
                 } else {
                     $error = "Group not available";
                 }
@@ -273,18 +292,22 @@ class GroupsController extends AbstractActionController
                 $group_id = (isset($post['groupid']) && $post['groupid'] != null && $post['groupid'] != '' && $post['groupid'] != 'undefined' && is_numeric($post['groupid'])) ? strip_tags(trim($post['groupid'])) : '';
                 if ((empty($group_id))) {
                     $dataArr[0]['flag'] = "Failure";
-                    $dataArr[0]['message'] = "Request Not Authorised.";
+                    $dataArr[0]['message'] = "Please input a valid group id.";
                     echo json_encode($dataArr);
                     exit;
                 }
                 $group = $this->getGroupTable()->getPlanetinfo($group_id);
-                $friends = $post['inviteusers'];
-
+                $friends = (isset($post['inviteusers']) && $post['inviteusers'] != null && $post['inviteusers'] != '' && $post['inviteusers'] != 'undefined') ? strip_tags(trim($post['inviteusers'])) : '';
+                if ((empty($friends))) {
+                    $dataArr[0]['flag'] = "Failure";
+                    $dataArr[0]['message'] = "Please input invite users .";
+                    echo json_encode($dataArr);
+                    exit;
+                }
                 if ($friends != "all"){
                     $friends = explode(",", $friends);
-                    $friends  = array_filter($friends);
+                    $friends = array_filter($friends);
                 }
-
                 if (!empty($group)) {
                     if ($group->group_type == 'private') {
                         $owner = $this->getUserGroupTable()->checkOwner($group->group_id, $userinfo->user_id);
@@ -302,24 +325,26 @@ class GroupsController extends AbstractActionController
                             $UserGroupJoiningInvitation = new UserGroupJoiningInvitation();
                             if (count($arrMembers)) {
                                 foreach ($arrMembers as $group_invt) {
-                                    $userExist = $this->getUserTable()->getUser($group_invt);
-                                    if (!empty($userExist)) {
-                                        $invite = $this->getGroupJoiningInvitationTable()->checkInvited($group_invt, $group_id);
-                                        if (empty($invite)) {
-                                            $UserGroupJoiningInvitation->user_group_joining_invitation_sender_user_id = $userinfo->user_id;
-                                            $UserGroupJoiningInvitation->user_group_joining_invitation_receiver_id = $group_invt;
-                                            $UserGroupJoiningInvitation->user_group_joining_invitation_status = "active";
-                                            $UserGroupJoiningInvitation->user_group_joining_invitation_ip_address = $_SERVER["SERVER_ADDR"];
-                                            $UserGroupJoiningInvitation->user_group_joining_invitation_group_id = $group_id;
-                                            $intUserGroupJoiningInvitation = $this->getGroupJoiningInvitationTable()->saveUserGroupJoiningInvite($UserGroupJoiningInvitation);
-                                            if ($intUserGroupJoiningInvitation) {
-                                                $config = $this->getServiceLocator()->get('Config');
-                                                $base_url = $config['pathInfo']['base_url'];
-                                                $msg = $userinfo->user_given_name . " invited you to join the group " . $group->group_title;
-                                                $subject = 'Group joining invitation';
-                                                $from = 'admin@jeera.com';
-                                                $process = 'Invite';
-                                                $this->UpdateNotifications($group_invt, $msg, 3, $subject, $from, $userinfo->user_id, $group_id, $process);
+                                    if (is_numeric($group_invt)){
+                                        $userExist = $this->getUserTable()->getUser($group_invt);
+                                        if (!empty($userExist)) {
+                                            $invite = $this->getGroupJoiningInvitationTable()->checkInvited($group_invt, $group_id);
+                                            if (empty($invite)) {
+                                                $UserGroupJoiningInvitation->user_group_joining_invitation_sender_user_id = $userinfo->user_id;
+                                                $UserGroupJoiningInvitation->user_group_joining_invitation_receiver_id = $group_invt;
+                                                $UserGroupJoiningInvitation->user_group_joining_invitation_status = "active";
+                                                $UserGroupJoiningInvitation->user_group_joining_invitation_ip_address = $_SERVER["SERVER_ADDR"];
+                                                $UserGroupJoiningInvitation->user_group_joining_invitation_group_id = $group_id;
+                                                $intUserGroupJoiningInvitation = $this->getGroupJoiningInvitationTable()->saveUserGroupJoiningInvite($UserGroupJoiningInvitation);
+                                                if ($intUserGroupJoiningInvitation) {
+                                                    $config = $this->getServiceLocator()->get('Config');
+                                                    $base_url = $config['pathInfo']['base_url'];
+                                                    $msg = $userinfo->user_given_name . " invited you to join the group " . $group->group_title;
+                                                    $subject = 'Group joining invitation';
+                                                    $from = 'admin@jeera.com';
+                                                    $process = 'Invite';
+                                                    $this->UpdateNotifications($group_invt, $msg, 3, $subject, $from, $userinfo->user_id, $group_id, $process);
+                                                }
                                             }
                                         }
                                     }

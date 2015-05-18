@@ -5,6 +5,7 @@ use Zend\View\Model\JsonModel;
 use Zend\Authentication\Adapter\DbTable as AuthAdapter;
 use Notification\Model\Notification;
 use Notification\Model\NotificationTable;
+use Application\Controller\Plugin\PushNotifications;
 use \Exception;
 class NotificationController extends AbstractActionController
 {
@@ -300,6 +301,13 @@ class NotificationController extends AbstractActionController
         echo json_encode($dataArr);
         exit;
 	}
+    public function ApplePushNotifyAction(){
+
+        $pushNotifications = new PushNotifications();
+        $config = $this->getServiceLocator()->get('Config');
+        $pushNotifications->ApplePushMessage($config);
+        //$pushNotifications->applepushtest($config);
+    }
 	public function getActivityTable(){
 		 if (!$this->activityTable) {
             $sm = $this->getServiceLocator();

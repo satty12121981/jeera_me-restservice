@@ -284,7 +284,7 @@ class IndexController extends AbstractActionController
 		}
     }
 		
-	public function loginAction(){ 
+	public function loginAction(){
 		$request = $this->getRequest();
 		if($this->getRequest()->getMethod() == 'POST') {
 			$postedValues = $this->getRequest()->getPost();

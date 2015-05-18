@@ -39,6 +39,9 @@ class GroupsController extends AbstractActionController
 	protected $groupQuestionnaireAnswersTable;
 	protected $tagTable;
 	protected $userTagTable;
+	protected $groupActivityTable;
+	protected $activityRsvpTable;
+	protected $discussionTable;
 	public function membergroupsAction(){
 		$error = '';
 		$auth = new AuthenticationService();
@@ -275,7 +278,7 @@ class GroupsController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{$error = "User not exist in the system";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;		 
@@ -322,7 +325,10 @@ class GroupsController extends AbstractActionController
 					$error =($post['media_type']=='')? "Media type required":$error;					 
 					$error =($post['group_id']=='')? "Select one group":$error;	 
 					$group  = $this->getGroupTable()->getPlanetinfo($post['group_id']);
-					$error =(empty($group)||$group->group_id=='')?"Given group not exist in this system":$error;					 
+					$error =(empty($group)||$group->group_id=='')?"Given group not exist in this system":$error;
+					if(!$this->getUserGroupTable()->is_member($identity->user_id,$group->group_id)){
+						 $error = "You don't have the permission to do this";
+					}					
 					$media_type = $post['media_type'];
 					switch($media_type){
 						case 'image':
@@ -399,7 +405,7 @@ class GroupsController extends AbstractActionController
 					}				 
 				}else{$error = "Unable to process";}
 			}else{$error = "User not exist in the system";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;		 
@@ -425,7 +431,7 @@ class GroupsController extends AbstractActionController
 					$allActiveMembers = $this->getUserGroupTable()->getAllActiveMembersExceptMeAction($group->group_id,$identity->user_id);
 				}else{$error = "Unable to process";}
 			}else{$error = "User not exist in the system";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -463,6 +469,10 @@ class GroupsController extends AbstractActionController
 					$is_admin = 0;
 					if($this->getUserGroupTable()->checkOwner($group_media->group_id,$group_media->user_id)){
 						$is_admin = 1;
+					}
+					$logged_user_ismember = 0;
+					if($this->getUserGroupTable()->is_member($identity->user_id,$group_media->group_id)){
+						$logged_user_ismember = 1;
 					}
 					$arr_group_media = array();
 					if(!empty($group_media)&&$group_media->group_media_id!=''){
@@ -510,6 +520,7 @@ class GroupsController extends AbstractActionController
 										'next_id' =>(isset($next_item->group_media_id))?$next_item->group_media_id:'',
 										'prev_id' =>(isset($prev_item->group_media_id))?$prev_item->group_media_id:'',
 										'is_admin'=>$is_admin,
+										'logged_user_ismember' =>$logged_user_ismember,
 										);
 						$commentSystemTYpe =$this->getGroupTable()->fetchSystemType('Comment'); 
 						$comments_details = $this->getCommentTable()->getAllCommentsWithLike($SystemTypeData->system_type_id,$commentSystemTYpe->system_type_id,$media_id,$identity->user_id,10,0);
@@ -531,6 +542,39 @@ class GroupsController extends AbstractActionController
 									}
 									 
 								}
+								$allowedit = 0;
+									if($list->user_id == $identity->user_id){
+										$allowedit = 1;
+									}
+									switch($list->system_type_title){
+										case 'Activity':
+											$activity_deatils =  $this->getActivityTable()->getActivity($list->comment_refer_id);
+											if($activity_deatils->group_activity_owner_user_id == $identity->user_id){
+												$allowedit = 1;
+											}
+											if($this->getUserGroupTable()->checkOwner($activity_deatils->group_activity_group_id,$identity->user_id)){
+												$allowedit = 1;
+											}
+										break;
+										case 'Discussion':
+											$discussion_deatils =  $this->getDiscussionTable()->getDiscussion($list->comment_refer_id);
+											if($discussion_deatils->group_discussion_owner_user_id == $identity->user_id){
+												$allowedit = 1;
+											}
+											if($this->getUserGroupTable()->checkOwner($discussion_deatils->group_discussion_group_id,$identity->user_id)){
+												$allowedit = 1;
+											}
+										break;
+										case 'Media':
+											$media_deatils =  $this->getGroupMediaTable()->getMedia($list->comment_refer_id);
+											if($media_deatils->media_added_user_id == $identity->user_id){
+												$allowedit = 1;
+											}
+											if($this->getUserGroupTable()->checkOwner($media_deatils->media_added_group_id,$identity->user_id)){
+												$allowedit = 1;
+											}
+										break;							 
+									}
 								$comments[] = array(
 												'likes_count'=>$like_details['likes_counts'],
 												'islike'=>$list->islike,
@@ -543,14 +587,15 @@ class GroupsController extends AbstractActionController
 												'user_fbid'=>$list->user_fbid,
 												'profile_photo'=>$list->profile_photo,
 												'likedUsers'=>$arr_likedUsers,
-												'user_profile_name'=>$list->user_profile_name
+												'user_profile_name'=>$list->user_profile_name,
+												'allowedit' =>$allowedit,
 											);
 							}
 						}
 					}						
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -561,7 +606,7 @@ class GroupsController extends AbstractActionController
 		));		
 		return $result;
 	}
-	public function timeAgo($time_ago){
+	public function timeAgo($time_ago){ //echo $time_ago;die();
 		$time_ago = strtotime($time_ago);
 		$cur_time   = time();
 		$time_elapsed   = $cur_time - $time_ago;
@@ -574,55 +619,55 @@ class GroupsController extends AbstractActionController
 		$years      = round($time_elapsed / 31207680 );
 		// Seconds
 		if($seconds <= 60){
-			return "just now";
+			return "0m";
 		}
 		//Minutes
 		else if($minutes <=60){
 			if($minutes==1){
-				return "one minute ago";
+				return "1m";
 			}
 			else{
-				return "$minutes minutes ago";
+				return $minutes."m";
 			}
 		}
 		//Hours
 		else if($hours <=24){
 			if($hours==1){
-				return "an hour ago";
+				return "1h";
 			}else{
-				return "$hours hrs ago";
+				return $hours."h";
 			}
 		}
 		//Days
 		else if($days <= 7){
 			if($days==1){
-				return "yesterday";
+				return "1d";
 			}else{
-				return "$days days ago";
+				return $days."d";
 			}
 		}
 		//Weeks
 		else if($weeks <= 4.3){
 			if($weeks==1){
-				return "a week ago";
+				return "1w";
 			}else{
-				return "$weeks weeks ago";
+				return $weeks."w";
 			}
 		}
 		//Months
 		else if($months <=12){
 			if($months==1){
-				return "a month ago";
+				return "1mo";
 			}else{
-				return "$months months ago";
+				return $months."mo";
 			}
 		}
 		//Years
 		else{
 			if($years==1){
-				return "one year ago";
+				return "1yr";
 			}else{
-				return "$years years ago";
+				return $years."yr";
 			}
 		}
 	}
@@ -678,7 +723,7 @@ class GroupsController extends AbstractActionController
 					}
 				}
 			}else{$error = "Unable to process";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -761,7 +806,7 @@ class GroupsController extends AbstractActionController
 					}         
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -790,7 +835,7 @@ class GroupsController extends AbstractActionController
 				   }else{$error = "Group not exist in the system";}
 				}else{$error = "User not exist in the system";}              
             }else{$error = "Unable to process";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;		 		 	
@@ -829,7 +874,7 @@ class GroupsController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -940,7 +985,7 @@ class GroupsController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -1032,7 +1077,7 @@ class GroupsController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -1084,7 +1129,7 @@ class GroupsController extends AbstractActionController
 					}else{$error = "Group is not existing";}			
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -1202,7 +1247,7 @@ class GroupsController extends AbstractActionController
 					$arr_group_tags = $this->getGroupTagTable()->fetchAllGroupTags($group_id);
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -1248,7 +1293,7 @@ class GroupsController extends AbstractActionController
 					}						
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}	
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;		
@@ -1290,7 +1335,7 @@ class GroupsController extends AbstractActionController
 					}else{$error = "You don't have the permissions to do this operation";}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}	
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	 	 		
@@ -1410,7 +1455,7 @@ class GroupsController extends AbstractActionController
 					 }
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}	
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	 
@@ -1440,7 +1485,7 @@ class GroupsController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}	
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error; 	
@@ -1482,7 +1527,7 @@ class GroupsController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}	
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error; 	
@@ -1512,7 +1557,7 @@ class GroupsController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}	
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error; 	
@@ -1549,7 +1594,7 @@ class GroupsController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}	
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error; 	
@@ -1579,7 +1624,7 @@ class GroupsController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}	
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error; 	
@@ -1796,7 +1841,7 @@ class GroupsController extends AbstractActionController
 					}else{$error = "Unable to process";}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}	
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error; 	
@@ -1860,7 +1905,7 @@ class GroupsController extends AbstractActionController
 					}else{$error = "Image not available";}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";} 
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error; 	
@@ -1905,7 +1950,7 @@ class GroupsController extends AbstractActionController
 					}else{$error = "Group not available";}				 
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";} 
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error; 	
@@ -1995,6 +2040,471 @@ class GroupsController extends AbstractActionController
 				}else{ return $this->redirect()->toRoute('home/404', array('action' => 'nopage')); }
 			}else{ return $this->redirect()->toRoute('home/404', array('action' => 'nopage')); }
 		}else{return $this->redirect()->toRoute('home', array('action' => 'nopage'));}
+	}
+	public function getFriendsNotMemberOfGroupListAction(){
+		$error = '';
+		$arrMembers = array();
+		$auth = new AuthenticationService();
+		if ($auth->hasIdentity()) {
+			$identity = $auth->getIdentity();			  
+			$request   = $this->getRequest();
+			if ($request->isPost()){
+				$post = $request->getPost(); 
+				if(!empty($post)){				 
+					$group_id = $post['group_id'];
+					$group  = $this->getGroupTable()->getPlanetinfo($group_id);
+					if(!empty($group)){						 
+						$search_string = $post['search_str'];
+						$arrMembers = $this->getUserGroupTable()->getFriendsNotMemberOfGroup($group_id,$identity->user_id,$search_string,0,250);
+					}else{$error = "Group not available";}				 
+				}else{$error = "Unable to process";}
+			}else{$error = "Unable to process";} 
+		}else{$error = "Your session expired, please log in again to continue";}
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error; 	
+		$return_array['members'] = $arrMembers; 	
+		$result = new JsonModel(array(
+		'return_array' => $return_array,      
+		));		
+		return $result;
+	}
+	public function inviteMembersAction(){		
+		$error = '';
+		$arrMembers = array();
+		$auth = new AuthenticationService();
+		if ($auth->hasIdentity()) {
+			$identity = $auth->getIdentity();			  
+			$request   = $this->getRequest();
+			if ($request->isPost()){
+				$post = $request->getPost(); 
+				if(!empty($post)){				 
+					$group_id = $post['group_id'];
+					$group  = $this->getGroupTable()->getPlanetinfo($group_id);
+					$friends = $post['users'];
+					if(!empty($group)){	
+						if($group->group_type=='private'){
+							$owner = $this->getUserGroupTable()->checkOwner($group->group_id,$identity->user_id);
+							if($owner){
+								if($friends == 'All'){
+									$all_members = $this->getUserGroupTable()->getFriendsNotMemberOfGroup($group_id,$identity->user_id,'');
+									foreach($all_members as $items){
+										$arrMembers[] = $items->user_id;
+									}
+								}else{								 
+									foreach($friends as $items){
+										$arrMembers[] = $items['user_id'];
+									}
+								}
+								$UserGroupJoiningInvitation                 = new UserGroupJoiningInvitation();
+								foreach($arrMembers as $group_invt){
+									$invite =  $this->getGroupJoiningInvitationTable()->checkInvited($group_invt, $group_id);
+									if(empty($invite)){
+										$UserGroupJoiningInvitation->user_group_joining_invitation_sender_user_id           = $identity->user_id;
+										$UserGroupJoiningInvitation->user_group_joining_invitation_receiver_id              = $group_invt;
+										$UserGroupJoiningInvitation->user_group_joining_invitation_status                   = "active";
+										$UserGroupJoiningInvitation->user_group_joining_invitation_ip_address               = $_SERVER["SERVER_ADDR"];
+										$UserGroupJoiningInvitation->user_group_joining_invitation_group_id                 = $group_id;
+										$intUserGroupJoiningInvitation   = $this->getGroupJoiningInvitationTable()->saveUserGroupJoiningInvite($UserGroupJoiningInvitation);
+										if( $intUserGroupJoiningInvitation){
+											$config = $this->getServiceLocator()->get('Config');
+											$base_url = $config['pathInfo']['base_url'];
+											$msg = $identity->user_given_name." invited you to join the group ".$group->group_title;
+											$subject = 'Group joining invitation';
+											$from = 'admin@jeera.com';
+											$process = 'Invite';
+											$this->UpdateNotifications($group_invt,$msg,3,$subject,$from,$identity->user_id,$group_id,$process);
+										}
+									}
+								}
+							}else{
+								$error = "You don't have the permission to do this";
+							}
+						}else{
+							if($this->getUserGroupTable()->is_member($identity->user_id,$group_id)){
+							
+								if($friends == 'All'){
+									$all_members = $this->getUserGroupTable()->getFriendsNotMemberOfGroup($group_id,$identity->user_id,'');
+									foreach($arrMembers as $items){
+										$arrMembers[] = $items->user_id;
+									}
+								}else{								 
+									foreach($friends as $items){
+										$arrMembers[] = $items['user_id'];
+									}
+								}
+								$UserGroupJoiningInvitation                 = new UserGroupJoiningInvitation();
+								foreach($arrMembers as $group_invt){
+									$invite =  $this->getGroupJoiningInvitationTable()->checkInvited($group_invt, $group_id);
+									if(empty($invite)){
+										$UserGroupJoiningInvitation->user_group_joining_invitation_sender_user_id           = $identity->user_id;
+										$UserGroupJoiningInvitation->user_group_joining_invitation_receiver_id              = $group_invt;
+										$UserGroupJoiningInvitation->user_group_joining_invitation_status                   = "active";
+										$UserGroupJoiningInvitation->user_group_joining_invitation_ip_address               = $_SERVER["SERVER_ADDR"];
+										$UserGroupJoiningInvitation->user_group_joining_invitation_group_id                 = $group_id;
+										$intUserGroupJoiningInvitation   = $this->getGroupJoiningInvitationTable()->saveUserGroupJoiningInvite($UserGroupJoiningInvitation);
+										if( $intUserGroupJoiningInvitation){
+											$config = $this->getServiceLocator()->get('Config');
+											$base_url = $config['pathInfo']['base_url'];
+											$msg = $identity->user_given_name." invited you to join the group ".$group->group_title;
+											$subject = 'Group joining invitation';
+											$from = 'admin@jeera.com';
+											$process = 'Invite';
+											$this->UpdateNotifications($group_invt,$msg,3,$subject,$from,$identity->user_id,$group_id,$process);
+										}
+									}
+								}
+							}else{$error = "You don't have the permission to do this";}
+						}						 
+					}else{$error = "Group not available";}				 
+				}else{$error = "Unable to process";}
+			}else{$error = "Unable to process";} 
+		}else{$error = "Your session expired, please log in again to continue";}
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error; 	
+		$return_array['members'] = $arrMembers; 	
+		$result = new JsonModel(array(
+		'return_array' => $return_array,      
+		));		
+		return $result;
+	}
+	public function getoneFeedAction(){
+		$error = '';
+		$feed_details = array();
+		$auth = new AuthenticationService();
+		if ($auth->hasIdentity()) {
+			$identity = $auth->getIdentity();			  
+			$request   = $this->getRequest();
+			if ($request->isPost()){
+				$post = $request->getPost(); 
+				if(!empty($post)){				 
+					$system_type = $post['system_type'];
+					$content_id = $post['content_id'];
+					if($system_type!=''&&$content_id!=''){
+						switch($system_type){
+							case 'Activity';
+								$activity_details = $this->getActivityTable()->getActivity($content_id); 
+								$feed_details['group_activity_id'] = $activity_details->group_activity_id;
+								$feed_details['group_activity_content'] = $activity_details->group_activity_content;
+								$feed_details['group_activity_owner_user_id'] = $activity_details->group_activity_owner_user_id;
+								$feed_details['group_activity_group_id'] = $activity_details->group_activity_group_id;
+								$feed_details['group_activity_start_timestamp'] = $activity_details->group_activity_start_timestamp;
+								$feed_details['group_activity_start_date'] = date("d-m-Y",strtotime($activity_details->group_activity_start_timestamp));
+								$feed_details['group_activity_start_time'] = date("H:i A",strtotime($activity_details->group_activity_start_timestamp));
+								$feed_details['group_activity_title'] = $activity_details->group_activity_title;
+								$feed_details['group_activity_location'] = $activity_details->group_activity_location;
+								$feed_details['group_activity_location_lat'] = $activity_details->group_activity_location_lat;
+								$feed_details['group_activity_location_lng'] = $activity_details->group_activity_location_lng;
+							break;
+							case 'Discussion';
+								$feed_details = $this->getDiscussionTable()->getDiscussion($content_id);
+							break;
+							case 'Media';
+								$feed_details = $this->getGroupMediaTable()->getMedia($content_id);
+							break;
+							default:
+								$error = "Unable to process";
+						}
+					}else{$error = "Unable to process";}				 			 
+				}else{$error = "Unable to process";}
+			}else{$error = "Unable to process";} 
+		}else{$error = "Your session expired, please log in again to continue";}
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error; 	
+		$return_array['feed_details'] = $feed_details; 	
+		$result = new JsonModel(array(
+		'return_array' => $return_array,      
+		));		
+		return $result;
+	}
+	public function editMediaAction(){
+		$error = '';
+		$feed_details = array();
+		$auth = new AuthenticationService();
+		if ($auth->hasIdentity()) {
+			$identity = $auth->getIdentity();			  
+			$request   = $this->getRequest();
+			if ($request->isPost()){
+				$post = $request->getPost(); 
+				if(!empty($post)){				 
+					$system_type = $post['system_type'];
+					$content_id = $post['content_id'];
+					$content = $post['content'];
+					if($content_id!=''){
+						$Mediadata = $this->getGroupMediaTable()->getMedia($content_id);
+						if(!empty($Mediadata)){
+							if($Mediadata->media_added_user_id == $identity->user_id ||$this->getUserGroupTable()->checkOwner($Mediadata->media_added_group_id,$identity->user_id)){	
+								$media_dataaarray['media_caption'] = $content;								 
+								$this->getGroupMediaTable()->updateMedia($media_dataaarray,$content_id);
+							}else{$error = "Sorry ! You don't have the permission to do this";}									 
+						}else{$error = "This status is not existing in the system";}
+					}else{$error = "Forms are incomplete. Some values are missing";}	 			 
+				}else{$error = "Unable to process";}
+			}else{$error = "Unable to process";} 
+		}else{$error = "Your session expired, please log in again to continue";}
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error; 	
+		$return_array['feed_details'] = $feed_details; 	
+		$result = new JsonModel(array(
+		'return_array' => $return_array,      
+		));		
+		return $result;
+	}
+	public function deleteMediaAction(){
+		$error = '';		
+		$auth = new AuthenticationService();
+		if ($auth->hasIdentity()) {
+			$identity = $auth->getIdentity();			  
+			$request   = $this->getRequest();
+			if ($request->isPost()){
+				$post = $request->getPost(); 
+				if(!empty($post)){				 
+					$system_type = $post['system_type'];
+					$content_id = $post['content_id'];					
+					if($content_id!=''){
+						$Mediadata = $this->getGroupMediaTable()->getMedia($content_id);
+						if(!empty($Mediadata)){
+							if($Mediadata->media_added_user_id == $identity->user_id ||$this->getUserGroupTable()->checkOwner($Mediadata->media_added_group_id,$identity->user_id)){	
+								$SystemTypeData = $this->getGroupTable()->fetchSystemType('Media');
+								$this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$content_id);
+								$this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$content_id);
+								$this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$content_id);
+								$this->getGroupMediaTable()->deleteMedia($content_id);
+								$this->getUserNotificationTable()->deleteSystemNotifications(8,$content_id);
+							}else{$error = "Sorry ! You don't have the permission to do this";}									 
+						}else{$error = "This status is not existing in the system";}
+					}else{$error = "Forms are incomplete. Some values are missing";}	 			 
+				}else{$error = "Unable to process";}
+			}else{$error = "Unable to process";} 
+		}else{$error = "Your session expired, please log in again to continue";}
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error; 			 	
+		$result = new JsonModel(array(
+		'return_array' => $return_array,      
+		));		
+		return $result;
+	}
+	public function getGroupFeedAction(){
+		$error = '';
+		$feeds = array();
+		$auth = new AuthenticationService();		 
+		if ($auth->hasIdentity()) { 
+			$identity  = $auth->getIdentity();			
+			$userinfo  = $this->getUserTable()->getUser($identity->user_id);
+			$request   = $this->getRequest();
+			if($request->isPost()){ 
+				$page   = $this->getRequest()->getPost('page');
+                $limit  =10;
+				$page   =($page>0)?$page-1:0;
+				$offset = $page*$limit;
+				$type	= $this->getRequest()->getPost('type');
+				$group  = $this->getRequest()->getPost('group');
+				$activity  = $this->getRequest()->getPost('activity');
+				$group_id = '';
+				$showfeed=1;
+				if($group!='All'){
+					$group_info = $this->getGroupTable()->getGroupForSEO($group);
+					if(!empty($group_info)){$group_id = $group_info->group_id;}
+					if($group_info->group_type == 'private'&&!$this->getUserGroupTable()->is_member($identity->user_id,$group_info->group_id)){
+						$showfeed=0;
+					}
+				}
+				if(!empty($userinfo)&&$userinfo->user_id){	
+					if($showfeed==1){
+					$feeds_list = $this->getGroupTable()->getGroupDetailsNewsFeeds($identity->user_id,$type,$group_id,$activity,$limit,$offset);				 
+					foreach($feeds_list as $list){
+						$is_admin = 0;
+						if($this->getUserGroupTable()->checkOwner($list['group_id'],$list['user_id'])){
+							$is_admin = 1;
+						}
+						$is_logged_user_admin = 0;
+						if($this->getUserGroupTable()->checkOwner($list['group_id'],$identity->user_id)){
+							$is_logged_user_admin = 1;
+						}
+						switch($list['type']){
+							case "New Activity":
+							$activity_details = array();
+							$activity = $this->getActivityTable()->getActivityForFeed($list['event_id'],$identity->user_id);
+							$SystemTypeData   = $this->groupTable->fetchSystemType("Activity");
+							$like_details     = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id); 
+							$comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id); 
+							$str_liked_users  = '';
+							$arr_likedUsers = array(); 
+							if(!empty($like_details)&&isset($like_details['likes_counts'])){  
+								$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id,2,0);
+								
+								if($like_details['is_liked']==1){
+									$arr_likedUsers[] = 'you';
+								}
+								if($like_details['likes_counts']>0&&!empty($liked_users)){
+									foreach($liked_users as $likeuser){
+										$arr_likedUsers[] = $likeuser['user_given_name'];
+									}
+								}
+								 
+							}
+							$rsvp_count = $this->getActivityRsvpTable()->getCountOfAllRSVPuser($activity->group_activity_id)->rsvp_count;
+							$attending_users = array();
+							if($rsvp_count>0){
+								$attending_users = $this->getActivityRsvpTable()->getJoinMembers($activity->group_activity_id,3,0);
+								//print_r($attending_users);die();
+							}
+							$allow_join = (strtotime($activity->group_activity_start_timestamp)>strtotime("now"))?1:0;
+							$activity_details = array(
+													"group_activity_id" => $activity->group_activity_id,
+													"group_activity_title" => $activity->group_activity_title,
+													"group_activity_location" => $activity->group_activity_location,
+													"group_activity_location_lat" => $activity->group_activity_location_lat,
+													"group_activity_location_lng" => $activity->group_activity_location_lng,
+													"group_activity_content" => $activity->group_activity_content,
+													"group_activity_start_timestamp" => date("M d,Y H:s a",strtotime($activity->group_activity_start_timestamp)),												 
+													"user_given_name" => $list['user_given_name'],
+													"group_title" =>$list['group_title'],
+													"group_seo_title" =>$list['group_seo_title'],
+													"group_id" =>$list['group_id'],	
+													"user_id" => $list['user_id'],
+													"user_profile_name" => $list['user_profile_name'],
+													"profile_photo" => $list['profile_photo'],	
+													"user_fbid" => $list['user_fbid'],
+													"like_count"	=>$like_details['likes_counts'],
+													"is_liked"	=>$like_details['is_liked'],
+													"comment_counts"	=>$comment_details['comment_counts'],
+													"is_commented"	=>$comment_details['is_commented'],
+													"liked_users"	=>$arr_likedUsers,
+													"rsvp_count" =>($activity->rsvp_count)?$activity->rsvp_count:0,
+													"rsvp_friend_count" =>($activity->friend_count)?$activity->friend_count:0,
+													"is_going"=>$activity->is_going,
+													"attending_users" =>$attending_users,
+													"allow_join" =>$allow_join,
+													'is_admin'=>$is_admin,
+													'is_logged_user_admin'=>$is_logged_user_admin,
+													
+													);
+							$feeds[] = array('content' => $activity_details,
+											'type'=>$list['type'],
+											'time'=>$this->timeAgo($list['update_time']),
+							); 							
+							break;
+							case "New Status":
+								$discussion_details = array();
+								$discussion = $this->getDiscussionTable()->getDiscussionForFeed($list['event_id']);
+								$SystemTypeData = $this->groupTable->fetchSystemType("Discussion");
+								$like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id);
+								$comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id); 
+								$str_liked_users = '';
+								$arr_likedUsers = array();
+								if(!empty($like_details)&&isset($like_details['likes_counts'])){  
+									$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id,2,0);
+									
+									if($like_details['is_liked']==1){
+										$arr_likedUsers[] = 'you';
+									}
+									if($like_details['likes_counts']>0&&!empty($liked_users)){
+										foreach($liked_users as $likeuser){
+											$arr_likedUsers[] = $likeuser['user_given_name'];
+										}
+									}
+									 
+								}
+								$discussion_details = array(
+													"group_discussion_id" => $discussion->group_discussion_id,
+													"group_discussion_content" => $discussion->group_discussion_content,
+													"group_title" =>$list['group_title'],
+													"group_seo_title" =>$list['group_seo_title'],
+													"group_id" =>$list['group_id'],												
+													"user_given_name" => $list['user_given_name'],
+													"user_id" => $list['user_id'],
+													"user_profile_name" => $list['user_profile_name'],												 
+													"profile_photo" => $list['profile_photo'],
+													"user_fbid" => $list['user_fbid'],
+													"like_count"	=>$like_details['likes_counts'],
+													"is_liked"	=>$like_details['is_liked'],
+													"liked_users"	=>$arr_likedUsers,
+													"comment_counts"	=>$comment_details['comment_counts'],
+													"is_commented"	=>$comment_details['is_commented'],
+													'is_admin'=>$is_admin,
+													'is_logged_user_admin'=>$is_logged_user_admin,
+													);
+								$feeds[] = array('content' => $discussion_details,
+												'type'=>$list['type'],
+												'time'=>$this->timeAgo($list['update_time']),
+								); 
+							break;
+							case "New Media":
+								$media_details = array();
+								$media = $this->getGroupMediaTable()->getMediaForFeed($list['event_id']);
+								$video_id  = '';
+								if($media->media_type == 'video')
+								$video_id  = $this->get_youtube_id_from_url($media->media_content);
+								$SystemTypeData = $this->groupTable->fetchSystemType("Media");
+								$like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id);
+								$comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id); 
+								$str_liked_users = '';
+								$arr_likedUsers = array();
+								if(!empty($like_details)&&isset($like_details['likes_counts'])){  
+									$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id,2,0);
+									
+									if($like_details['is_liked']==1){
+										$arr_likedUsers[] = 'you';
+									}
+									if($like_details['likes_counts']>0&&!empty($liked_users)){
+										foreach($liked_users as $likeuser){
+											$arr_likedUsers[] = $likeuser['user_given_name'];
+										}
+									}
+									 
+								}
+								$media_details = array(
+													"group_media_id" => $media->group_media_id,
+													"media_type" => $media->media_type,
+													"media_content" => $media->media_content,
+													"media_caption" => $media->media_caption,
+													"video_id" => $video_id,
+													"group_title" =>$list['group_title'],
+													"group_seo_title" =>$list['group_seo_title'],	
+													"group_id" =>$list['group_id'],													
+													"user_given_name" => $list['user_given_name'],
+													"user_id" => $list['user_id'],
+													"user_profile_name" => $list['user_profile_name'],												 
+													"profile_photo" => $list['profile_photo'],
+													"user_fbid" => $list['user_fbid'],
+													"like_count"	=>$like_details['likes_counts'],
+													"is_liked"	=>$like_details['is_liked'],	
+													"liked_users"	=>$arr_likedUsers,	
+													"comment_counts"	=>$comment_details['comment_counts'],
+													"is_commented"	=>$comment_details['is_commented'],	
+													'is_admin'=>$is_admin,	
+													'is_logged_user_admin'=>$is_logged_user_admin,													
+													);
+								$feeds[] = array('content' => $media_details,
+												'type'=>$list['type'],
+												'time'=>$this->timeAgo($list['update_time']),
+								); 
+							break;
+						}
+					} 
+				}
+				}else{$error = "User not exist in the system";}
+			}else{$error = "Unable to process";}
+		}else{$error = "Your session expired, please log in again to continue";} 
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error;
+		$return_array['feeds'] = $feeds;
+		$result = new JsonModel(array(
+		'return_array' => $return_array,      
+		));		
+		return $result;
+	}
+	public function  get_youtube_id_from_url($url){
+		if (stristr($url,'youtu.be/'))
+			{preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return isset($final_ID[4])?$final_ID[4]:''; }
+		else 
+			{@preg_match('/(https:|http:|):(\/\/www\.|\/\/|)(.*?)\/(embed\/|watch.*?v=|channel\/)([a-z_A-Z0-9\-]{11})/i', $url, $IDD); return isset($IDD[5])?$IDD[5]:''; }
 	}
 	public function UpdateNotifications($user_notification_user_id,$msg,$type,$subject,$from,$sender,$reference_id,$processs){
 		$UserGroupNotificationData = array();						
@@ -2104,5 +2614,17 @@ class GroupsController extends AbstractActionController
 		$sm = $this->getServiceLocator();
 		return  $this->userTagTable = (!$this->userTagTable)?$sm->get('Tag\Model\UserTagTable'):$this->userTagTable;    
 	}
-	 
+	public function getActivityTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupActivityTable = (!$this->groupActivityTable)?$sm->get('Activity\Model\ActivityTable'):$this->groupActivityTable;    
+    }
+	public function getDiscussionTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->discussionTable = (!$this->discussionTable)?$sm->get('Discussion\Model\DiscussionTable'):$this->discussionTable;   
+    }
+	public function getActivityRsvpTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->activityRsvpTable = (!$this->activityRsvpTable)?$sm->get('Activity\Model\ActivityRsvpTable'):$this->activityRsvpTable;
+    }
+	
 }
