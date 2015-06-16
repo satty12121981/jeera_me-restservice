@@ -507,6 +507,10 @@ class GroupsController extends AbstractActionController
                                 $list['group_photo_photo'] = $config['pathInfo']['absolute_img_path'] . $config['image_folders']['group'] . $list['group_id'] . '/medium/' . $list['group_photo_photo'];
                             else
                                 $list['group_photo_photo'] = $config['pathInfo']['absolute_img_path'] . '/images/group-img_def.jpg';
+                            $is_owner = false;
+                            if ($list['user_group_is_owner']){
+                                $is_owner = true;
+                            }
 
                             $arr_group_list[] = array(
                                 'group_id' => $list['group_id'],
@@ -522,6 +526,7 @@ class GroupsController extends AbstractActionController
                                 'city' => $list['city'],
                                 'is_admin' => $list['is_admin'],
                                 'is_member' => $list['is_member'],
+                                'is_created_by_user' => $is_owner,
                                 'request_count' => $request_count,
                                 'is_requested' => $is_requested,
                                 'is_invited' => $is_invited,
@@ -557,7 +562,7 @@ class GroupsController extends AbstractActionController
 
 			if ((!isset($accToken)) || (trim($accToken) == '')) {
 				$dataArr[0]['flag'] = "Failure";
-				$dataArr[0]['message'] = "Request Not Autdhorised.";
+				$dataArr[0]['message'] = "Request Not Authorised.";
 				echo json_encode($dataArr);
 				exit;
 			}
@@ -635,27 +640,31 @@ class GroupsController extends AbstractActionController
 				foreach ($groupUsers as $list) {
 					unset($list['user_register_type']);
 					$list['profile_photo'] = $this->manipulateProfilePic($list['user_id'], $list['profile_photo'], $list['user_fbid']);
-
+                    $is_friend = ($this->getUserFriendTable()->isFriend($list['user_id'],$user_id))?1:0;
+                    $is_requested = ($this->getUserFriendTable()->isRequested($list['user_id'],$user_id))?1:0;
+                    $is_pending = ($this->getUserFriendTable()->isPending($list['user_id'],$user_id))?1:0;
 					$friend_status ="";
-					if($list['is_friend']){
-						$friend_status = 'IsFriend';
-					}
-					else if($list['is_requested']){
-						$friend_status = 'AccessUserRequested';
-					}
-					else if($list['get_request']){
-						$friend_status = 'GroupUserRequested';
-					}
-					else if ( $user_id == $list['user_id']){
-						$friend_status = '';
-					}else{
-						$friend_status = 'NoFriends';
-					}
+                    if ( $list['user_id'] != $user_id ){
+                        $is_friend = ($this->getUserFriendTable()->isFriend($list['user_id'],$user_id))?1:0;
+                        $is_requested = ($this->getUserFriendTable()->isRequested($list['user_id'],$user_id))?1:0;
+                        $is_pending = ($this->getUserFriendTable()->isPending($list['user_id'],$user_id))?1:0;
+                        if($is_friend){
+                            $friend_status = 'IsFriend';
+                        }
+                        else if($is_requested){
+                            $friend_status = 'RequestSent';
+                        }
+                        else if($is_pending){
+                            $friend_status = 'RequestPending';
+                        }
+                        else{
+                            $friend_status = 'NoFriends';
+                        }
+                    }
 					$list['friend_status']= $friend_status;
 					unset($list['is_friend']);
 					unset($list['is_requested']);
 					unset($list['get_request']);
-
 					$tempmembers[] = $list;
 				}
 				$flag = 1;
@@ -663,9 +672,28 @@ class GroupsController extends AbstractActionController
 
 			if(!empty($newsfeedsList)){
 				foreach($newsfeedsList as $list){
+                    $friendl_status =  "";
 					$profileDetails = $this->getUserTable()->getProfileDetails($list['user_id']);
 					$userprofiledetails = array();
                     $profile_details_photo = $this->manipulateProfilePic($profileDetails->user_id, $profileDetails->profile_photo, $profileDetails->user_fbid);
+                    if ( $list['user_id'] != $user_id ){
+                        $is_lfriend = ($this->getUserFriendTable()->isFriend($list['user_id'],$user_id))?1:0;
+                        $is_lrequested = ($this->getUserFriendTable()->isRequested($list['user_id'],$user_id))?1:0;
+                        $is_lpending = ($this->getUserFriendTable()->isPending($list['user_id'],$user_id))?1:0;
+                        if($is_lfriend){
+                            $friendl_status = 'IsFriend';
+                        }
+                        else if($is_lrequested){
+                            $friendl_status = 'RequestSent';
+                        }
+                        else if($is_lpending){
+                            $friendl_status = 'RequestPending';
+                        }
+                        else{
+                            $friendl_status = 'NoFriends';
+                        }
+                    }
+                    //$dataArr[0]['friendship_status'] = $friend_status;
 					$userprofiledetails[] = array('user_id'=>$profileDetails->user_id,
 								'user_given_name'=>$profileDetails->user_given_name,									 
 								'user_profile_name'=>$profileDetails->user_profile_name,
@@ -681,6 +709,7 @@ class GroupsController extends AbstractActionController
 								'city_name'=>$profileDetails->city_name,
 								'city_id'=>$profileDetails->city_id,
 								'profile_photo'=>$profile_details_photo,
+                                'friendship_status' => $friendl_status,
 								);
 					switch($list['type']){
 						case "New Activity":
@@ -914,10 +943,10 @@ class GroupsController extends AbstractActionController
 						$friend_status = 'IsFriend';
 					}
 					else if($is_requested){
-						$friend_status = 'AccessUserRequested';
+						$friend_status = 'RequestSent';
 					}
 					else if($isPending){
-						$friend_status = 'GroupUserRequested';
+						$friend_status = 'RequestPending';
 					}
 					else if ( $myinfo->user_id == $list['user_id']){
 						$friend_status = '';

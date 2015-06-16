@@ -101,14 +101,15 @@ return array(
     
     'controllers' => array(
         'invokables' => array(
-            'Service\Controller\Index' => 'Service\Controller\IndexController',
-            'Service\Controller\Groups' => 'Service\Controller\GroupsController',          
-            'Service\Controller\Tags' => 'Service\Controller\TagsController',
-            'Service\Controller\GroupPosts' => 'Service\Controller\GroupPostsController',
-            'Service\Controller\Activity' => 'Service\Controller\ActivityController',
-            'Service\Controller\Like' => 'Service\Controller\LikeController',
-            'Service\Controller\Comment' => 'Service\Controller\CommentController',
-            'Service\Controller\Notification' => 'Service\Controller\NotificationController',
+		'Service\Controller\Index' => 'Service\Controller\IndexController',
+		'Service\Controller\Groups' => 'Service\Controller\GroupsController', 
+		'Service\Controller\Tags' => 'Service\Controller\TagsController',
+		'Service\Controller\Friends' => 'Service\Controller\FriendsController',
+		'Service\Controller\GroupPosts' => 'Service\Controller\GroupPostsController',
+		'Service\Controller\Activity' => 'Service\Controller\ActivityController',
+		'Service\Controller\Like' => 'Service\Controller\LikeController',
+		'Service\Controller\Comment' => 'Service\Controller\CommentController',
+		'Service\Controller\Notification' => 'Service\Controller\NotificationController',
         ),
     ),   
     

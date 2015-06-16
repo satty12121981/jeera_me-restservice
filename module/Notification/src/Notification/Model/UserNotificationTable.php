@@ -276,7 +276,7 @@ class UserNotificationTable extends AbstractTableGateway
 
 		if($type=="Event"){
 
-			$select->where(array("(y2m_notification_type.notification_type_title='Activity')"));
+			$select->where(array("(y2m_notification_type.notification_type_title='Event')"));
 
 		}
 
@@ -302,7 +302,7 @@ class UserNotificationTable extends AbstractTableGateway
 
 	}
 
-	public function  getAllUserNotificationWithType($user_id,$type,$offset,$limit){  
+	public function getAllUserNotificationWithType($user_id,$type,$offset,$limit){
 
 		$select = new Select;
 
@@ -330,7 +330,7 @@ class UserNotificationTable extends AbstractTableGateway
 
 		if($type=="Events"){
 
-			$select->where(array("(y2m_notification_type.notification_type_title='Activity')"));
+			$select->where(array("(y2m_notification_type.notification_type_title='Event')"));
 
 		}
 
@@ -412,6 +412,112 @@ class UserNotificationTable extends AbstractTableGateway
 
 		return $resultSet->buffer();
 	}
-	
 
+    public function getUserNotificationWithTypeForAPI($user_id,$type,$process,$offset,$limit){
+        $select = new Select;
+        $select->from("y2m_user_notification")
+            ->columns(array("user_notification_id","user_notification_content","user_notification_added_timestamp","user_notification_sender_id","user_notification_reference_id","user_notification_status","user_notification_process"))
+            ->join("y2m_notification_type","y2m_notification_type.notification_type_id = y2m_user_notification.user_notification_notification_type_id",array("notification_type_title","notification_type_id"))
+            ->join('y2m_user','y2m_user.user_id = y2m_user_notification.user_notification_sender_id', array('user_given_name','user_id','user_profile_name','user_register_type','user_fbid'))
+            ->join('y2m_user_profile_photo','y2m_user.user_profile_photo_id = y2m_user_profile_photo.profile_photo_id',array('profile_photo'),'left')
+            ->where(array("user_notification_user_id"=>$user_id));
+        if($type=="user"){
+            if($process=="friendrequest"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '1' and y2m_notification_type.notification_type_title='Friend Request')"));
+            }
+            if($process=="friendrequestaccepted"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '2' and y2m_notification_type.notification_type_title='Friend Request Accept')"));
+            }
+            if($process=="friendrequestrejected"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '10' and y2m_notification_type.notification_type_title='Friend Request Reject')"));
+            }
+        }
+        if($type=="group"){
+            if($process=="groupinvite"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '3' and y2m_notification_type.notification_type_title='Group Invite')"));
+            }
+            if($process=="groupjoiningrequest"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '4' and y2m_notification_type.notification_type_title='Group joining Request')"));
+            }
+            if($process=="groupjoiningrequestaccepted"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '5' and y2m_notification_type.notification_type_title='Group Joining Request Accepted')"));
+            }
+            if($process=="groupjoiningrequestrejected"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '11' and y2m_notification_type.notification_type_title='Group Joining Request Rejected')"));
+            }
+            if($process=="groupadminpromoted"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '9' and y2m_notification_type.notification_type_title='Group Admin Promoted')"));
+            }
+        }
+        if($type=="status"){
+            if($process=="newstatus"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '6' and y2m_user_notification.user_notification_process = 'New Discussion')"));
+            }
+            if($process=="commentmade"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '6' and y2m_user_notification.user_notification_process = 'comment')"));
+                $select->where(array("(y2m_notification_type.notification_type_title='Event' and y2m_notification_type.notification_type_title='Event')"));
+            }
+            if($process=="mentionedincomment"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '6' and y2m_user_notification.user_notification_process = 'comment_hashed')"));
+            }
+            if($process=="liked"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '6' and y2m_user_notification.user_notification_process = 'like')"));
+            }
+            if($process=="commentliked"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '6' and y2m_user_notification.user_notification_process = 'comment like')"));
+            }
+        }
+        if($type=="event"){
+            if($process=="newevent"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '7' and y2m_user_notification.user_notification_process = 'New Event')"));
+            }
+            if($process=="commentmade"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '7' and y2m_user_notification.user_notification_process = 'comment')"));
+            }
+            if($process=="mentionedincomment"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '7' and y2m_user_notification.user_notification_process = 'comment_hashed')"));
+            }
+            if($process=="liked"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '7' and y2m_user_notification.user_notification_process = 'like')"));
+            }
+            if($process=="commentliked"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '7' and y2m_user_notification.user_notification_process = 'comment like')"));
+            }
+            if($process=="joinedevent"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '7' and y2m_user_notification.user_notification_process = 'Join Event')"));
+            }
+        }
+        if($type=="media"){
+            if($process=="newmedia"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '8' and y2m_user_notification.user_notification_process = 'New Media')"));
+            }
+            if($process=="commentmade"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '8' and y2m_user_notification.user_notification_process = 'comment')"));
+            }
+            if($process=="mentionedincomment"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '8' and y2m_user_notification.user_notification_process = 'comment_hashed')"));
+            }
+            if($process=="liked"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '8' and y2m_user_notification.user_notification_process = 'like')"));
+            }
+            if($process=="commentliked"){
+                $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '8' and y2m_user_notification.user_notification_process = 'comment like')"));
+            }
+        }
+        $select->order('user_notification_added_timestamp DESC');
+        if ($limit){
+            $select->limit($limit);
+            $select->offset($offset);
+        }
+        $statement = $this->adapter->createStatement();
+        $select->prepareStatement($this->adapter, $statement);
+        //echo $select->getSqlString();die();
+        $resultSet = new ResultSet();
+        $resultSet->initialize($statement->execute());
+        return $resultSet->buffer();
+    }
+
+    public function deleteSystemNotifications($type_id,$refer_id){
+        $this->delete(array('user_notification_notification_type_id' => $type_id,'user_notification_reference_id'=>$refer_id));
+    }
 }

@@ -22,17 +22,39 @@ class NotificationController extends AbstractActionController
 		$notification_list =array();
 		$request   = $this->getRequest();
 		if ($request->isPost()){
+            $post = $request->getPost();
             $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
             $error = (empty($accToken)) ? "Request Not Authorised." : $error;
             $this->checkError($error);
             $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
             $this->checkError($error);
-            $post = $request->getPost();
-            $error = (isset($post['type']) && $post['type'] != null && $post['type'] != '' && $post['type'] != 'undefined' && is_numeric($post['type'])) ? '' : 'please input a valid type';
+            $error = (isset($post['type']) && $post['type'] != null && $post['type'] != '' && $post['type'] != 'undefined') ? '' : 'please input a valid type';
             $this->checkError($error);
-            $type = $post['type'];
-            $objnotification_list = $this->getUserNotificationTable()->getUserNotificationWithSenderInformation($userinfo->user_id,$type,$offset,$limit);
+            $strType = $post['type'];
+            $error = (isset($post['process']) && $post['process'] != null && $post['process'] != '' && $post['process'] != 'undefined') ? '' :'please input a valid process' ;
+            $this->checkError($error);
+            $strProcess = $post['process'];
+            $offset = trim($post['nparam']);
+            $limit = trim($post['countparam']);
+            if (!empty($limit) && !is_numeric($limit)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a Valid Count Field.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if (!empty($offset) && !is_numeric($offset)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please input a Valid N Field.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $offset = (int)$offset;
+            $limit = (int)$limit;
+            $offset = ($offset > 0) ? $offset - 1 : 0;
+            $offset = $offset * $limit;
+            $objnotification_list = $this->getUserNotificationTable()->getUserNotificationWithTypeForAPI($userinfo->user_id,$strType,$strProcess,(int) $offset,(int) $limit);
+            //$objnotification_list = $this->getUserNotificationTable()->getUserNotificationWithSenderInformation($userinfo->user_id,$type,$offset,$limit);
             if(!empty($objnotification_list)){
                 foreach($objnotification_list as $list){
                     Switch($list->notification_type_title){
@@ -40,6 +62,7 @@ class NotificationController extends AbstractActionController
                             $is_friend = $this->getUserFriendTable()->isFriend($userinfo->user_id,$list->user_notification_sender_id);
                             $isRequested = $this->getUserFriendTable()->isRequested($userinfo->user_id,$list->user_notification_sender_id);
                             $notification_list[] = array(
+                                'user_notification_id'=>$list->user_notification_id,
                                 'user_notification_content'=>$list->user_notification_content,
                                 'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                 'user_notification_sender_id'=>$list->user_notification_sender_id,
@@ -57,6 +80,23 @@ class NotificationController extends AbstractActionController
                             break;
                         case "Friend Request Accept":
                             $notification_list[] = array(
+                                'user_notification_id'=>$list->user_notification_id,
+                                'user_notification_content'=>$list->user_notification_content,
+                                'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
+                                'user_notification_sender_id'=>$list->user_notification_sender_id,
+                                'user_notification_reference_id'=>$list->user_notification_reference_id,
+                                'user_notification_status'=>$list->user_notification_status,
+                                'notification_type_title' =>$list->notification_type_title,
+                                'sender_name' => $list->user_given_name,
+                                'sender_profile_name' => $list->user_profile_name,
+                                'sender_profile_photo' => $list->profile_photo,
+                                'sender_user_fbid' => $list->user_fbid,
+                                'user_notification_process' => $list->user_notification_process,
+                            );
+                            break;
+                        case "Friend Request Reject":
+                            $notification_list[] = array(
+                                'user_notification_id'=>$list->user_notification_id,
                                 'user_notification_content'=>$list->user_notification_content,
                                 'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                 'user_notification_sender_id'=>$list->user_notification_sender_id,
@@ -74,6 +114,7 @@ class NotificationController extends AbstractActionController
                             $group  = $this->getGroupTable()->getPlanetinfo($list->user_notification_reference_id);
                             if(!empty($group)){
                                 $notification_list[] = array(
+                                    'user_notification_id'=>$list->user_notification_id,
                                     'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
@@ -95,6 +136,7 @@ class NotificationController extends AbstractActionController
                             $group  = $this->getGroupTable()->getPlanetinfo($list->user_notification_reference_id);
                             if(!empty($group)){
                                 $notification_list[] = array(
+                                    'user_notification_id'=>$list->user_notification_id,
                                     'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
@@ -116,6 +158,29 @@ class NotificationController extends AbstractActionController
                             $group  = $this->getGroupTable()->getPlanetinfo($list->user_notification_reference_id);
                             if(!empty($group)){
                                 $notification_list[] = array(
+                                    'user_notification_id'=>$list->user_notification_id,
+                                    'user_notification_content'=>$list->user_notification_content,
+                                    'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
+                                    'user_notification_sender_id'=>$list->user_notification_sender_id,
+                                    'user_notification_reference_id'=>$list->user_notification_reference_id,
+                                    'user_notification_status'=>$list->user_notification_status,
+                                    'notification_type_title' =>$list->notification_type_title,
+                                    'sender_name' => $list->user_given_name,
+                                    'sender_profile_name' => $list->user_profile_name,
+                                    'sender_profile_photo' => $list->profile_photo,
+                                    'sender_user_fbid' => $list->user_fbid,
+                                    'user_notification_process' => $list->user_notification_process,
+                                    'group_id'	=> $group->group_id,
+                                    'group_title'	=> $group->group_title,
+                                    'group_seo_title'	=> $group->group_seo_title,
+                                );
+                            }
+                            break;
+                        case "Group Joining Request Rejected":
+                            $group  = $this->getGroupTable()->getPlanetinfo($list->user_notification_reference_id);
+                            if(!empty($group)){
+                                $notification_list[] = array(
+                                    'user_notification_id'=>$list->user_notification_id,
                                     'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
@@ -138,6 +203,7 @@ class NotificationController extends AbstractActionController
                             if(!empty($discussion)){
                                 $group  = $this->getGroupTable()->getPlanetinfo($discussion->group_discussion_group_id);
                                 $notification_list[] = array(
+                                    'user_notification_id'=>$list->user_notification_id,
                                     'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
@@ -160,6 +226,7 @@ class NotificationController extends AbstractActionController
                             if(!empty($activity)){
                                 $group  = $this->getGroupTable()->getPlanetinfo($activity->group_activity_group_id);
                                 $notification_list[] = array(
+                                    'user_notification_id'=>$list->user_notification_id,
                                     'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
@@ -182,6 +249,7 @@ class NotificationController extends AbstractActionController
                             if(!empty($media)){
                                 $group  = $this->getGroupTable()->getPlanetinfo($media->media_added_group_id);
                                 $notification_list[] = array(
+                                    'user_notification_id'=>$list->user_notification_id,
                                     'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
@@ -206,6 +274,7 @@ class NotificationController extends AbstractActionController
                             $group  = $this->getGroupTable()->getPlanetinfo($list->user_notification_reference_id);
                             if(!empty($group)){
                                 $notification_list[] = array(
+                                    'user_notification_id'=>$list->user_notification_id,
                                     'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
@@ -227,7 +296,7 @@ class NotificationController extends AbstractActionController
                 }
             }
         }
-        $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
+        $dataArr[0]['flag'] = (empty($error))?"Success":"Failure";
         $dataArr[0]['message'] = $error;
         $dataArr[0]['notification_list'] = $notification_list;
         echo json_encode($dataArr);
@@ -268,12 +337,17 @@ class NotificationController extends AbstractActionController
             $this->checkError($error);
             $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
-            $this->checkError($error);
+            if ($error) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = $error;
+                echo json_encode($dataArr);
+                exit;
+            }
             if ($userinfo->user_id) {
                 $notification_list = $this->getUserNotificationTable()->getAllUnreadNotification($userinfo->user_id);
             }
         }
-        $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
+        $dataArr[0]['flag'] = (empty($error))?"Success":"Failure";
         $dataArr[0]['message'] = $error;
         $dataArr[0]['notification_count'] = $notification_count;
         echo json_encode($dataArr);
@@ -302,11 +376,21 @@ class NotificationController extends AbstractActionController
         exit;
 	}
     public function ApplePushNotifyAction(){
-
         $pushNotifications = new PushNotifications();
         $config = $this->getServiceLocator()->get('Config');
         $pushNotifications->ApplePushMessage($config);
-        //$pushNotifications->applepushtest($config);
+    }
+    public function GoogleCloudNotifyAction(){
+        $GoogleCloudMsgs = new PushNotifications();
+        $GoogleCloudMsgs->GoogleCloudMessage();
+    }
+    public function checkError($error){
+        if (!empty($error)){
+            $dataArr[0]['flag'] = "Failure";
+            $dataArr[0]['message'] = $error;
+            echo json_encode($dataArr);
+            exit;
+        }
     }
 	public function getActivityTable(){
 		 if (!$this->activityTable) {

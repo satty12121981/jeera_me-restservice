@@ -12,8 +12,12 @@ class IndexController extends AbstractActionController
 	protected $groupTagTable;
 	protected $userTable;
 	protected $userNotificationTable;
-	public function indexAction()
-    {
+	protected $discussionTable;
+	protected $groupActivityTable;
+	protected $groupMediaTable;
+	protected $userFriendTable;
+	public function indexAction(){
+
 		$auth = new AuthenticationService();
 		if ($auth->hasIdentity()) {
 			$identity = $auth->getIdentity();
@@ -153,7 +157,9 @@ class IndexController extends AbstractActionController
 			if ($request->isPost()){
 				$notification_count = $this->getUserNotificationTable()->getUserNotificationCountForUserUnread($identity->user_id);
 			}else{$error = "Unable to process";}	
-		}else{$error = "Your session has to be expired";}
+
+		}else{$error = "Your session expired, please log in again to continue";}
+
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error; 
@@ -171,30 +177,207 @@ class IndexController extends AbstractActionController
 			$identity = $auth->getIdentity();			  
 			$request   = $this->getRequest();			
 			if ($request->isPost()){
-				$objnotification_list = $this->getUserNotificationTable()->getAllUserNotificationWithAllStatus($identity->user_id,0,5);
+				$objnotification_list = $this->getUserNotificationTable()->getUserNotificationWithSenderInformation($identity->user_id,'',0,5);
 				if(!empty($objnotification_list)){
-				foreach($objnotification_list as $list){
-					$sender_info = $this->getUserTable()->getProfileDetails($list->user_notification_sender_id);
-					$reference_info = array();
-					if($list->notification_type_title=='Group'||$list->notification_type_title=='Activity'||$list->notification_type_title=='Discussion'||$list->notification_type_title=='Photo'||$list->notification_type_title=='Video'){
-						$reference_info =$this->getGroupTable()->getGroupDetails($list->user_notification_reference_id,$identity->user_id);
-					}
-					$notification_list[] = array(
+					foreach($objnotification_list as $list){
+						Switch($list->notification_type_title){
+							case "Friend Request":
+								$is_friend = $this->getUserFriendTable()->isFriend($identity->user_id,$list->user_notification_sender_id);
+								$isRequested = $this->getUserFriendTable()->isRequested($identity->user_id,$list->user_notification_sender_id);
+								$notification_list[] = array(
 								'user_notification_content'=>$list->user_notification_content,
 								'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
 								'user_notification_sender_id'=>$list->user_notification_sender_id,
 								'user_notification_reference_id'=>$list->user_notification_reference_id,
 								'user_notification_status'=>$list->user_notification_status,
 								'notification_type_title' =>$list->notification_type_title,
-								'sender_name' => $sender_info->user_given_name,
-								'sender_profile_name' => $sender_info->user_profile_name,
-								'sender_profile_photo' => $sender_info->profile_photo,
-								'reference_info' =>$reference_info
+								'sender_name' => $list->user_given_name,
+								'sender_profile_name' => $list->user_profile_name,
+								'sender_profile_photo' => $list->profile_photo,
+								'sender_user_fbid' => $list->user_fbid,	
+								'user_notification_process' => $list->user_notification_process,
+								'is_friend' =>$is_friend,
+								'isRequested' => $isRequested,
 									);
-				}
+							break;
+							case "Friend Request Accept":
+								$notification_list[] = array(
+								'user_notification_content'=>$list->user_notification_content,
+								'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
+								'user_notification_sender_id'=>$list->user_notification_sender_id,
+								'user_notification_reference_id'=>$list->user_notification_reference_id,
+								'user_notification_status'=>$list->user_notification_status,
+								'notification_type_title' =>$list->notification_type_title,
+								'sender_name' => $list->user_given_name,
+								'sender_profile_name' => $list->user_profile_name,
+								'sender_profile_photo' => $list->profile_photo,
+								'sender_user_fbid' => $list->user_fbid,	
+								'user_notification_process' => $list->user_notification_process,									
+									);
+							break;
+							case "Group Invite":
+								$group  = $this->getGroupTable()->getPlanetinfo($list->user_notification_reference_id);
+								if(!empty($group)){
+									$notification_list[] = array(
+									'user_notification_content'=>$list->user_notification_content,
+									'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
+									'user_notification_sender_id'=>$list->user_notification_sender_id,
+									'user_notification_reference_id'=>$list->user_notification_reference_id,
+									'user_notification_status'=>$list->user_notification_status,
+									'notification_type_title' =>$list->notification_type_title,
+									'sender_name' => $list->user_given_name,
+									'sender_profile_name' => $list->user_profile_name,
+									'sender_profile_photo' => $list->profile_photo,
+									'sender_user_fbid' => $list->user_fbid,	
+									'user_notification_process' => $list->user_notification_process,
+									'group_id'	=> $group->group_id,
+									'group_title'	=> $group->group_title,
+									'group_seo_title'	=> $group->group_seo_title,
+										);
+								}
+							break;
+							case "Group joining Request":								
+								$group  = $this->getGroupTable()->getPlanetinfo($list->user_notification_reference_id);
+								if(!empty($group)){
+									$notification_list[] = array(
+									'user_notification_content'=>$list->user_notification_content,
+									'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
+									'user_notification_sender_id'=>$list->user_notification_sender_id,
+									'user_notification_reference_id'=>$list->user_notification_reference_id,
+									'user_notification_status'=>$list->user_notification_status,
+									'notification_type_title' =>$list->notification_type_title,
+									'sender_name' => $list->user_given_name,
+									'sender_profile_name' => $list->user_profile_name,
+									'sender_profile_photo' => $list->profile_photo,
+									'sender_user_fbid' => $list->user_fbid,	
+									'user_notification_process' => $list->user_notification_process,
+									'group_id'	=> $group->group_id,
+									'group_title'	=> $group->group_title,
+									'group_seo_title'	=> $group->group_seo_title,
+										);
+								}
+							break;
+							case "Group Joining Request Accepted":
+								$group  = $this->getGroupTable()->getPlanetinfo($list->user_notification_reference_id);
+								if(!empty($group)){
+									$notification_list[] = array(
+									'user_notification_content'=>$list->user_notification_content,
+									'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
+									'user_notification_sender_id'=>$list->user_notification_sender_id,
+									'user_notification_reference_id'=>$list->user_notification_reference_id,
+									'user_notification_status'=>$list->user_notification_status,
+									'notification_type_title' =>$list->notification_type_title,
+									'sender_name' => $list->user_given_name,
+									'sender_profile_name' => $list->user_profile_name,
+									'sender_profile_photo' => $list->profile_photo,
+									'sender_user_fbid' => $list->user_fbid,	
+									'user_notification_process' => $list->user_notification_process,
+									'group_id'	=> $group->group_id,
+									'group_title'	=> $group->group_title,
+									'group_seo_title'	=> $group->group_seo_title,
+										);
+								}
+							break;
+							
+							
+							case "Discussion":
+								$discussion = $this->getDiscussionTable()->getDiscussion($list->user_notification_reference_id);
+								if(!empty($discussion)){
+									$group  = $this->getGroupTable()->getPlanetinfo($discussion->group_discussion_group_id);
+									$notification_list[] = array(
+									'user_notification_content'=>$list->user_notification_content,
+									'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
+									'user_notification_sender_id'=>$list->user_notification_sender_id,
+									'user_notification_reference_id'=>$list->user_notification_reference_id,
+									'user_notification_status'=>$list->user_notification_status,
+									'notification_type_title' =>$list->notification_type_title,
+									'sender_name' => $list->user_given_name,
+									'sender_profile_name' => $list->user_profile_name,
+									'sender_profile_photo' => $list->profile_photo,
+									'sender_user_fbid' => $list->user_fbid,	
+									'user_notification_process' => $list->user_notification_process,
+									'group_id'	=> $group->group_id,
+									'group_title'	=> $group->group_title,
+									'group_seo_title'	=> $group->group_seo_title,
+										);
+								}
+							break;
+							case "Event":
+								$activity = $this->getActivityTable()->getActivity($list->user_notification_reference_id);
+								if(!empty($activity)){
+									$group  = $this->getGroupTable()->getPlanetinfo($activity->group_activity_group_id);
+									$notification_list[] = array(
+									'user_notification_content'=>$list->user_notification_content,
+									'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
+									'user_notification_sender_id'=>$list->user_notification_sender_id,
+									'user_notification_reference_id'=>$list->user_notification_reference_id,
+									'user_notification_status'=>$list->user_notification_status,
+									'notification_type_title' =>$list->notification_type_title,
+									'sender_name' => $list->user_given_name,
+									'sender_profile_name' => $list->user_profile_name,
+									'sender_profile_photo' => $list->profile_photo,
+									'sender_user_fbid' => $list->user_fbid,	
+									'user_notification_process' => $list->user_notification_process,
+									'group_id'	=> $group->group_id,
+									'group_title'	=> $group->group_title,
+									'group_seo_title'	=> $group->group_seo_title,
+										);
+								}
+							break;
+							case "Media":
+								$media = $this->getGroupMediaTable()->getMedia($list->user_notification_reference_id);
+								if(!empty($media)){
+									$group  = $this->getGroupTable()->getPlanetinfo($media->media_added_group_id);
+									$notification_list[] = array(
+									'user_notification_content'=>$list->user_notification_content,
+									'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
+									'user_notification_sender_id'=>$list->user_notification_sender_id,
+									'user_notification_reference_id'=>$list->user_notification_reference_id,
+									'user_notification_status'=>$list->user_notification_status,
+									'notification_type_title' =>$list->notification_type_title,
+									'sender_name' => $list->user_given_name,
+									'sender_profile_name' => $list->user_profile_name,
+									'sender_profile_photo' => $list->profile_photo,
+									'sender_user_fbid' => $list->user_fbid,	
+									'user_notification_process' => $list->user_notification_process,
+									'group_id'	=> $group->group_id,
+									'group_title'	=> $group->group_title,
+									'group_seo_title'	=> $group->group_seo_title,
+									'media_type'	=> $media->media_type,
+									'media_content' => $media->media_content,
+									'media_caption' => $media->media_caption,
+								    );
+								}
+							break;
+							case "Group Admin Promoted":
+								$group  = $this->getGroupTable()->getPlanetinfo($list->user_notification_reference_id);
+								if(!empty($group)){
+									$notification_list[] = array(
+									'user_notification_content'=>$list->user_notification_content,
+									'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
+									'user_notification_sender_id'=>$list->user_notification_sender_id,
+									'user_notification_reference_id'=>$list->user_notification_reference_id,
+									'user_notification_status'=>$list->user_notification_status,
+									'notification_type_title' =>$list->notification_type_title,
+									'sender_name' => $list->user_given_name,
+									'sender_profile_name' => $list->user_profile_name,
+									'sender_profile_photo' => $list->profile_photo,
+									'sender_user_fbid' => $list->user_fbid,	
+									'user_notification_process' => $list->user_notification_process,
+									'group_id'	=> $group->group_id,
+									'group_title'	=> $group->group_title,
+									'group_seo_title'	=> $group->group_seo_title,
+										);
+								}
+							break;
+						}			 
+
+					}
 				}
 			}else{$error = "Unable to process";}	
-		}else{$error = "Your session has to be expired";}
+
+		}else{$error = "Your session expired, please log in again to continue";}
+
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error; 
@@ -213,7 +396,9 @@ class IndexController extends AbstractActionController
 			if ($request->isPost()){
 				$this->getUserNotificationTable()->makeNotificationsReaded($identity->user_id);
 			}else{$error = "Unable to process";}	
-		}else{$error = "Your session has to be expired";}
+
+		}else{$error = "Your session expired, please log in again to continue";}
+
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error; 		 	
@@ -222,8 +407,20 @@ class IndexController extends AbstractActionController
 		));		
 		return $result;	
 	}
-	 
-	public function timeAgo($time_ago){
+
+	 public function nopageAction(){
+		$auth = new AuthenticationService();
+
+		if ($auth->hasIdentity()) {
+			$identity = $auth->getIdentity();		 
+			$this->layout()->identity = $identity; 
+			$this->layout('layout/layout_user');
+		} 
+		$viewmodel = new ViewModel();
+		return $viewmodel;
+	 }
+
+	public function timeAgo($time_ago){ //echo $time_ago;die();
 		$time_ago = strtotime($time_ago);
 		$cur_time   = time();
 		$time_elapsed   = $cur_time - $time_ago;
@@ -236,55 +433,55 @@ class IndexController extends AbstractActionController
 		$years      = round($time_elapsed / 31207680 );
 		// Seconds
 		if($seconds <= 60){
-			return "just now";
+			return "0m";
 		}
 		//Minutes
 		else if($minutes <=60){
 			if($minutes==1){
-				return "one minute ago";
+				return "1m";
 			}
 			else{
-				return "$minutes minutes ago";
+				return $minutes."m";
 			}
 		}
 		//Hours
 		else if($hours <=24){
 			if($hours==1){
-				return "an hour ago";
+				return "1h";
 			}else{
-				return "$hours hrs ago";
+				return $hours."h";
 			}
 		}
 		//Days
 		else if($days <= 7){
 			if($days==1){
-				return "yesterday";
+				return "1d";
 			}else{
-				return "$days days ago";
+				return $days."d";
 			}
 		}
 		//Weeks
 		else if($weeks <= 4.3){
 			if($weeks==1){
-				return "a week ago";
+				return "1w";
 			}else{
-				return "$weeks weeks ago";
+				return $weeks."w";
 			}
 		}
 		//Months
 		else if($months <=12){
 			if($months==1){
-				return "a month ago";
+				return "1mo";
 			}else{
-				return "$months months ago";
+				return $months."mo";
 			}
 		}
 		//Years
 		else{
 			if($years==1){
-				return "one year ago";
+				return "1yr";
 			}else{
-				return "$years years ago";
+				return $years."yr";
 			}
 		}
 	}
@@ -308,4 +505,20 @@ class IndexController extends AbstractActionController
 		$sm = $this->getServiceLocator();
 		return  $this->userNotificationTable = (!$this->userNotificationTable)?$sm->get('Notification\Model\UserNotificationTable'):$this->userNotificationTable;    
     }
+	public function getDiscussionTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->discussionTable = (!$this->discussionTable)?$sm->get('Discussion\Model\DiscussionTable'):$this->discussionTable;    
+    }
+	public function getActivityTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupActivityTable = (!$this->groupActivityTable)?$sm->get('Activity\Model\ActivityTable'):$this->groupActivityTable;    
+    }
+	public function getGroupMediaTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupMediaTable = (!$this->groupMediaTable)?$sm->get('Groups\Model\GroupMediaTable'):$this->groupMediaTable;    
+    }
+	public function getUserFriendTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->userFriendTable = (!$this->userFriendTable)?$sm->get('User\Model\UserFriendTable'):$this->userFriendTable;    
+	}
 }

@@ -9,13 +9,19 @@ use ZendService\Apple\Apns\Message\Alert;
 use ZendService\Apple\Apns\Response\Message as Response;
 use ZendService\Apple\Apns\Exception\RuntimeException;
 
+use ZendService\Apple\Apns\Client\Feedback as FeedClient;
+use ZendService\Apple\Apns\Response\Feedback as FeedResponse;
+
+use ZendService\Google\Gcm\Client as GcmClient;
+use ZendService\Google\Gcm\Message as GcmMessage;
+use ZendService\Google\Exception\RuntimeException as GcmException;
+
 class PushNotifications extends AbstractPlugin
 {
 	public function ApplePushMessage($config){
 
 		$client = new Client();
-        //echo $config['pathInfo']['ROOTPATH'].'/public/applepushnotifications/jeera.pem';
-		$client->open(Client::SANDBOX_URI, $config['pathInfo']['ROOTPATH'].'/public/applepushnotifications/jeera.pem', '');
+		$client->open(Client::SANDBOX_URI, $config['pathInfo']['ROOTPATH'].'/public/applepushnotifications/jeera-apns.pem', 'Jeera2015');
 		
 		$message = new Message();
 		$message->setId('satty1212');
@@ -25,6 +31,7 @@ class PushNotifications extends AbstractPlugin
 
 		// simple alert:
 		$message->setAlert('Sathish likes to send text');
+
 		// complex alert:
 		/*
 		$alert = new Alert();
@@ -76,7 +83,67 @@ class PushNotifications extends AbstractPlugin
 		     }
 		}
 
+        $feedclient = new FeedClient();
+        $feedclient->open(FeedClient::SANDBOX_URI, $config['pathInfo']['ROOTPATH'].'/public/applepushnotifications/jeera-apns.pem', 'Jeera2015');
+
+        $feedresponses = $feedclient->feedback();
+        $feedclient->close();
+
+        foreach ($feedresponses as $response) {
+            echo "Response time: ".$response->getTime() . 'Token : ' . $response->getToken();
+        }
+        exit;
+
 	}
 
+    public function GoogleCloudMessage(){
+
+        $client = new GcmClient();
+        $client->setApiKey('AIzaSyBduIyNVvpnc4xtUJdEs6EeqYQHei0h58k');
+
+        $c = new \Zend\Http\Client(null, array(
+            'adapter' => 'Zend\Http\Client\Adapter\Socket',
+            'sslverifypeer' => false,
+        ));
+        $client->setHttpClient($c);
+
+        $message = new GcmMessage();
+
+        // up to 100 registration ids can be sent to at once
+        $message->setRegistrationIds(array(
+            '684802883399',
+        ));
+
+        // optional fields
+        $message->setData(array(
+            'pull-request' => '1',
+
+        ));
+        $message->setCollapseKey('pull-request');
+        $message->setRestrictedPackageName('com.zf.manual');
+        $message->setDelayWhileIdle(false);
+        $message->setTimeToLive(600);
+        $message->setDryRun(false);
+        $message->setData([
+            'title' => 'Sample Push Notification',
+            'message' => 'This is a test push notification using Google Cloud Messaging'
+        ]);
+        echo "<pre>";
+        print_r($message);
+        echo "</pre>";
+        try {
+            $response = $client->send($message);
+            echo "<pre>";
+            print_r($response->getResults());
+            echo "</pre>";
+        } catch (RuntimeException $e) {
+            echo $e->getMessage() . PHP_EOL;
+            exit(1);
+        }
+        echo 'Successful: ' . $response->getSuccessCount() . PHP_EOL;
+        echo 'Failures: ' . $response->getFailureCount() . PHP_EOL;
+        echo 'Canonicals: ' . $response->getCanonicalCount() . PHP_EOL;
+        exit;
+    }
 
 }

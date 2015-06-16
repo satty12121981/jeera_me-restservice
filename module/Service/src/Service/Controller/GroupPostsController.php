@@ -31,7 +31,7 @@ class GroupPostsController extends AbstractActionController
 	protected $commentTable;
 	protected $activityRsvpTable;
     protected $userNotificationTable;
-    protected  $groupActivityInviteTable;
+    protected $groupActivityInviteTable;
 
 	public function __construct(){
         $this->flagSuccess = "Success";
@@ -84,8 +84,26 @@ class GroupPostsController extends AbstractActionController
             $feeds_list = $this->getGroupTable()->getNewsFeedsAPI($userinfo->user_id,$type,$group_id,$activity,(int) $limit, (int) $offset);
             foreach($feeds_list as $list){
                 $is_admin = 0;
+                $friendl_status = "";
                 if($this->getUserGroupTable()->checkOwner($list['group_id'],$list['user_id'])){
                     $is_admin = 1;
+                }
+                if ( $list['user_id'] != $userinfo->user_id ){
+                    $is_lfriend = ($this->getUserFriendTable()->isFriend($list['user_id'],$userinfo->user_id))?1:0;
+                    $is_lrequested = ($this->getUserFriendTable()->isRequested($list['user_id'],$userinfo->user_id))?1:0;
+                    $is_lpending = ($this->getUserFriendTable()->isPending($list['user_id'],$userinfo->user_id))?1:0;
+                    if($is_lfriend){
+                        $friendl_status = 'IsFriend';
+                    }
+                    else if($is_lrequested){
+                        $friendl_status = 'RequestSent';
+                    }
+                    else if($is_lpending){
+                        $friendl_status = 'RequestPending';
+                    }
+                    else{
+                        $friendl_status = 'NoFriends';
+                    }
                 }
                 $profileDetails = $this->getUserTable()->getProfileDetails($list['user_id']);
                 $userprofiledetails = array();
@@ -105,6 +123,7 @@ class GroupPostsController extends AbstractActionController
                     'city_name'=>$profileDetails->city_name,
                     'city_id'=>$profileDetails->city_id,
                     'profile_photo'=>$profile_details_photo,
+                    'friendship_status' => $friendl_status,
                 );
                 switch($list['type']){
                     case "New Activity":
@@ -540,7 +559,7 @@ class GroupPostsController extends AbstractActionController
             }
         }
     }
-    public function  get_youtube_id_from_url($url){
+    public function get_youtube_id_from_url($url){
         if (stristr($url,'youtu.be/'))
         {preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return isset($final_ID[4])?$final_ID[4]:''; }
         else
@@ -603,7 +622,11 @@ class GroupPostsController extends AbstractActionController
 		$sm = $this->getServiceLocator();
 		return  $this->userTable = (!$this->userTable)?$sm->get('User\Model\UserTable'):$this->userTable;    
 	}
-	public function getGroupTable(){
+    public function getUserFriendTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->userFriendTable = (!$this->userFriendTable)?$sm->get('User\Model\UserFriendTable'):$this->userFriendTable;
+    }
+    public function getGroupTable(){
 		$sm = $this->getServiceLocator();
 		return  $this->groupTable = (!$this->groupTable)?$sm->get('Groups\Model\GroupsTable'):$this->groupTable;    
 	}

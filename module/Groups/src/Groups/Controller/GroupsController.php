@@ -734,7 +734,7 @@ class GroupsController extends AbstractActionController
 		));		
 		return $result;
 	}
-	 public function grouplistAction(){
+	public function grouplistAction(){
         $error = '';
 		$auth = new AuthenticationService();	
 		$arr_group_list = '';
@@ -2500,7 +2500,7 @@ class GroupsController extends AbstractActionController
 		));		
 		return $result;
 	}
-	public function  get_youtube_id_from_url($url){
+	public function get_youtube_id_from_url($url){
 		if (stristr($url,'youtu.be/'))
 			{preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return isset($final_ID[4])?$final_ID[4]:''; }
 		else 
