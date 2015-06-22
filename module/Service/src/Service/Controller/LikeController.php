@@ -34,6 +34,8 @@ class LikeController extends AbstractActionController
 	protected $activityRsvpTable;	
 	protected $userNotificationTable;
 	protected $groupMediaTable;
+    protected $userFriendTable;
+    protected $userTagTable;
 	public function __construct(){
         $this->flagSuccess = "Success";
         $this->flagFailure = "Failure";
@@ -69,7 +71,7 @@ class LikeController extends AbstractActionController
                         $discussion_data = $this->getDiscussionTable()->getDiscussion($refer_id);
                         if(!empty($discussion_data)){
                             $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($discussion_data->group_discussion_group_id,$userinfo->user_id);
-                            $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group post to like.":$error;
+                            $error =(empty($userPermissionOnGroup))?"User is not a member of the groups to like the post.":$error;
                             $this->checkError($error);
                             if($this->addLike($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id)){
                                 $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
@@ -92,7 +94,7 @@ class LikeController extends AbstractActionController
                         $media_data = $this->getGroupMediaTable()->getMedia($refer_id);
                         if(!empty($media_data)){
                             $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($media_data->media_added_group_id,$userinfo->user_id);
-                            $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group post to like.":$error;
+                            $error =(empty($userPermissionOnGroup))?"User is not a member of the groups to like the post.":$error;
                             $this->checkError($error);
                             if($this->addLike($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id)){
                                 $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
@@ -115,7 +117,7 @@ class LikeController extends AbstractActionController
                         $activity_data = $this->getActivityTable()->getActivity($refer_id);
                         if(!empty($activity_data)){
                             $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($activity_data->group_activity_group_id,$userinfo->user_id);
-                            $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group post to like.":$error;
+                            $error =(empty($userPermissionOnGroup))?"User is not a member of the groups to like the post.":$error;
                             $this->checkError($error);
                             if($this->addLike($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id)){
                                 $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
@@ -138,8 +140,6 @@ class LikeController extends AbstractActionController
                         $comment_data = $this->getCommentTable()->getComment($refer_id);
                         if(!empty($comment_data)){
                             $groupInfoComment = $this->getCommentTable()->getGroupInfoByComment($comment_data->comment_system_type_id,$refer_id);
-                            print_r($groupInfoComment);
-                            exit;
                             if($comment_data->comment_system_type_id == 1){
                                 $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($groupInfoComment->group_activity_group_id,$userinfo->user_id);
                             }
@@ -149,8 +149,7 @@ class LikeController extends AbstractActionController
                             else if($comment_data->comment_system_type_id == 4){
                                 $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($groupInfoComment->media_added_group_id,$userinfo->user_id);
                             }
-
-                            $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group post to like.":$error;
+                            $error =(empty($userPermissionOnGroup))?"User is not a member of the groups to like the post.":$error;
                             $this->checkError($error);
                             if($this->addLike($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id)){
                                 $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
@@ -387,14 +386,49 @@ class LikeController extends AbstractActionController
         if (!empty($liked_users)) {
             foreach ($liked_users as $f_list) {
                 $profile_photo = $this->manipulateProfilePic($f_list['user_id'], $f_list['profile_photo'], $f_list['user_fbid']);
+
+                $tag_category = $this->getUserTagTable()->getAllUserTagCategiry($f_list['user_id']);
+                $tags = $this->getUserTagTable()->getAllUserTagsForAPI($f_list['user_id']);
+                if(!empty($tags)){
+                    $tags = $this->formatTagsWithCategory($tags,"|");
+                }
+                $objcreated_group_count = $this->getUserGroupTable()->getCreatedGroupCount($f_list['user_id']);
+                if(!empty($objcreated_group_count)){
+                    $created_group_count = $objcreated_group_count->created_group_count;
+                }else{$created_group_count =0;}
+                $is_friend = ($this->getUserFriendTable()->isFriend($f_list['user_id'],$userinfo->user_id))?1:0;
+                $is_requested = ($this->getUserFriendTable()->isRequested($f_list['user_id'],$userinfo->user_id))?1:0;
+                $isPending = ($this->getUserFriendTable()->isPending($f_list['user_id'],$userinfo->user_id))?1:0;
+
+                $friend_status ="";
+                if($is_friend){
+                    $friend_status = 'Friends';
+                }
+                else if($is_requested){
+                    $friend_status = 'RequestSent';
+                }
+                else if($isPending){
+                    $friend_status = 'RequestPending';
+                }
+                else if ($userinfo->user_id == $f_list['user_id']){
+                    $friend_status = '';
+                }else{
+                    $friend_status = 'NoFriends';
+                }
+
                 $arrLikeMembers[] = array(
                     'user_id'=>$f_list['user_id'],
                     'user_fbid'=>$f_list['user_fbid'],
                     'user_given_name'=>$f_list['user_given_name'],
                     'user_profile_name'=>$f_list['user_profile_name'],
+                    'country_title'=>$f_list['country_title'],
+                    'country_code'=>$f_list['country_code'],
+                    'city'=>$f_list['city'],
                     'profile_photo'=>$profile_photo,
+                    'tag_categories_count' =>count($tag_category),
+                    'tags' =>$tags,
+                    'friendship_status'=>$friend_status,
                 );
-
             }
         } else $error = "No Likes exists for the content";
         $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
@@ -436,6 +470,40 @@ class LikeController extends AbstractActionController
 		//$this->sendNotificationMail($msg,$subject,$userData->user_email,$from);
 
 	}
+    public function formatTagsWithCategory($taglistdata,$char){
+        $config = $this->getServiceLocator()->get('Config');
+        $loadtagslist = array();
+        if (!empty($taglistdata)){
+            $objarr_tags = array();
+
+            foreach($taglistdata as $index => $tagslist){
+                $temptags = explode(",", $tagslist['tag_title']);
+                $arr_tags[0] = array();
+                foreach($temptags as $indexes => $splitlist){
+                    $arr_tags = array();
+                    $arr_tags = explode($char, $splitlist);
+                    $objarr_tags[] = array('tag_id'=>$arr_tags[0],'tag_title'=>$arr_tags[1]);
+                }
+
+                if (!empty($tagslist['tag_category_icon']))
+                    $tagslist['tag_category_icon'] = $config['pathInfo']['absolute_img_path'].$config['image_folders']['tag_category'].$tagslist['tag_category_icon'];
+                else
+                    $tagslist['tag_category_icon'] = $config['pathInfo']['absolute_img_path'].'/images/category-icon.png';
+
+                $loadtagslist[] = array(
+                    'tag_category_id' =>$tagslist['category_id'],
+                    'tag_category_title' =>$tagslist['tag_category_title'],
+                    'tag_category_icon' =>$tagslist['tag_category_icon'],
+                    'tag_category_desc' =>$tagslist['tag_category_desc'],
+                    'tagslist' =>$objarr_tags,
+                );
+
+                unset($objarr_tags);
+            }
+            return $loadtagslist;
+        }
+        return;
+    }
 	public function sendNotificationMail($msg,$subject,$emailId,$from){
 		$this->renderer = $this->getServiceLocator()->get('ViewRenderer');		
 		$body = $this->renderer->render('user/email/emailInvitation.phtml', array('msg'=>$msg));
@@ -479,19 +547,19 @@ class LikeController extends AbstractActionController
     }
 	public function getActivityTable(){
 		$sm = $this->getServiceLocator();
-		return  $this->activityTable = (!$this->activityTable)?$sm->get('Activity\Model\ActivityTable'):$this->activityTable;    
+		return $this->activityTable = (!$this->activityTable)?$sm->get('Activity\Model\ActivityTable'):$this->activityTable;
     }
 	public function getGroupTable(){
         $sm = $this->getServiceLocator();
-		return  $this->groupTable = (!$this->groupTable)?$sm->get('Groups\Model\GroupsTable'):$this->groupTable;    
+		return $this->groupTable = (!$this->groupTable)?$sm->get('Groups\Model\GroupsTable'):$this->groupTable;
     }
 	public function getUserGroupTable(){
 		$sm = $this->getServiceLocator();
-		return  $this->userGroupTable = (!$this->userGroupTable)?$sm->get('Groups\Model\UserGroupTable'):$this->userGroupTable;    
+		return $this->userGroupTable = (!$this->userGroupTable)?$sm->get('Groups\Model\UserGroupTable'):$this->userGroupTable;
     }
 	public function getDiscussionTable(){
 		$sm = $this->getServiceLocator();
-		return  $this->discussionTable = (!$this->discussionTable)?$sm->get('Discussion\Model\DiscussionTable'):$this->discussionTable;    
+		return $this->discussionTable = (!$this->discussionTable)?$sm->get('Discussion\Model\DiscussionTable'):$this->discussionTable;
     }
 	public function getGroupMediaTable(){
 		$sm = $this->getServiceLocator();
@@ -504,9 +572,17 @@ class LikeController extends AbstractActionController
         }
         return $this->userNotificationTable;
     }
-	public function getLikeTable(){
+    public function getUserTagTable(){
+        $sm = $this->getServiceLocator();
+        return $this->userTagTable = (!$this->userTagTable)?$sm->get('Tag\Model\UserTagTable'):$this->userTagTable;
+    }
+    public function getUserFriendTable(){
+        $sm = $this->getServiceLocator();
+        return $this->userFriendTable = (!$this->userFriendTable)?$sm->get('User\Model\UserFriendTable'):$this->userFriendTable;
+    }
+    public function getLikeTable(){
 		$sm = $this->getServiceLocator();
-		return  $this->likeTable = (!$this->likeTable)?$sm->get('Like\Model\LikeTable'):$this->likeTable; 
+		return $this->likeTable = (!$this->likeTable)?$sm->get('Like\Model\LikeTable'):$this->likeTable;
 	}
 	public function getUserTable(){
         if (!$this->userTable) {
@@ -517,6 +593,6 @@ class LikeController extends AbstractActionController
     }
 	public function getCommentTable(){
 		$sm = $this->getServiceLocator();
-		return  $this->commentTable = (!$this->commentTable)?$sm->get('Comment\Model\CommentTable'):$this->commentTable;   
+		return $this->commentTable = (!$this->commentTable)?$sm->get('Comment\Model\CommentTable'):$this->commentTable;
 	}
 }

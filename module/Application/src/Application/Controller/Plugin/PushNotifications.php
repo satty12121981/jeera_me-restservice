@@ -111,7 +111,7 @@ class PushNotifications extends AbstractPlugin
 
         // up to 100 registration ids can be sent to at once
         $message->setRegistrationIds(array(
-            '684802883399',
+            'ej9mLk5SC_c:APA91bGGVSX2wuGn_JWzS0zVTlkiP9YV1oa9UmYeX49um-_BCEcKNJ4UycrzV44iM8zuikizpcuF94IDVBA74RIGYjg2s0pMB5INcwDHHzxKG1_Pm023bLud6F9c_Md84JuyjOklHJ0H',
         ));
 
         // optional fields

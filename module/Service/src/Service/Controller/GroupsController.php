@@ -649,7 +649,7 @@ class GroupsController extends AbstractActionController
                         $is_requested = ($this->getUserFriendTable()->isRequested($list['user_id'],$user_id))?1:0;
                         $is_pending = ($this->getUserFriendTable()->isPending($list['user_id'],$user_id))?1:0;
                         if($is_friend){
-                            $friend_status = 'IsFriend';
+                            $friend_status = 'Friends';
                         }
                         else if($is_requested){
                             $friend_status = 'RequestSent';
@@ -661,7 +661,7 @@ class GroupsController extends AbstractActionController
                             $friend_status = 'NoFriends';
                         }
                     }
-					$list['friend_status']= $friend_status;
+					$list['friendship_status']= $friend_status;
 					unset($list['is_friend']);
 					unset($list['is_requested']);
 					unset($list['get_request']);
@@ -681,7 +681,7 @@ class GroupsController extends AbstractActionController
                         $is_lrequested = ($this->getUserFriendTable()->isRequested($list['user_id'],$user_id))?1:0;
                         $is_lpending = ($this->getUserFriendTable()->isPending($list['user_id'],$user_id))?1:0;
                         if($is_lfriend){
-                            $friendl_status = 'IsFriend';
+                            $friendl_status = 'Friends';
                         }
                         else if($is_lrequested){
                             $friendl_status = 'RequestSent';
@@ -940,7 +940,7 @@ class GroupsController extends AbstractActionController
 					$profile_photo = $this->manipulateProfilePic($list['user_id'], $list['profile_icon'], $list['user_fbid']);
 					$friend_status ="";
 					if($is_friend){
-						$friend_status = 'IsFriend';
+						$friend_status = 'Friends';
 					}
 					else if($is_requested){
 						$friend_status = 'RequestSent';
@@ -948,7 +948,7 @@ class GroupsController extends AbstractActionController
 					else if($isPending){
 						$friend_status = 'RequestPending';
 					}
-					else if ( $myinfo->user_id == $list['user_id']){
+					else if ($myinfo->user_id == $list['user_id']){
 						$friend_status = '';
 					}else{
 						$friend_status = 'NoFriends';
@@ -956,6 +956,7 @@ class GroupsController extends AbstractActionController
 
 					$arrMembers[] = array(
 									'user_id'=>$list['user_id'],
+                                    'user_fbid'=>$list['user_fbid'],
 									'user_given_name'=>$list['user_given_name'],
 									'user_profile_name'=>$list['user_profile_name'],
 									'country_title'=>$list['country_title'],
@@ -1451,11 +1452,11 @@ class GroupsController extends AbstractActionController
                     if($this->getUserFriendTable()->isFriend($user_details->user_id, $requests['user_id']) == true) {
                         $arrRequests[$ctr]['friendship_status'] = 'Friends';
                     } elseif($this->getUserFriendTable()->isRequested($user_details->user_id, $requests['user_id']) == true) {
-                        $arrRequests[$ctr]['friendship_status'] = 'Requested';
+                        $arrRequests[$ctr]['friendship_status'] = 'RequestSent';
                     }  elseif($this->getUserFriendTable()->isPending($user_details->user_id, $requests['user_id']) == true) {
-                        $arrRequests[$ctr]['friendship_status'] = 'Pending';
+                        $arrRequests[$ctr]['friendship_status'] = 'RequestPending';
                     }  else {
-                        $arrRequests[$ctr]['friendship_status'] = 'Not a friend';
+                        $arrRequests[$ctr]['friendship_status'] = 'NoFriends';
                     } 
                     $questionnairectr        = 0;
                     $arrUserQuestionnaire    = array();

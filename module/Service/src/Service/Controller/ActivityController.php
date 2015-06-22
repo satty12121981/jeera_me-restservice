@@ -25,6 +25,7 @@ class ActivityController extends AbstractActionController
 	}
     public function quitactivityAction(){
         $error = '';
+        $message = '';
         $request   = $this->getRequest();
         if ($request->isPost()){
             $post = $request->getPost();
@@ -44,7 +45,7 @@ class ActivityController extends AbstractActionController
             if(!empty($activityDetails)){
                 if ($this->getActivityRsvpTable()->getActivityRsvpOfUser($userinfo->user_id, $activity_id)){
                     if($this->getActivityRsvpTable()->removeActivityRsvp($activity_id,$userinfo->user_id)){
-                        $error = "Event quited Successfully";
+                        $message = "Event quited Successfully";
                     }else{
                         $error = "Some error occurred. Please try again";
                     }
@@ -56,7 +57,7 @@ class ActivityController extends AbstractActionController
             $error = "Request Not Authorised";
         }
         $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
-        $dataArr[0]['message'] = $error;
+        $dataArr[0]['message'] = (empty($error))?$message:$error;
         echo json_encode($dataArr);
         exit;
     }
@@ -70,6 +71,7 @@ class ActivityController extends AbstractActionController
     }
     public function joinactivityAction(){
         $error = '';
+        $message = '';
         $request   = $this->getRequest();
         if ($request->isPost()){
             $post = $request->getPost();
@@ -103,14 +105,14 @@ class ActivityController extends AbstractActionController
                             $from = 'admin@jeera.com';
                             $process = 'Join Event';
                             $this->UpdateNotifications($activity->group_activity_owner_user_id,$msg,7,$subject,$from,$userinfo->user_id,$activity->group_activity_group_id,$process);
-                            $error = "Event joined Successfully";
+                            $message = "Event joined Successfully";
                         }else{$error="Some error occurred. Please try again";}
                     }else{$error = "Activity RSVP already exist for the user";}
                 }else{$error = "Activity not exist";}
             }else{$error = "Activity Id required";}
         }else{$error = "Request Not Authorized";}
         $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
-        $dataArr[0]['message'] = $error;
+        $dataArr[0]['message'] = (empty($error))?$message:$error;
         echo json_encode($dataArr);
         exit;
     }

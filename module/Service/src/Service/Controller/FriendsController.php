@@ -325,7 +325,6 @@ class FriendsController extends AbstractActionController
                 $arrFriendslist                                     = $this->getUserFriendTable()->getAllMutualFriendsForAPI($user_id, $loggedin_userId, $nparam, $countparam);
             }
 
-           //print_r($arrFriendslist); die;
             // if data is coming from database
             if(!empty($arrFriendslist)) {
                 $ctr                                                        = 0;
@@ -351,45 +350,33 @@ class FriendsController extends AbstractActionController
                     // get user profile picture
                     $arrFriends[$ctr]['profile_photo']                 = $this->manipulateProfilePic($friend['user_id'], $friend['profile_photo'], $friend['user_fbid']);
 
-
-
-
-
                     // get user tag category details
                     $arrUserTagCategory                             = array();
-                    $user_tags                                      = $this->getUserTagTable()->getAllUserTagCategiry($friend['user_id']);
-
-                    // loop through user tag details array
-                    foreach($user_tags as $tag) {
-                        $arrUserTagCategory['tag_category_id']      = $tag['tag_category_id'];
-                        $arrUserTagCategory['tag_category_title']   = $tag['tag_category_title'];
-
-                        // if tag category icon is not blank
-                        if (!empty($tag['tag_category_icon'])) {
-                            $arrUserTagCategory['tag_category_icon']= $config['pathInfo']['absolute_img_path'].$config['image_folders']['tag_category'].$tag['tag_category_icon'];
-                        } else {    // if tag category icon is blank then show default icon
-                            $arrUserTagCategory['tag_category_icon']= $config['pathInfo']['absolute_img_path'].'/images/category-icon.png';
-                        }
+                    $arrUserTagCategory                                      = $this->getUserTagTable()->getAllUserTagCategiry($friend['user_id']);
+                    $tags = $this->getUserTagTable()->getAllUserTagsForAPI($friend['user_id']);
+                    if(!empty($tags)){
+                        $tags = $this->formatTagsWithCategory($tags,"|");
                     }
 
-                    $arrFriends[$ctr]['tag_category']                  = $arrUserTagCategory;
+                    $arrFriends[$ctr]['tag_category_count']                  = count($arrUserTagCategory);
+                    $arrFriends[$ctr]['tags']                                = $tags;
                     $arrFriends[$ctr]['joined_group_count']            = $friend['joined_group_count'];
                     $arrFriends[$ctr]['created_group_count']           = $friend['created_group_count'];
 
                     if($type == 'requested') {
-                        $arrFriends[$ctr]['friendship_status']         = 'Requested';
+                        $arrFriends[$ctr]['friendship_status']         = 'RequestSent';
                     }
                     else if($type == 'pending') {
-                        $arrFriends[$ctr]['friendship_status']         = 'Pending';
+                        $arrFriends[$ctr]['friendship_status']         = 'RequestPending';
                     } else {
                         if($friend['is_friend'] == '1') {
                             $arrFriends[$ctr]['friendship_status']     = 'Friends';
                         } elseif($friend['is_requested'] == '1') {
-                            $arrFriends[$ctr]['friendship_status']     = 'Requested';
+                            $arrFriends[$ctr]['friendship_status']     = 'RequestSent';
                         }  elseif($friend['get_request'] == '1') {
-                            $arrFriends[$ctr]['friendship_status']     = 'Pending';
+                            $arrFriends[$ctr]['friendship_status']     = 'RequestPending';
                         }  else {
-                            $arrFriends[$ctr]['friendship_status']     = 'Not a friend';
+                            $arrFriends[$ctr]['friendship_status']     = 'NoFriends';
                         }
                     }
 
@@ -400,7 +387,7 @@ class FriendsController extends AbstractActionController
                     $dataArr[0]['friends']                              = $arrFriends;
             } else {    // if there is no data coming from database
                 $dataArr[0]['flag']                                     = $this->flagSuccess;
-                $dataArr[0]['message']                                  = "There are no friends availbale.";
+                $dataArr[0]['message']                                  = "There are no friends available.";
                 $dataArr[0]['friends']                                  = $arrFriends;
             }
         } else {        // if request is not of type POST
@@ -412,7 +399,40 @@ class FriendsController extends AbstractActionController
 		echo json_encode($dataArr);
 		exit;
     }
+    public function formatTagsWithCategory($taglistdata,$char){
+        $config = $this->getServiceLocator()->get('Config');
+        $loadtagslist = array();
+        if (!empty($taglistdata)){
+            $objarr_tags = array();
 
+            foreach($taglistdata as $index => $tagslist){
+                $temptags = explode(",", $tagslist['tag_title']);
+                $arr_tags[0] = array();
+                foreach($temptags as $indexes => $splitlist){
+                    $arr_tags = array();
+                    $arr_tags = explode($char, $splitlist);
+                    $objarr_tags[] = array('tag_id'=>$arr_tags[0],'tag_title'=>$arr_tags[1]);
+                }
+
+                if (!empty($tagslist['tag_category_icon']))
+                    $tagslist['tag_category_icon'] = $config['pathInfo']['absolute_img_path'].$config['image_folders']['tag_category'].$tagslist['tag_category_icon'];
+                else
+                    $tagslist['tag_category_icon'] = $config['pathInfo']['absolute_img_path'].'/images/category-icon.png';
+
+                $loadtagslist[] = array(
+                    'tag_category_id' =>$tagslist['category_id'],
+                    'tag_category_title' =>$tagslist['tag_category_title'],
+                    'tag_category_icon' =>$tagslist['tag_category_icon'],
+                    'tag_category_desc' =>$tagslist['tag_category_desc'],
+                    'tagslist' =>$objarr_tags,
+                );
+
+                unset($objarr_tags);
+            }
+            return $loadtagslist;
+        }
+        return;
+    }
     // this function is used to get the profile picture of user
     public function manipulateProfilePic($user_id, $profile_photo = null, $fb_id = null) {
     	$config             = $this->getServiceLocator()->get('Config');

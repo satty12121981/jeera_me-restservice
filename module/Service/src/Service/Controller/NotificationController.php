@@ -29,11 +29,11 @@ class NotificationController extends AbstractActionController
             $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
             $this->checkError($error);
-            $error = (isset($post['type']) && $post['type'] != null && $post['type'] != '' && $post['type'] != 'undefined') ? '' : 'please input a valid type';
-            $this->checkError($error);
+            //$error = (isset($post['type']) && $post['type'] != null && $post['type'] != '' && $post['type'] != 'undefined') ? '' : 'please input a valid type';
+            //$this->checkError($error);
             $strType = $post['type'];
-            $error = (isset($post['process']) && $post['process'] != null && $post['process'] != '' && $post['process'] != 'undefined') ? '' :'please input a valid process' ;
-            $this->checkError($error);
+            //$error = (isset($post['process']) && $post['process'] != null && $post['process'] != '' && $post['process'] != 'undefined') ? '' :'please input a valid process' ;
+            //$this->checkError($error);
             $strProcess = $post['process'];
             $offset = trim($post['nparam']);
             $limit = trim($post['countparam']);
