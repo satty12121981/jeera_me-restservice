@@ -32,6 +32,7 @@ class GroupPostsController extends AbstractActionController
 	protected $activityRsvpTable;
     protected $userNotificationTable;
     protected $groupActivityInviteTable;
+    protected $groupPhotoTable;
 
 	public function __construct(){
         $this->flagSuccess = "Success";
@@ -93,7 +94,7 @@ class GroupPostsController extends AbstractActionController
                     $is_lrequested = ($this->getUserFriendTable()->isRequested($list['user_id'],$userinfo->user_id))?1:0;
                     $is_lpending = ($this->getUserFriendTable()->isPending($list['user_id'],$userinfo->user_id))?1:0;
                     if($is_lfriend){
-                        $friendl_status = 'IsFriend';
+                        $friendl_status = 'Friends';
                     }
                     else if($is_lrequested){
                         $friendl_status = 'RequestSent';
@@ -125,6 +126,10 @@ class GroupPostsController extends AbstractActionController
                     'profile_photo'=>$profile_details_photo,
                     'friendship_status' => $friendl_status,
                 );
+                if ($list['group_photo_photo'])
+                    $group_cover_photo = $config['pathInfo']['ROOTPATH'].'/public/datagd/groups/'.$list['group_id'].'/'.$list['group_photo_photo'];
+                else
+                    $group_cover_photo = $config['pathInfo']['absolute_img_path'].'/images/noimg.jpg';
                 switch($list['type']){
                     case "New Activity":
                         $activity_details = array();
@@ -164,6 +169,7 @@ class GroupPostsController extends AbstractActionController
                             "group_activity_location_lng" => $activity->group_activity_location_lng,
                             "group_activity_content" => $activity->group_activity_content,
                             "group_activity_start_timestamp" => date("M d,Y H:s a",strtotime($activity->group_activity_start_timestamp)),
+                            "group_image_link" =>$group_cover_photo,
                             "group_title" =>$list['group_title'],
                             "group_seo_title" =>$list['group_seo_title'],
                             "group_id" =>$list['group_id'],
@@ -196,6 +202,7 @@ class GroupPostsController extends AbstractActionController
                         $discussion_details[] = array(
                             "group_discussion_id" => $discussion->group_discussion_id,
                             "group_discussion_content" => $discussion->group_discussion_content,
+                            "group_image_link" =>$group_cover_photo,
                             "group_title" =>$list['group_title'],
                             "group_seo_title" =>$list['group_seo_title'],
                             "group_id" =>$list['group_id'],
@@ -230,12 +237,14 @@ class GroupPostsController extends AbstractActionController
                                 $media->media_content = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$list['group_id'].'/media/medium/'.$media->media_content;
                             }
                         }
+
                         $media_details[] = array(
                             "group_media_id" => $media->group_media_id,
                             "media_type" => $media->media_type,
                             "media_content" => $media->media_content,
                             "media_caption" => $media->media_caption,
                             "video_id" => $video_id,
+                            "group_image_link" =>$group_cover_photo,
                             "group_title" =>$list['group_title'],
                             "group_seo_title" =>$list['group_seo_title'],
                             "group_id" =>$list['group_id'],
@@ -661,5 +670,9 @@ class GroupPostsController extends AbstractActionController
     public function getActivityInviteTable(){
         $sm = $this->getServiceLocator();
         return  $this->groupActivityInviteTable = (!$this->groupActivityInviteTable)?$sm->get('Activity\Model\ActivityInviteTable'):$this->groupActivityInviteTable;
+    }
+    public function getGroupPhotoTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->groupPhotoTable = (!$this->groupPhotoTable)?$sm->get('Groups\Model\GroupPhotoTable'):$this->groupPhotoTable;
     }
 }

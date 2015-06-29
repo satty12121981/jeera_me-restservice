@@ -70,6 +70,35 @@ class UserGroupTable extends AbstractTableGateway
 		$resultSet->initialize($statement->execute());	  
 	  	return $resultSet; 
     }
+
+    public function fetchAllUserListForGroupForAPI($group_id,$user_id,$offset=0,$limit='',$search_string=''){
+        $select = new Select;
+        $select->from('y2m_user_group')
+            ->columns(array('is_friend'=>new Expression('IF(EXISTS(SELECT * FROM y2m_user_friend WHERE  (y2m_user_friend.user_friend_sender_user_id = y2m_user_group.user_group_user_id AND y2m_user_friend.user_friend_friend_user_id = '.$user_id.')OR(y2m_user_friend.user_friend_friend_user_id = y2m_user_group.user_group_user_id AND y2m_user_friend.user_friend_sender_user_id = '.$user_id.')),1,0)'),
+                'is_requested'=>new Expression('IF(EXISTS(SELECT * FROM   y2m_user_friend_request WHERE  ( y2m_user_friend_request.user_friend_request_friend_user_id = y2m_user_group.user_group_user_id AND y2m_user_friend_request.user_friend_request_sender_user_id = '.$user_id.' AND y2m_user_friend_request.user_friend_request_status = 0) ),1,0)'),
+                'get_request'=>new Expression('IF(EXISTS(SELECT * FROM   y2m_user_friend_request WHERE  ( y2m_user_friend_request.user_friend_request_sender_user_id = y2m_user_group.user_group_user_id AND y2m_user_friend_request.user_friend_request_friend_user_id = '.$user_id.' AND y2m_user_friend_request.user_friend_request_status = 0) ),1,0)'),
+                'user_group_status' =>'user_group_status', 'is_admin'=>new Expression('IF(EXISTS(SELECT * FROM y2m_user_group WHERE ( y2m_user_group.user_group_group_id = '.$group_id.' AND y2m_user_group.user_group_user_id = y2m_user.user_id AND y2m_user_group.user_group_is_owner = 1)),1,0)'),
+                'is_member'=>new Expression('IF(EXISTS(SELECT * FROM y2m_user_group WHERE  (y2m_user_group.user_group_group_id = '.$group_id.' AND y2m_user_group.user_group_user_id = y2m_user.user_id AND y2m_user_group.user_group_is_owner = 0)),1,0)'),
+            ))
+            ->join('y2m_user', 'y2m_user.user_id = y2m_user_group.user_group_user_id', array('user_given_name','user_id','user_profile_name','user_register_type','user_fbid'))
+            ->join('y2m_user_profile_photo','y2m_user.user_profile_photo_id = y2m_user_profile_photo.profile_photo_id',array('profile_photo'),'left')
+
+            ->where(array('y2m_user_group.user_group_group_id' => $group_id));
+        if($search_string!=''){
+            $select->where->like('y2m_user.user_given_name','%'.$search_string.'%');
+        }
+        if($limit!=''){
+            $select->limit($limit);
+            $select->offset($offset);
+        }
+        $statement = $this->adapter->createStatement();
+        $select->prepareStatement($this->adapter, $statement);
+        //echo $select->getSqlString();exit;
+        $resultSet = new ResultSet();
+        $resultSet->initialize($statement->execute());
+        return $resultSet;
+    }
+
 	public function fetchAllUserListForGroupWithSettings($group_id,$user_id,$offset=0,$limit='',$search_string=''){	   
 		$select = new Select;
 		$select->from('y2m_user_group')
@@ -656,7 +685,7 @@ class UserGroupTable extends AbstractTableGateway
 		$resultSet->initialize($statement->execute());
 		return $resultSet->toArray(); 
 	}
-	 public function deleteOneUserGroup($group_id, $user_id){
+	public function deleteOneUserGroup($group_id, $user_id){
        return $this->delete(array('user_group_user_id' => $user_id, 'user_group_group_id' => $group_id));
     }
 	public function checkOwner($group_id, $user_id){

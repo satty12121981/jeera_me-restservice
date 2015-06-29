@@ -737,7 +737,7 @@ class IndexController extends AbstractActionController
                 }
                 $dataArr[0]['flag'] = "Success";
                 $dataArr[0]['userposts'] = $feeds;
-                $dataArr[0]['userdetails'] = $userprofiledetails;
+                $dataArr[0]['postedby'] = $userprofiledetails;
                 echo json_encode($dataArr);
                 exit;
             }

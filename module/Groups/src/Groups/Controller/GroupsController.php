@@ -1184,10 +1184,10 @@ class GroupsController extends AbstractActionController
 							}
 						}
 						$is_invited = 0;
-								$invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($identity->user_id,$group_info->group_id);
-								if(!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){
-									$is_invited = 1;
-								}
+                            $invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($identity->user_id,$group_info->group_id);
+                            if(!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){
+                                $is_invited = 1;
+                            }
 						 $arr_group_info = array(
 							'group_id'=>$group_info->group_id,
 							'group_title'=>$group_info->group_title,
@@ -1204,7 +1204,7 @@ class GroupsController extends AbstractActionController
 							'country_title'=>$group_info->country_title,
 							'country_code'=>$group_info->country_code,
 							'group_photo_photo'=>$group_info->group_photo_photo,
-							'city'=>$group_info->city,							 
+							'city'=>$group_info->city,
 							'request_count'=>$request_count,
 						 );
 					  }

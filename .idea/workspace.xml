@@ -2,17 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0b736442-2289-4c94-904e-bdd89460f66f" name="Default" comment="Adding New comment service to add edit delete getlist of comments&#10;">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/ActivityController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/ActivityController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/FriendsController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/FriendsController.php" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/module/Notification/src/Notification/Controller/PushNotificationController.php" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/module/Notification/src/Notification/Form/PushNotificationForm.php" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/module/Notification/view/notification/push-notification/push-notify.phtml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php" afterPath="$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Like/src/Like/Model/LikeTable.php" afterPath="$PROJECT_DIR$/module/Like/src/Like/Model/LikeTable.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupsTable.php" afterPath="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupsTable.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/IndexController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/IndexController.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/NotificationController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/NotificationController.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/PushNotifications.php" afterPath="$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/PushNotifications.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/User/src/User/Model/UserFriendRequestTable.php" afterPath="$PROJECT_DIR$/module/User/src/User/Model/UserFriendRequestTable.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/User/src/User/Model/UserFriendTable.php" afterPath="$PROJECT_DIR$/module/User/src/User/Model/UserFriendTable.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Notification/src/Notification/Model/UserNotificationTable.php" afterPath="$PROJECT_DIR$/module/Notification/src/Notification/Model/UserNotificationTable.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php" afterPath="$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Notification/config/module.config.php" afterPath="$PROJECT_DIR$/module/Notification/config/module.config.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/config/module.config.php" afterPath="$PROJECT_DIR$/module/Service/config/module.config.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="jeera_me-restservice.iws" />
@@ -41,18 +43,56 @@
       <file leaf-file-name="NotificationController.php" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/NotificationController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-102.34615" vertical-offset="3765" max-vertical-offset="8330">
-              <caret line="384" column="47" selection-start-line="384" selection-start-column="47" selection-end-line="384" selection-end-column="47" />
+            <state vertical-scroll-proportion="0.30769232" vertical-offset="7199" max-vertical-offset="9469">
+              <caret line="423" column="35" selection-start-line="423" selection-start-column="35" selection-end-line="423" selection-end-column="35" />
+              <folding>
+                <element signature="e#36#85#0#PHP" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PushNotificationController.php" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/module/Notification/src/Notification/Controller/PushNotificationController.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-15.961538" vertical-offset="112" max-vertical-offset="833">
+              <caret line="31" column="70" selection-start-line="31" selection-start-column="62" selection-end-line="31" selection-end-column="70" />
+              <folding>
+                <element signature="e#41#90#0#PHP" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PushNotifications.php" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/PushNotifications.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-43.0" vertical-offset="854" max-vertical-offset="2771">
+              <caret line="244" column="0" selection-start-line="244" selection-start-column="0" selection-end-line="244" selection-end-column="0" />
+              <folding>
+                <element signature="e#47#61#0#PHP" expanded="true" />
+                <element signature="e#691#3176#0#PHP" expanded="false" />
+                <element signature="e#3182#4945#0#PHP" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PushNotificationForm.php" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/module/Notification/src/Notification/Form/PushNotificationForm.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-4.6923075" vertical-offset="133" max-vertical-offset="816">
+              <caret line="15" column="52" selection-start-line="15" selection-start-column="52" selection-end-line="15" selection-end-column="52" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="PushNotifications.php" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/PushNotifications.php">
+      <file leaf-file-name="push-notify.phtml" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/module/Notification/view/notification/push-notification/push-notify.phtml">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.59683096" vertical-offset="1344" max-vertical-offset="2397">
-              <caret line="113" column="165" selection-start-line="113" selection-start-column="165" selection-end-line="113" selection-end-column="165" />
+            <state vertical-scroll-proportion="0.23924269" vertical-offset="286" max-vertical-offset="867">
+              <caret line="25" column="0" selection-start-line="25" selection-start-column="0" selection-end-line="30" selection-end-column="8" />
               <folding />
             </state>
           </provider>
@@ -83,26 +123,32 @@
         <option value="$PROJECT_DIR$/module/Activity/src/Activity/Model/ActivityTable.php" />
         <option value="$PROJECT_DIR$/module/Like/src/Like/Controller/LikeController.php" />
         <option value="$PROJECT_DIR$/module/Comment/src/Comment/Controller/CommentController.php" />
-        <option value="$PROJECT_DIR$/module/Service/config/module.config.php" />
         <option value="$PROJECT_DIR$/module/User/src/User/Controller/UserProfileController.php" />
         <option value="$PROJECT_DIR$/module/Comment/src/Comment/Model/CommentTable.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/CommentController.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/TagsController.php" />
         <option value="$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/ServiceUploadHandler.php" />
         <option value="$PROJECT_DIR$/config/autoload/global.php" />
-        <option value="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupsTable.php" />
-        <option value="$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php" />
-        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/IndexController.php" />
-        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
         <option value="$PROJECT_DIR$/module/Notification/src/Notification/Model/UserNotificationTable.php" />
-        <option value="$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php" />
         <option value="$PROJECT_DIR$/module/Like/src/Like/Model/LikeTable.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" />
-        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/NotificationController.php" />
-        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/ActivityController.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/FriendsController.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/IndexController.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Form/Form.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/TestController.php" />
+        <option value="$PROJECT_DIR$/module/Service/config/module.config.php" />
+        <option value="$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php" />
+        <option value="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupsTable.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
+        <option value="$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/NotificationController.php" />
+        <option value="$PROJECT_DIR$/module/Notification/config/module.config.php" />
+        <option value="$PROJECT_DIR$/module/Notification/src/Notification/Controller/PushNotificationController.php" />
         <option value="$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/PushNotifications.php" />
+        <option value="$PROJECT_DIR$/module/Notification/src/Notification/Form/PushNotificationForm.php" />
+        <option value="$PROJECT_DIR$/module/Notification/view/notification/push-notification/push-notify.phtml" />
       </list>
     </option>
   </component>
@@ -158,6 +204,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -204,7 +251,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Application" />
+              <option name="myItemId" value="Groups" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -222,7 +269,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Application" />
+              <option name="myItemId" value="Groups" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -230,11 +277,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Application" />
+              <option name="myItemId" value="Groups" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Controller" />
+              <option name="myItemId" value="Model" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -252,7 +299,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Application" />
+              <option name="myItemId" value="Groups" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -260,21 +307,12 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Application" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Controller" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Plugin" />
+              <option name="myItemId" value="Groups" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -300,9 +338,6 @@
       <BehatRunner />
       <method />
     </configuration>
-    <configuration default="true" type="PhpUnitRemoteRunConfigurationType" factoryName="PHPUnit on Server">
-      <method />
-    </configuration>
     <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
       <node-options />
       <gulpfile />
@@ -310,6 +345,9 @@
       <arguments />
       <pass-parent-envs>true</pass-parent-envs>
       <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="PhpUnitRemoteRunConfigurationType" factoryName="PHPUnit on Server">
       <method />
     </configuration>
     <list size="0" />
@@ -334,22 +372,22 @@
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.37165356" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24963397" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22181553" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23792094" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3279483" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3023622" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.0668626" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.0668626" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -372,109 +410,11 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="14" />
+      <option name="time" value="15" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/module/Activity/src/Activity/Model/ActivityTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.4190141" vertical-offset="1530" max-vertical-offset="12410">
-          <caret line="108" column="52" selection-start-line="108" selection-start-column="20" selection-end-line="108" selection-end-column="52" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Activity/src/Activity/Controller/ActivityController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-4.8855634" vertical-offset="3013" max-vertical-offset="4879">
-          <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="16" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Activity/src/Activity/Model/ActivityRsvpTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6144366" vertical-offset="297" max-vertical-offset="2924">
-          <caret line="42" column="104" selection-start-line="42" selection-start-column="20" selection-end-line="42" selection-end-column="105" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Like/src/Like/Controller/LikeController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.97183096" vertical-offset="2916" max-vertical-offset="8245">
-          <caret line="217" column="55" selection-start-line="217" selection-start-column="39" selection-end-line="217" selection-end-column="55" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Comment/src/Comment/Model/Comment.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1085" max-vertical-offset="1666">
-          <caret line="74" column="9" selection-start-line="74" selection-start-column="9" selection-end-line="74" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Notification/src/Notification/Model/NotificationTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.40963855" vertical-offset="0" max-vertical-offset="2584">
-          <caret line="20" column="48" selection-start-line="20" selection-start-column="48" selection-end-line="20" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Notification/src/Notification/Controller/UserNotificationController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-9.153846" vertical-offset="0" max-vertical-offset="3298">
-          <caret line="42" column="33" selection-start-line="42" selection-start-column="33" selection-end-line="42" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Notification/src/Notification/Controller/NotificationController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-2.3926055" vertical-offset="1733" max-vertical-offset="4420">
-          <caret line="44" column="31" selection-start-line="44" selection-start-column="31" selection-end-line="44" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Comment/src/Comment/Controller/CommentController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.17957747" vertical-offset="0" max-vertical-offset="2448">
-          <caret line="6" column="29" selection-start-line="6" selection-start-column="29" selection-end-line="6" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/config/module.config.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3415493" vertical-offset="1353" max-vertical-offset="1972">
-          <caret line="97" column="12" selection-start-line="97" selection-start-column="12" selection-end-line="97" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Comment/src/Comment/Model/CommentTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.82042253" vertical-offset="9139" max-vertical-offset="9911">
-          <caret line="577" column="48" selection-start-line="577" selection-start-column="48" selection-end-line="577" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../jeerav1.2live/module/Service/src/Service/Controller/ActivityController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="3094">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/ResizeImage.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.7554348" vertical-offset="2780" max-vertical-offset="3332">
-          <caret line="146" column="46" selection-start-line="146" selection-start-column="46" selection-end-line="146" selection-end-column="46" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/GenericPlugin.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.9384058" vertical-offset="145" max-vertical-offset="765">
-          <caret line="40" column="1" selection-start-line="40" selection-start-column="1" selection-end-line="40" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/UploadHandler.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-6.9636364" vertical-offset="1963" max-vertical-offset="23511">
@@ -573,24 +513,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupsTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2771739" vertical-offset="204" max-vertical-offset="16218">
-          <caret line="27" column="48" selection-start-line="27" selection-start-column="48" selection-end-line="27" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Controller/UserGroupController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-14.152174" vertical-offset="8186" max-vertical-offset="8738">
           <caret line="35" column="47" selection-start-line="35" selection-start-column="47" selection-end-line="35" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2332696" vertical-offset="2071" max-vertical-offset="4709">
-          <caret line="1346" column="32" selection-start-line="1346" selection-start-column="20" selection-end-line="1346" selection-end-column="32" />
         </state>
       </provider>
     </entry>
@@ -601,31 +527,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Desktop/layout_user.phtml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8007246" vertical-offset="4386" max-vertical-offset="12291">
-          <caret line="284" column="48" selection-start-line="284" selection-start-column="48" selection-end-line="284" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5528757" vertical-offset="12180" max-vertical-offset="14569">
-          <caret line="741" column="37" selection-start-line="741" selection-start-column="37" selection-end-line="741" selection-end-column="37" />
-          <folding>
-            <marker date="1434876665256" expanded="true" signature="-1:-1" placeholder="SELECT y2m_u..y2m_user..." />
-            <marker date="1434876665256" expanded="true" signature="-1:-1" placeholder="DELETE FROM ..." />
-            <marker date="1434876665256" expanded="true" signature="-1:-1" placeholder="DELETE FROM ..." />
-            <marker date="1434876665256" expanded="true" signature="-1:-1" placeholder="DELETE FROM ..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/User/src/User/Model/UserProfileTable.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-2.2822719" vertical-offset="1581" max-vertical-offset="2176">
           <caret line="18" column="6" selection-start-line="18" selection-start-column="6" selection-end-line="18" selection-end-column="6" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -633,7 +538,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.32922536" vertical-offset="1224" max-vertical-offset="3349">
           <caret line="87" column="147" selection-start-line="85" selection-start-column="14" selection-end-line="87" selection-end-column="147" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -641,18 +545,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-3.2545455" vertical-offset="2218" max-vertical-offset="3400">
           <caret line="147" column="130" selection-start-line="147" selection-start-column="125" selection-end-line="147" selection-end-column="130" />
-          <folding>
-            <marker date="1434952852368" expanded="true" signature="-1:-1" placeholder="SELECT count..count..." />
-            <marker date="1434952852368" expanded="true" signature="-1:-1" placeholder="Select count..y2m_like..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Notification/src/Notification/Model/UserNotificationTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3320965" vertical-offset="6791" max-vertical-offset="8840">
-          <caret line="418" column="59" selection-start-line="418" selection-start-column="59" selection-end-line="418" selection-end-column="59" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -660,31 +552,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-5.012324" vertical-offset="10786" max-vertical-offset="12308">
           <caret line="476" column="43" selection-start-line="476" selection-start-column="43" selection-end-line="476" selection-end-column="43" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/IndexController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-12.084507" vertical-offset="15415" max-vertical-offset="24208">
-          <caret line="534" column="46" selection-start-line="534" selection-start-column="46" selection-end-line="534" selection-end-column="46" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-34.35211" vertical-offset="28420" max-vertical-offset="30923">
-          <caret line="547" column="5" selection-start-line="547" selection-start-column="5" selection-end-line="547" selection-end-column="5" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="10.482394" vertical-offset="3498" max-vertical-offset="11169">
-          <caret line="570" column="44" selection-start-line="570" selection-start-column="44" selection-end-line="570" selection-end-column="44" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -692,7 +559,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.35843372" vertical-offset="3417" max-vertical-offset="9639">
           <caret line="224" column="33" selection-start-line="224" selection-start-column="33" selection-end-line="224" selection-end-column="33" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -700,7 +566,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-1.0316901" vertical-offset="1674" max-vertical-offset="3128">
           <caret line="73" column="22" selection-start-line="73" selection-start-column="22" selection-end-line="73" selection-end-column="22" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -708,7 +573,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.71057516" vertical-offset="6655" max-vertical-offset="10047">
           <caret line="427" column="66" selection-start-line="427" selection-start-column="45" selection-end-line="427" selection-end-column="66" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -716,7 +580,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.29929578" vertical-offset="0" max-vertical-offset="2176">
           <caret line="14" column="28" selection-start-line="14" selection-start-column="28" selection-end-line="14" selection-end-column="28" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -724,7 +587,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.040816326" vertical-offset="1916" max-vertical-offset="5423">
           <caret line="118" column="41" selection-start-line="118" selection-start-column="41" selection-end-line="118" selection-end-column="41" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -732,7 +594,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.14285715" vertical-offset="4921" max-vertical-offset="8670">
           <caret line="312" column="44" selection-start-line="312" selection-start-column="44" selection-end-line="312" selection-end-column="44" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -740,22 +601,242 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.11971831" vertical-offset="5661" max-vertical-offset="8942">
           <caret line="341" column="28" selection-start-line="341" selection-start-column="28" selection-end-line="341" selection-end-column="28" />
-          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Admin/src/Admin/Form/AdminTagForm.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="850">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Admin/config/module.config.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-38.6179" vertical-offset="22743" max-vertical-offset="23324">
+          <caret line="18" column="22" selection-start-line="18" selection-start-column="22" selection-end-line="18" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/config/module.config.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.38732395" vertical-offset="1344" max-vertical-offset="1989">
+          <caret line="98" column="10" selection-start-line="98" selection-start-column="10" selection-end-line="98" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.2504638" vertical-offset="32573" max-vertical-offset="44472">
+          <caret line="1943" column="152" selection-start-line="1943" selection-start-column="44" selection-end-line="1943" selection-end-column="152" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupPhotoTable.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-6.3461537" vertical-offset="73" max-vertical-offset="1037">
+          <caret line="20" column="43" selection-start-line="20" selection-start-column="43" selection-end-line="20" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupJoiningRequestTable.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.35915494" vertical-offset="765" max-vertical-offset="3655">
+          <caret line="39" column="40" selection-start-line="39" selection-start-column="21" selection-end-line="39" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupQuestionnaireAnswersTable.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="986">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupsTable.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.13380282" vertical-offset="485" max-vertical-offset="1428">
+          <caret line="417" column="37" selection-start-line="417" selection-start-column="37" selection-end-line="417" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Notification/src/Notification/Model/UserNotificationTable.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.584507" vertical-offset="7226" max-vertical-offset="8840">
+          <caret line="486" column="171" selection-start-line="486" selection-start-column="161" selection-end-line="486" selection-end-column="171" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/IndexController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.73415494" vertical-offset="21139" max-vertical-offset="24208">
+          <caret line="1299" column="60" selection-start-line="1299" selection-start-column="60" selection-end-line="1299" selection-end-column="60" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Admin/view/admin/admin/index.phtml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="594">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Admin/view/admin/admin/login.phtml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="731">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Admin/view/admin/admin-planet-tag/get-tag-list.phtml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="594">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Notification/config/module.config.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.52667814" vertical-offset="1275" max-vertical-offset="2057">
+          <caret line="93" column="42" selection-start-line="93" selection-start-column="42" selection-end-line="93" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Admin/src/Admin/Controller/AdminTagController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.6883803" vertical-offset="969" max-vertical-offset="3723">
+          <caret line="91" column="56" selection-start-line="91" selection-start-column="20" selection-end-line="91" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Admin/src/Admin/Controller/AdminController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-1.0774527" vertical-offset="1187" max-vertical-offset="1768">
+          <caret line="46" column="49" selection-start-line="46" selection-start-column="49" selection-end-line="46" selection-end-column="49" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/NotificationController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-102.34615" vertical-offset="3765" max-vertical-offset="8330">
-          <caret line="384" column="47" selection-start-line="384" selection-start-column="47" selection-end-line="384" selection-end-column="47" />
+        <state vertical-scroll-proportion="0.30769232" vertical-offset="7199" max-vertical-offset="9469">
+          <caret line="423" column="35" selection-start-line="423" selection-start-column="35" selection-end-line="423" selection-end-column="35" />
+          <folding>
+            <element signature="e#36#85#0#PHP" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.28521127" vertical-offset="314" max-vertical-offset="1241">
+          <caret line="224" column="64" selection-start-line="224" selection-start-column="64" selection-end-line="224" selection-end-column="64" />
+          <folding>
+            <element signature="e#386#632#0#PHP" expanded="false" />
+            <element signature="e#637#735#0#PHP" expanded="false" />
+            <element signature="e#791#1087#0#PHP" expanded="false" />
+            <element signature="e#1139#1826#0#PHP" expanded="false" />
+            <element signature="e#1863#3970#0#PHP" expanded="false" />
+            <element signature="e#3976#6744#0#PHP" expanded="false" />
+            <element signature="e#6747#9093#0#PHP" expanded="false" />
+            <element signature="e#9178#9779#0#PHP" expanded="false" />
+            <element signature="e#9830#10730#0#PHP" expanded="false" />
+            <element signature="e#10779#11729#0#PHP" expanded="false" />
+            <element signature="e#11780#13104#0#PHP" expanded="false" />
+            <element signature="e#13110#14075#0#PHP" expanded="false" />
+            <element signature="e#14201#14819#0#PHP" expanded="false" />
+            <element signature="e#14821#15372#0#PHP" expanded="false" />
+            <element signature="e#15375#16007#0#PHP" expanded="false" />
+            <element signature="e#16009#16550#0#PHP" expanded="false" />
+            <element signature="e#16552#16701#0#PHP" expanded="false" />
+            <element signature="e#16703#16897#0#PHP" expanded="false" />
+            <element signature="e#16899#17098#0#PHP" expanded="false" />
+            <element signature="e#17103#19274#0#PHP" expanded="false" />
+            <element signature="e#19276#20287#0#PHP" expanded="false" />
+            <element signature="e#20289#21757#0#PHP" expanded="false" />
+            <element signature="e#21759#21908#0#PHP" expanded="false" />
+            <element signature="e#21910#22642#0#PHP" expanded="false" />
+            <element signature="e#22644#23514#0#PHP" expanded="false" />
+            <element signature="e#23516#24625#0#PHP" expanded="false" />
+            <element signature="e#24627#25323#0#PHP" expanded="false" />
+            <element signature="e#25325#26231#0#PHP" expanded="false" />
+            <element signature="e#26233#26445#0#PHP" expanded="false" />
+            <element signature="e#26447#26668#0#PHP" expanded="false" />
+            <element signature="e#26670#27202#0#PHP" expanded="false" />
+            <element signature="e#27204#27656#0#PHP" expanded="false" />
+            <element signature="e#27658#28539#0#PHP" expanded="false" />
+            <element signature="e#28541#31627#0#PHP" expanded="false" />
+            <element signature="e#31629#35869#0#PHP" expanded="false" />
+            <element signature="e#35871#37292#0#PHP" expanded="false" />
+            <element signature="e#37294#41307#0#PHP" expanded="false" />
+            <element signature="e#41479#42123#0#PHP" expanded="false" />
+            <element signature="e#42125#43294#0#PHP" expanded="false" />
+            <element signature="e#43296#46405#0#PHP" expanded="false" />
+            <element signature="e#46407#47149#0#PHP" expanded="false" />
+            <element signature="e#47151#47745#0#PHP" expanded="false" />
+            <element signature="e#47747#48446#0#PHP" expanded="false" />
+            <element signature="e#48448#49452#0#PHP" expanded="false" />
+            <element signature="e#49454#51025#0#PHP" expanded="false" />
+            <element signature="e#51027#51663#0#PHP" expanded="false" />
+            <marker date="1435213695339" expanded="true" signature="-1:-1" placeholder="SELECT y2m_u..y2m_user..." />
+            <marker date="1435213695339" expanded="true" signature="-1:-1" placeholder="DELETE FROM ..." />
+            <marker date="1435213695339" expanded="true" signature="-1:-1" placeholder="DELETE FROM ..." />
+            <marker date="1435213695339" expanded="true" signature="-1:-1" placeholder="DELETE FROM ..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.3028169" vertical-offset="9766" max-vertical-offset="32572">
+          <caret line="641" column="48" selection-start-line="641" selection-start-column="48" selection-end-line="641" selection-end-column="48" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.23747681" vertical-offset="2541" max-vertical-offset="10302">
+          <caret line="171" column="45" selection-start-line="171" selection-start-column="29" selection-end-line="171" selection-end-column="45" />
+          <folding>
+            <element signature="e#32858#34678#0#PHP" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Notification/src/Notification/Controller/PushNotificationController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-15.961538" vertical-offset="112" max-vertical-offset="833">
+          <caret line="31" column="70" selection-start-line="31" selection-start-column="62" selection-end-line="31" selection-end-column="70" />
+          <folding>
+            <element signature="e#41#90#0#PHP" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/PushNotifications.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.59683096" vertical-offset="1344" max-vertical-offset="2397">
-          <caret line="113" column="165" selection-start-line="113" selection-start-column="165" selection-end-line="113" selection-end-column="165" />
+        <state vertical-scroll-proportion="-43.0" vertical-offset="854" max-vertical-offset="2771">
+          <caret line="244" column="0" selection-start-line="244" selection-start-column="0" selection-end-line="244" selection-end-column="0" />
+          <folding>
+            <element signature="e#47#61#0#PHP" expanded="true" />
+            <element signature="e#691#3176#0#PHP" expanded="false" />
+            <element signature="e#3182#4945#0#PHP" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Notification/src/Notification/Form/PushNotificationForm.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-4.6923075" vertical-offset="133" max-vertical-offset="816">
+          <caret line="15" column="52" selection-start-line="15" selection-start-column="52" selection-end-line="15" selection-end-column="52" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Notification/view/notification/push-notification/push-notify.phtml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.23924269" vertical-offset="286" max-vertical-offset="867">
+          <caret line="25" column="0" selection-start-line="25" selection-start-column="0" selection-end-line="30" selection-end-column="8" />
           <folding />
         </state>
       </provider>

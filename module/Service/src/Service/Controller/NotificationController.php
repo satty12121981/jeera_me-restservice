@@ -7,6 +7,7 @@ use Notification\Model\Notification;
 use Notification\Model\NotificationTable;
 use Application\Controller\Plugin\PushNotifications;
 use \Exception;
+
 class NotificationController extends AbstractActionController
 {
     protected $NotificationTable;
@@ -17,6 +18,7 @@ class NotificationController extends AbstractActionController
 	protected $groupTable;
 	protected $discussionTable;
 	protected $groupMediaTable;
+
 	public function NotificationsAction(){
 		$error = '';
 		$notification_list =array();
@@ -29,11 +31,7 @@ class NotificationController extends AbstractActionController
             $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
             $this->checkError($error);
-            //$error = (isset($post['type']) && $post['type'] != null && $post['type'] != '' && $post['type'] != 'undefined') ? '' : 'please input a valid type';
-            //$this->checkError($error);
             $strType = $post['type'];
-            //$error = (isset($post['process']) && $post['process'] != null && $post['process'] != '' && $post['process'] != 'undefined') ? '' :'please input a valid process' ;
-            //$this->checkError($error);
             $strProcess = $post['process'];
             $offset = trim($post['nparam']);
             $limit = trim($post['countparam']);
@@ -54,9 +52,9 @@ class NotificationController extends AbstractActionController
             $offset = ($offset > 0) ? $offset - 1 : 0;
             $offset = $offset * $limit;
             $objnotification_list = $this->getUserNotificationTable()->getUserNotificationWithTypeForAPI($userinfo->user_id,$strType,$strProcess,(int) $offset,(int) $limit);
-            //$objnotification_list = $this->getUserNotificationTable()->getUserNotificationWithSenderInformation($userinfo->user_id,$type,$offset,$limit);
             if(!empty($objnotification_list)){
                 foreach($objnotification_list as $list){
+                    $sender_photo = $this->manipulateProfilePic($list->user_id, $list->profile_photo, $list->user_fbid);
                     Switch($list->notification_type_title){
                         case "Friend Request":
                             $is_friend = $this->getUserFriendTable()->isFriend($userinfo->user_id,$list->user_notification_sender_id);
@@ -68,14 +66,14 @@ class NotificationController extends AbstractActionController
                                 'user_notification_sender_id'=>$list->user_notification_sender_id,
                                 'user_notification_reference_id'=>$list->user_notification_reference_id,
                                 'user_notification_status'=>$list->user_notification_status,
-                                'notification_type_title' =>$list->notification_type_title,
                                 'sender_name' => $list->user_given_name,
                                 'sender_profile_name' => $list->user_profile_name,
-                                'sender_profile_photo' => $list->profile_photo,
+                                'sender_profile_photo' => $sender_photo,
                                 'sender_user_fbid' => $list->user_fbid,
-                                'user_notification_process' => $list->user_notification_process,
                                 'is_friend' =>$is_friend,
-                                'isRequested' => $isRequested,
+                                'is_requested' => $isRequested,
+                                'type' => "User",
+                                'process' => "FriendRequest",
                             );
                             break;
                         case "Friend Request Accept":
@@ -86,12 +84,12 @@ class NotificationController extends AbstractActionController
                                 'user_notification_sender_id'=>$list->user_notification_sender_id,
                                 'user_notification_reference_id'=>$list->user_notification_reference_id,
                                 'user_notification_status'=>$list->user_notification_status,
-                                'notification_type_title' =>$list->notification_type_title,
                                 'sender_name' => $list->user_given_name,
                                 'sender_profile_name' => $list->user_profile_name,
-                                'sender_profile_photo' => $list->profile_photo,
+                                'sender_profile_photo' => $sender_photo,
                                 'sender_user_fbid' => $list->user_fbid,
-                                'user_notification_process' => $list->user_notification_process,
+                                'type' => "User",
+                                'process' => "FriendRequestAccepted",
                             );
                             break;
                         case "Friend Request Reject":
@@ -102,12 +100,12 @@ class NotificationController extends AbstractActionController
                                 'user_notification_sender_id'=>$list->user_notification_sender_id,
                                 'user_notification_reference_id'=>$list->user_notification_reference_id,
                                 'user_notification_status'=>$list->user_notification_status,
-                                'notification_type_title' =>$list->notification_type_title,
                                 'sender_name' => $list->user_given_name,
                                 'sender_profile_name' => $list->user_profile_name,
-                                'sender_profile_photo' => $list->profile_photo,
+                                'sender_profile_photo' => $sender_photo,
                                 'sender_user_fbid' => $list->user_fbid,
-                                'user_notification_process' => $list->user_notification_process,
+                                'type' => "User",
+                                'process' => "FriendRequestRejected",
                             );
                             break;
                         case "Group Invite":
@@ -120,15 +118,15 @@ class NotificationController extends AbstractActionController
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
                                     'user_notification_status'=>$list->user_notification_status,
-                                    'notification_type_title' =>$list->notification_type_title,
                                     'sender_name' => $list->user_given_name,
                                     'sender_profile_name' => $list->user_profile_name,
-                                    'sender_profile_photo' => $list->profile_photo,
+                                    'sender_profile_photo' => $sender_photo,
                                     'sender_user_fbid' => $list->user_fbid,
-                                    'user_notification_process' => $list->user_notification_process,
                                     'group_id'	=> $group->group_id,
                                     'group_title'	=> $group->group_title,
                                     'group_seo_title'	=> $group->group_seo_title,
+                                    'type' => "Group",
+                                    'process' => "GroupInvite",
                                 );
                             }
                             break;
@@ -142,15 +140,15 @@ class NotificationController extends AbstractActionController
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
                                     'user_notification_status'=>$list->user_notification_status,
-                                    'notification_type_title' =>$list->notification_type_title,
                                     'sender_name' => $list->user_given_name,
                                     'sender_profile_name' => $list->user_profile_name,
-                                    'sender_profile_photo' => $list->profile_photo,
+                                    'sender_profile_photo' => $sender_photo,
                                     'sender_user_fbid' => $list->user_fbid,
-                                    'user_notification_process' => $list->user_notification_process,
                                     'group_id'	=> $group->group_id,
                                     'group_title'	=> $group->group_title,
                                     'group_seo_title'	=> $group->group_seo_title,
+                                    'type' => "Group",
+                                    'process' => "GroupJoiningRequest",
                                 );
                             }
                             break;
@@ -164,15 +162,15 @@ class NotificationController extends AbstractActionController
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
                                     'user_notification_status'=>$list->user_notification_status,
-                                    'notification_type_title' =>$list->notification_type_title,
                                     'sender_name' => $list->user_given_name,
                                     'sender_profile_name' => $list->user_profile_name,
-                                    'sender_profile_photo' => $list->profile_photo,
+                                    'sender_profile_photo' => $sender_photo,
                                     'sender_user_fbid' => $list->user_fbid,
-                                    'user_notification_process' => $list->user_notification_process,
                                     'group_id'	=> $group->group_id,
                                     'group_title'	=> $group->group_title,
                                     'group_seo_title'	=> $group->group_seo_title,
+                                    'type' => "Group",
+                                    'process' => "GroupJoiningRequestAccepted",
                                 );
                             }
                             break;
@@ -186,15 +184,15 @@ class NotificationController extends AbstractActionController
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
                                     'user_notification_status'=>$list->user_notification_status,
-                                    'notification_type_title' =>$list->notification_type_title,
                                     'sender_name' => $list->user_given_name,
                                     'sender_profile_name' => $list->user_profile_name,
-                                    'sender_profile_photo' => $list->profile_photo,
+                                    'sender_profile_photo' => $sender_photo,
                                     'sender_user_fbid' => $list->user_fbid,
-                                    'user_notification_process' => $list->user_notification_process,
                                     'group_id'	=> $group->group_id,
                                     'group_title'	=> $group->group_title,
                                     'group_seo_title'	=> $group->group_seo_title,
+                                    'type' => "Group",
+                                    'process' => "GroupJoiningRequestRejected",
                                 );
                             }
                             break;
@@ -202,6 +200,21 @@ class NotificationController extends AbstractActionController
                             $discussion = $this->getDiscussionTable()->getDiscussion($list->user_notification_reference_id);
                             if(!empty($discussion)){
                                 $group  = $this->getGroupTable()->getPlanetinfo($discussion->group_discussion_group_id);
+                                if ($list->user_notification_process == "New Discussion"){
+                                    $notification_process = "NewStatus";
+                                }
+                                else if ($list->user_notification_process == "comment"){
+                                    $notification_process = "CommentMade";
+                                }
+                                else if ($list->user_notification_process == "comment_hashed"){
+                                    $notification_process = "MentionedInComment";
+                                }
+                                else if ($list->user_notification_process == "like"){
+                                    $notification_process = "Liked";
+                                }
+                                else if ($list->user_notification_process == "comment like"){
+                                    $notification_process = "CommentLiked";
+                                }
                                 $notification_list[] = array(
                                     'user_notification_id'=>$list->user_notification_id,
                                     'user_notification_content'=>$list->user_notification_content,
@@ -209,15 +222,15 @@ class NotificationController extends AbstractActionController
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
                                     'user_notification_status'=>$list->user_notification_status,
-                                    'notification_type_title' =>$list->notification_type_title,
                                     'sender_name' => $list->user_given_name,
                                     'sender_profile_name' => $list->user_profile_name,
-                                    'sender_profile_photo' => $list->profile_photo,
+                                    'sender_profile_photo' => $sender_photo,
                                     'sender_user_fbid' => $list->user_fbid,
-                                    'user_notification_process' => $list->user_notification_process,
                                     'group_id'	=> $group->group_id,
                                     'group_title'	=> $group->group_title,
                                     'group_seo_title'	=> $group->group_seo_title,
+                                    'type' => "Status",
+                                    'process' => $notification_process,
                                 );
                             }
                             break;
@@ -225,6 +238,25 @@ class NotificationController extends AbstractActionController
                             $activity = $this->getActivityTable()->getActivity($list->user_notification_reference_id);
                             if(!empty($activity)){
                                 $group  = $this->getGroupTable()->getPlanetinfo($activity->group_activity_group_id);
+                                if ($list->user_notification_process == "New Event"){
+                                    $notification_process = "NewEvent";
+                                }
+                                else if ($list->user_notification_process == "comment"){
+                                    $notification_process = "CommentMade";
+                                }
+                                else if ($list->user_notification_process == "comment_hashed"){
+                                    $notification_process = "MentionedInComment";
+                                }
+                                else if ($list->user_notification_process == "like"){
+                                    $notification_process = "Liked";
+                                }
+                                else if ($list->user_notification_process == "comment like"){
+                                    $notification_process = "CommentLiked";
+                                }
+                                else if ($list->user_notification_process == "Join Event"){
+                                    $notification_process = "JoinedEvent";
+                                }
+
                                 $notification_list[] = array(
                                     'user_notification_id'=>$list->user_notification_id,
                                     'user_notification_content'=>$list->user_notification_content,
@@ -232,15 +264,15 @@ class NotificationController extends AbstractActionController
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
                                     'user_notification_status'=>$list->user_notification_status,
-                                    'notification_type_title' =>$list->notification_type_title,
                                     'sender_name' => $list->user_given_name,
                                     'sender_profile_name' => $list->user_profile_name,
-                                    'sender_profile_photo' => $list->profile_photo,
+                                    'sender_profile_photo' => $sender_photo,
                                     'sender_user_fbid' => $list->user_fbid,
-                                    'user_notification_process' => $list->user_notification_process,
                                     'group_id'	=> $group->group_id,
                                     'group_title'	=> $group->group_title,
                                     'group_seo_title'	=> $group->group_seo_title,
+                                    'type' => "Event",
+                                    'process' => $notification_process,
                                 );
                             }
                             break;
@@ -248,6 +280,21 @@ class NotificationController extends AbstractActionController
                             $media = $this->getGroupMediaTable()->getMedia($list->user_notification_reference_id);
                             if(!empty($media)){
                                 $group  = $this->getGroupTable()->getPlanetinfo($media->media_added_group_id);
+                                if ($list->user_notification_process == "New Media"){
+                                    $notification_process = "NewMedia";
+                                }
+                                else if ($list->user_notification_process == "comment"){
+                                    $notification_process = "CommentMade";
+                                }
+                                else if ($list->user_notification_process == "comment_hashed"){
+                                    $notification_process = "MentionedInComment";
+                                }
+                                else if ($list->user_notification_process == "like"){
+                                    $notification_process = "Liked";
+                                }
+                                else if ($list->user_notification_process == "comment like"){
+                                    $notification_process = "CommentLiked";
+                                }
                                 $notification_list[] = array(
                                     'user_notification_id'=>$list->user_notification_id,
                                     'user_notification_content'=>$list->user_notification_content,
@@ -255,18 +302,18 @@ class NotificationController extends AbstractActionController
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
                                     'user_notification_status'=>$list->user_notification_status,
-                                    'notification_type_title' =>$list->notification_type_title,
                                     'sender_name' => $list->user_given_name,
                                     'sender_profile_name' => $list->user_profile_name,
-                                    'sender_profile_photo' => $list->profile_photo,
+                                    'sender_profile_photo' => $sender_photo,
                                     'sender_user_fbid' => $list->user_fbid,
-                                    'user_notification_process' => $list->user_notification_process,
                                     'group_id'	=> $group->group_id,
                                     'group_title'	=> $group->group_title,
                                     'group_seo_title'	=> $group->group_seo_title,
                                     'media_type'	=> $media->media_type,
                                     'media_content' => $media->media_content,
                                     'media_caption' => $media->media_caption,
+                                    'type' => "Media",
+                                    'process' => $notification_process,
                                 );
                             }
                             break;
@@ -280,15 +327,17 @@ class NotificationController extends AbstractActionController
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
                                     'user_notification_status'=>$list->user_notification_status,
-                                    'notification_type_title' =>$list->notification_type_title,
+                                    'user_notification_type_title' =>$list->notification_type_title,
+                                    'user_notification_process' => $list->user_notification_process,
                                     'sender_name' => $list->user_given_name,
                                     'sender_profile_name' => $list->user_profile_name,
-                                    'sender_profile_photo' => $list->profile_photo,
+                                    'sender_profile_photo' => $sender_photo,
                                     'sender_user_fbid' => $list->user_fbid,
-                                    'user_notification_process' => $list->user_notification_process,
                                     'group_id'	=> $group->group_id,
                                     'group_title'	=> $group->group_title,
                                     'group_seo_title'	=> $group->group_seo_title,
+                                    'type' => "Group",
+                                    'process' => "GroupAdminPromoted",
                                 );
                             }
                             break;
@@ -375,12 +424,24 @@ class NotificationController extends AbstractActionController
         echo json_encode($dataArr);
         exit;
 	}
+    public function manipulateProfilePic($user_id, $profile_photo = null, $fb_id = null){
+        $config = $this->getServiceLocator()->get('Config');
+        $return_photo = null;
+        if (!empty($profile_photo))
+            $return_photo = $config['pathInfo']['absolute_img_path'].$config['image_folders']['profile_path'].$user_id.'/'.$profile_photo;
+        else if(isset($fb_id) && !empty($fb_id))
+            $return_photo = 'http://graph.facebook.com/'.$fb_id.'/picture?type=normal';
+        else
+            $return_photo = $config['pathInfo']['absolute_img_path'].'/images/noimg.jpg';
+        return $return_photo;
+
+    }
     public function ApplePushNotifyAction(){
         $pushNotifications = new PushNotifications();
         $config = $this->getServiceLocator()->get('Config');
         $pushNotifications->ApplePushMessage($config);
     }
-    public function GoogleCloudNotifyAction(){
+    public function GooglePushNotifyAction(){
         $GoogleCloudMsgs = new PushNotifications();
         $GoogleCloudMsgs->GoogleCloudMessage();
     }

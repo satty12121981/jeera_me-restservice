@@ -616,10 +616,25 @@ class GroupsController extends AbstractActionController
                 if(!empty($tags)) {
                     $tags = $this->formatTagsWithCategory($tags, "|");
                 }
-                    $arr_group_list[] = array(
+                $accessTokenGroupRoleData = null;
+                $accessTokenGroupRoleRequestData = null;
+                $access_token_group_rights= null;
+                $accessTokenGroupRoleRequestData = $this->getUserGroupJoiningRequestTable()->checkIfrequestExist($user_id,$groupdetailslist->group_id);
+                if ($this->getUserGroupTable()->is_member($user_id,$groupdetailslist->group_id)){
+                    $accessTokenGroupRoleData = $this->getUserGroupTable()->getUserGroup($user_id,$groupdetailslist->group_id);
+                    if ($accessTokenGroupRoleData->user_group_is_owner){
+                        $access_token_group_rights = "Admin";
+                    }else{
+                        $access_token_group_rights = "Member";
+                    }
+                } else if (!empty($accessTokenGroupRoleRequestData)){
+                    $access_token_group_rights = "PendingRequest";
+                }
+                $arr_group_list[] = array(
 					'group_id' =>$groupdetailslist->group_id,
 					'group_title' =>$groupdetailslist->group_title,
 					'group_seo_title' =>$groupdetailslist->group_seo_title,
+                    'group_description' =>$groupdetailslist->group_description,
 					'group_type' =>(empty($groupdetailslist->group_type))?"":$groupdetailslist->group_type,
 					'group_photo_photo' =>$groupdetailslist->group_photo_photo,										 
 					'country_title' =>$groupdetailslist->country_title,
@@ -629,20 +644,18 @@ class GroupsController extends AbstractActionController
 					'city' =>$groupdetailslist->city,	
 					'tag_categories_count' =>count($tag_category),
 					'tags' =>$tags,
+                    'access_token_user_group_rights' => $access_token_group_rights,
 					);
-				$flag = 1;
+                $flag = 1;
 			}
 
-			$groupUsers = $this->getUserGroupTable()->fetchAllUserListForGroup($group_id,$user_id,0,5)->toArray();
+			$groupUsers = $this->getUserGroupTable()->fetchAllUserListForGroupForAPI($group_id,$user_id,0,5)->toArray();
 			$tempmembers = array();
 			if (!empty($groupUsers)) {
-				
+                $group_rights = null;
 				foreach ($groupUsers as $list) {
 					unset($list['user_register_type']);
 					$list['profile_photo'] = $this->manipulateProfilePic($list['user_id'], $list['profile_photo'], $list['user_fbid']);
-                    $is_friend = ($this->getUserFriendTable()->isFriend($list['user_id'],$user_id))?1:0;
-                    $is_requested = ($this->getUserFriendTable()->isRequested($list['user_id'],$user_id))?1:0;
-                    $is_pending = ($this->getUserFriendTable()->isPending($list['user_id'],$user_id))?1:0;
 					$friend_status ="";
                     if ( $list['user_id'] != $user_id ){
                         $is_friend = ($this->getUserFriendTable()->isFriend($list['user_id'],$user_id))?1:0;
@@ -661,10 +674,18 @@ class GroupsController extends AbstractActionController
                             $friend_status = 'NoFriends';
                         }
                     }
+                    if ($list['is_admin']){
+                        $group_rights = "Admin";
+                    }else{
+                        $group_rights = "Member";
+                    }
 					$list['friendship_status']= $friend_status;
+                    $list['group_rights']= $group_rights;
 					unset($list['is_friend']);
 					unset($list['is_requested']);
 					unset($list['get_request']);
+                    unset($list['is_admin']);
+                    unset($list['is_member']);
 					$tempmembers[] = $list;
 				}
 				$flag = 1;
@@ -922,7 +943,21 @@ class GroupsController extends AbstractActionController
 			$limit = (int) $limit;
 			$offset =($offset>0)?$offset-1:0;
 			$offset = $offset*$limit;
-			$members_list = $this->getUserGroupTable()->getMembers($group_id,$myinfo->user_id,$type,(int) $offset,(int) $limit);			
+
+            if($type == 'Pending'){
+                $ownerRow = $this->getUserGroupTable()->checkOwner($group_id, $myinfo->user_id);
+                if (!empty($ownerRow)){
+                    $members_list = $this->getUserGroupJoiningRequestTable()->getRequestMembers($group_id,(int) $offset,(int) $limit);
+                }
+                else{
+                    $dataArr[0]['flag'] = "Failure";
+                    $dataArr[0]['message'] = "Not a owner to see pending requests.";
+                    echo json_encode($dataArr);
+                    exit;
+                }
+            }else{
+                $members_list = $this->getUserGroupTable()->getMembers($group_id,$myinfo->user_id,$type,(int) $offset,(int) $limit);
+            }
 			if(!empty($members_list)){
 				foreach($members_list as $list){
 					$tag_category = $this->getUserTagTable()->getAllUserTagCategiry($list['user_id']);
@@ -938,6 +973,27 @@ class GroupsController extends AbstractActionController
 					$is_requested = ($this->getUserFriendTable()->isRequested($list['user_id'],$myinfo->user_id))?1:0;
 					$isPending = ($this->getUserFriendTable()->isPending($list['user_id'],$myinfo->user_id))?1:0;
 					$profile_photo = $this->manipulateProfilePic($list['user_id'], $list['profile_icon'], $list['user_fbid']);
+                    $arr_questionnaire = array();
+                    $groupRights = null;
+                    if($type == 'Pending'){
+                        $questionnaire = $this->getGroupQuestionnaireAnswersTable()->getAllQuestionswithanswers($group_id,$list['user_id']);
+                        foreach($questionnaire as $questions){
+                            $options = $this->getGroupQuestionnaireOptionsTable()->getAnswerOptions(array($questions['selected_options']));
+                            $arr_questionnaire[] = array(
+                                'question'=>$questions['question'],
+                                'answer_type'=>$questions['answer_type'],
+                                'answer'=>$questions['answer'],
+                                'options'=>$options,
+                            );
+                        }
+                        $groupRights = "PendingRequest";
+                    }else{
+                        if($list['is_admin']){
+                            $groupRights = "Admin";
+                        } else{
+                            $groupRights = "Member";
+                        }
+                    }
 					$friend_status ="";
 					if($is_friend){
 						$friend_status = 'Friends';
@@ -967,10 +1023,9 @@ class GroupsController extends AbstractActionController
 									'tags' =>$tags,
 									'joined_group_count'=>$list['group_count'],
 									'created_group_count'=>$created_group_count,
-									'is_admin'=>($type == 'pending')?0:$list['is_admin'],
-									'user_group_is_owner'=>($type == 'pending')?0:$list['user_group_is_owner'],
-									'user_group_role'=>($type == 'pending')?'':$list['user_group_role'],
+									'group_rights'=>$groupRights,
 									'friendship_status'=>$friend_status,
+                                    'questionnaire' =>($type == 'Pending')?$arr_questionnaire:"",
 									);
 				}
 			}
@@ -1285,11 +1340,11 @@ class GroupsController extends AbstractActionController
                          $arrGroupQuestion   = $this->getGroupJoiningQuestionnaireTable()->getQuestionFromQuestionIdAndGroupId($question['questionnaire_id'], $intGroupId);
                          if(!empty($arrGroupQuestion)){
                             if($question['answer_type'] == 'radio'|| $question['answer_type'] == 'checkbox'){
-                                if(trim($question['selected_options']) != ''){
+                                if($question['selected_options'] != ''){
                                     // check options
                                     $sptOption   = explode(',',$question['selected_options']);
                                     for($a=0; $a<count($sptOption); $a++ ){
-                                       $arrOption   = $this->getGroupQuestionnaireOptionsTable()->getSelectedOptionDetails($sptOption[0]);
+                                       $arrOption   = $this->getGroupQuestionnaireOptionsTable()->getSelectedOptionDetails(strip_tags(trim($sptOption[0])));
                                        if($arrOption[0]['question_id'] != $question['questionnaire_id']){
                                            $questionError   = 1;
                                        }
@@ -1639,6 +1694,48 @@ class GroupsController extends AbstractActionController
             $dataArr[0]['flag']                     = $this->flagError;
             $dataArr[0]['message']                  = "Request Not Authorised.";                        
         }
+        echo json_encode($dataArr);
+        exit;
+    }
+    public function leavegroupAction(){
+        $error = '';
+        $request    = $this->getRequest();
+        if ($request->isPost()){
+            $post       = $request->getPost();
+            $accToken   = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+            $group_id   = (isset($post['groupid']) && $post['groupid'] != null && $post['groupid'] != '' && $post['groupid'] != 'undefined') ? strip_tags(trim($post['groupid'])) : '';
+            if ($accToken == '') {
+                $dataArr[0]['flag']     = $this->flagError;
+                $dataArr[0]['message']  = "Please Input a Valid Access Token.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            if ($group_id == '') {
+                $dataArr[0]['flag']     = $this->flagError;
+                $dataArr[0]['message']  = "Please Input a Valid Group Id.";
+                echo json_encode($dataArr);
+                exit;
+            } else if (!is_numeric($group_id)) {
+                $dataArr[0]['flag']     = $this->flagError;
+                $dataArr[0]['message']  = "Group Id must be numeric.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $arrUserGroup = array();
+            $user_details       = $this->getUserTable()->getUserByAccessToken($accToken);
+            if(!empty($user_details)&&$user_details->user_id){
+                $arrUserGroup      = $this->getUserGroupTable()->getUserGroup($user_details->user_id, $group_id);
+                if(count($arrUserGroup) > 0){
+                    if($this->getUserGroupTable()->deleteOneUserGroup($group_id, $user_details->user_id)){
+                        $this->getGroupQuestionnaireAnswersTable()->deleteUserAnswersOfGroup($group_id,$user_details->user_id);
+                    }else{	$error = "Some error occured. Please try again"; }
+                }else{$error = "Group not exist in the system";}
+            }else{$error = "User not exist in the system";}
+        }else{$error = "Request Not Authorized";}
+
+        $dataArr= array();
+        $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagError;
+        $dataArr[0]['message'] = (empty($error))?'Left Group Successfully':$error;
         echo json_encode($dataArr);
         exit;
     }

@@ -111,7 +111,7 @@ return array(
 		'Service\Controller\Comment' => 'Service\Controller\CommentController',
 		'Service\Controller\Notification' => 'Service\Controller\NotificationController',
         ),
-    ),   
-    
+    ),
+
 );
 

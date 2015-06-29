@@ -4,6 +4,7 @@ return array(
         'invokables' => array(
             'Notification\Controller\Notification' => 'Notification\Controller\NotificationController',
 			'Notification\Controller\UserNotification' => 'Notification\Controller\UserNotificationController',
+            'Notification\Controller\PushNotification' => 'Notification\Controller\PushNotificationController',
         ),
     ),
 
@@ -89,6 +90,17 @@ return array(
                             ),
                         ),
                     ),
+                   'pushnotify' => array(
+                      'type' => 'Literal',
+                      'options' => array(
+                          'route' => '/pushnotify',
+                          'defaults' => array(
+                              '__NAMESPACE__' => 'Notification\Controller',
+                              'controller' => 'PushNotification',
+                              'action'     => 'PushNotify',
+                          ),
+                      ),
+                   ),
                 ),
 			),
 		),
