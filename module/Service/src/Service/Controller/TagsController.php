@@ -20,7 +20,7 @@ class TagsController extends AbstractActionController
     protected $groupsTable;
 	protected $userGroupTable;	
 	protected $tagCategoryTable;
-	public function init(){
+	public function __construct(){
         $this->flagSuccess = "Success";
 		$this->flagError = "Failure";
 	}

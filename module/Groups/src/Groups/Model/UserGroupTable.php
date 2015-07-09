@@ -538,7 +538,6 @@ class UserGroupTable extends AbstractTableGateway
 		$sub_select = new Select;
 		$sub_select2 = new Select;
 		$sub_select3 = new Select;
-		$sub_select4 = new Select;
 		$sub_select->from('y2m_group')
 				   ->columns(array(new Expression('COUNT(y2m_group.group_id) as member_count'),"group_id"))
 				   ->join(array('y2m_user_group'=>'y2m_user_group'),'y2m_group.group_id = y2m_user_group.user_group_group_id',array());
@@ -551,11 +550,6 @@ class UserGroupTable extends AbstractTableGateway
 				   ->join(array('y2m_user_group'=>'y2m_user_group'),"y2m_group.group_id = y2m_user_group.user_group_group_id",array())
 				   ->where->in("user_group_user_id",$sub_select2);
 		$sub_select3->group('y2m_group.group_id');
-		$sub_select4->from('y2m_group')
-				   ->columns(array("group_id"))
-				   ->join(array('y2m_user_group'=>'y2m_user_group'),"y2m_group.group_id = y2m_user_group.user_group_group_id",array())
-				   ->where->in("user_group_user_id",$sub_select2);
-		$sub_select4->group('y2m_group.group_id');
 		$select->from('y2m_group')
 			   ->join('y2m_group_tag',"y2m_group_tag.group_tag_group_id = y2m_group.group_id")
 			   ->join('y2m_tag',"y2m_group_tag.group_tag_tag_id = y2m_tag.tag_id")
@@ -588,15 +582,39 @@ class UserGroupTable extends AbstractTableGateway
 			$select->where(array("y2m_group.group_id IN (SELECT y2m_group.group_id AS group_id FROM y2m_group INNER JOIN y2m_user_group AS y2m_user_group ON y2m_group.group_id = y2m_user_group.user_group_group_id WHERE user_group_user_id IN (SELECT IF(user_friend_sender_user_id=$user_id,user_friend_friend_user_id,user_friend_sender_user_id) AS friend_user FROM y2m_user_friend WHERE user_friend_sender_user_id = $user_id OR user_friend_friend_user_id = $user_id) GROUP BY y2m_group.group_id)"));
 		}
 		$select->group("y2m_group.group_id");
-		$select->limit((int) $limit);
-		$select->offset((int) $offset);
+        if ($limit) {
+            $select->limit((int)$limit);
+            $select->offset((int)$offset);
+        }
 		$statement = $this->adapter->createStatement();
 		//echo $select->getSqlString();
 		$select->prepareStatement($this->adapter, $statement);
 		$resultSet = new ResultSet();
 		$resultSet->initialize($statement->execute());
-        	return $resultSet->toArray();
+        return $resultSet->toArray();
 	}
+    public function getCountOfAllMatchedGroupsOfUserAPI($user_id,$user_tag_status=null){
+        $select = new Select;
+        $select->from('y2m_group')
+            ->columns(array(new Expression('COUNT(DISTINCT(y2m_group.group_id)) as group_count')))
+            ->join("y2m_group_tag","y2m_group.group_id = y2m_group_tag.group_tag_group_id",array())
+            ->join("y2m_tag","y2m_tag.tag_id = y2m_group_tag.group_tag_tag_id",array())
+            ->where(array("y2m_group.group_status"=>'active'))
+            ->where(array("y2m_group.group_id NOT IN (SELECT user_group_group_id FROM y2m_user_group WHERE user_group_user_id = $user_id)"));
+             if ($user_tag_status != ''){
+                 $select->where(array('y2m_group_tag.group_tag_tag_id IN
+	                (SELECT y2m_user_tag.user_tag_tag_id FROM y2m_user_tag where y2m_user_tag.user_tag_user_id= '.$user_id.')'));
+             } else {
+                 $select->where(array('y2m_group_tag.group_tag_tag_id IN
+	                (SELECT y2m_tag.tag_id FROM y2m_tag)'));
+             }
+        $statement = $this->adapter->createStatement();
+        $select->prepareStatement($this->adapter, $statement);
+        //echo $select->getSqlString();
+        $resultSet = new ResultSet();
+        $resultSet->initialize($statement->execute());
+        return $resultSet->current();
+    }
 	public function fetchAllUserGroupCount($user_id,$visitor_id, $strType,$profile_type){ 
         // creating condition for gropu navigations
          

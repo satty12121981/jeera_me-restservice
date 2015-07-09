@@ -83,9 +83,11 @@ class GroupPostsController extends AbstractActionController
 			$offset =($offset>0)?$offset-1:0;
 			$offset = $offset*$limit;
             $feeds_list = $this->getGroupTable()->getNewsFeedsAPI($userinfo->user_id,$type,$group_id,$activity,(int) $limit, (int) $offset);
+            $groupMemberCount = "";
             foreach($feeds_list as $list){
                 $is_admin = 0;
                 $friendl_status = "";
+                $groupMemberCount = $this->getUserGroupTable()->countGroupMembers($list['group_id']);
                 if($this->getUserGroupTable()->checkOwner($list['group_id'],$list['user_id'])){
                     $is_admin = 1;
                 }
@@ -183,6 +185,7 @@ class GroupPostsController extends AbstractActionController
                             "attending_users" =>$attending_users,
                             "allow_join" =>$allow_join,
                             'is_admin'=>$is_admin,
+                            'member_count'=>$groupMemberCount->memberCount,
                         );
                         $feeds[] = array('content' => $activity_details,
                             'type'=>$list['type'],
@@ -211,6 +214,7 @@ class GroupPostsController extends AbstractActionController
                             "comment_counts"	=>$comment_details['comment_counts'],
                             "is_commented"	=>$comment_details['is_commented'],
                             'is_admin'=>$is_admin,
+                            'member_count'=>$groupMemberCount->memberCount,
                         );
                         $feeds[] = array('content' => $discussion_details,
                             'type'=>$list['type'],
@@ -253,6 +257,7 @@ class GroupPostsController extends AbstractActionController
                             "comment_counts"	=>$comment_details['comment_counts'],
                             "is_commented"	=>$comment_details['is_commented'],
                             'is_admin'=>$is_admin,
+                            'member_count'=>$groupMemberCount->memberCount,
                         );
                         $feeds[] = array(
                             'content' => $media_details,

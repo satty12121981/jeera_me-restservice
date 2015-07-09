@@ -156,6 +156,17 @@ class UserNotificationTable extends AbstractTableGateway
 
     }
 
+    public function saveUserNotificationStatusByNotificationId(UserNotification $notification){
+        $data = array(
+            'user_notification_status'  => $notification->user_notification_status
+        );
+        if ($this->getUserNotification($notification->user_notification_id)) {
+            $this->update($data, array('user_notification_id' => $notification->user_notification_id));
+        } else {
+            throw new \Exception('Form id does not exist');
+        }
+    }
+
     public function deleteUserNotification($user_notification_id){  $this->delete(array('user_notification_id' => $user_notification_id)); }
 
 	public function getAllNotification($user_id){
@@ -208,7 +219,7 @@ class UserNotificationTable extends AbstractTableGateway
 
 	}
 
-	public function  getAllUserNotificationWithAllStatus($user_id,$offset,$limit){
+	public function getAllUserNotificationWithAllStatus($user_id,$offset,$limit){
 
 		$select = new Select;
 
@@ -238,7 +249,7 @@ class UserNotificationTable extends AbstractTableGateway
 
 	}
 
-	public function  makeNotificationsReaded($user_id){
+	public function makeNotificationsReaded($user_id){
 
 		  $data['user_notification_status'] = 'read';
 
@@ -356,7 +367,8 @@ class UserNotificationTable extends AbstractTableGateway
 
 		return $resultSet->buffer();
 
-	} 
+	}
+
 	public function getUserNotificationWithSenderInformation($user_id,$type,$offset,$limit){
 		$select = new Select;
 

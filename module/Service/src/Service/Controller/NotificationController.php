@@ -1,10 +1,14 @@
 <?php
 namespace Service\Controller;
+use Notification\Model\PushNotificationDeviceToken;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\JsonModel;
 use Zend\Authentication\Adapter\DbTable as AuthAdapter;
 use Notification\Model\Notification;
 use Notification\Model\NotificationTable;
+use Notification\Model\UserNotification;
+use Notification\Model\PushNotificationToken;
+use Notification\Model\PushNotificationTokenTable;
 use Application\Controller\Plugin\PushNotifications;
 use \Exception;
 
@@ -18,7 +22,11 @@ class NotificationController extends AbstractActionController
 	protected $groupTable;
 	protected $discussionTable;
 	protected $groupMediaTable;
-
+    protected $pushNotificationTokenTable;
+    public function __construct(){
+        $this->flagSuccess = "Success";
+        $this->flagFailure = "Failure";
+    }
 	public function NotificationsAction(){
 		$error = '';
 		$notification_list =array();
@@ -61,7 +69,6 @@ class NotificationController extends AbstractActionController
                             $isRequested = $this->getUserFriendTable()->isRequested($userinfo->user_id,$list->user_notification_sender_id);
                             $notification_list[] = array(
                                 'user_notification_id'=>$list->user_notification_id,
-                                'user_notification_content'=>$list->user_notification_content,
                                 'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                 'user_notification_sender_id'=>$list->user_notification_sender_id,
                                 'user_notification_reference_id'=>$list->user_notification_reference_id,
@@ -74,12 +81,13 @@ class NotificationController extends AbstractActionController
                                 'is_requested' => $isRequested,
                                 'type' => "User",
                                 'process' => "FriendRequest",
+                                'user_notification_content'=>$list->user_given_name.' sent you a friend request',
+
                             );
                             break;
                         case "Friend Request Accept":
                             $notification_list[] = array(
                                 'user_notification_id'=>$list->user_notification_id,
-                                'user_notification_content'=>$list->user_notification_content,
                                 'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                 'user_notification_sender_id'=>$list->user_notification_sender_id,
                                 'user_notification_reference_id'=>$list->user_notification_reference_id,
@@ -90,12 +98,12 @@ class NotificationController extends AbstractActionController
                                 'sender_user_fbid' => $list->user_fbid,
                                 'type' => "User",
                                 'process' => "FriendRequestAccepted",
+                                'user_notification_content'=>$list->user_given_name.' accepted your friend request',
                             );
                             break;
                         case "Friend Request Reject":
                             $notification_list[] = array(
                                 'user_notification_id'=>$list->user_notification_id,
-                                'user_notification_content'=>$list->user_notification_content,
                                 'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                 'user_notification_sender_id'=>$list->user_notification_sender_id,
                                 'user_notification_reference_id'=>$list->user_notification_reference_id,
@@ -106,6 +114,7 @@ class NotificationController extends AbstractActionController
                                 'sender_user_fbid' => $list->user_fbid,
                                 'type' => "User",
                                 'process' => "FriendRequestRejected",
+                                'user_notification_content'=>$list->user_given_name.' rejected your friend request',
                             );
                             break;
                         case "Group Invite":
@@ -113,7 +122,6 @@ class NotificationController extends AbstractActionController
                             if(!empty($group)){
                                 $notification_list[] = array(
                                     'user_notification_id'=>$list->user_notification_id,
-                                    'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
@@ -127,6 +135,7 @@ class NotificationController extends AbstractActionController
                                     'group_seo_title'	=> $group->group_seo_title,
                                     'type' => "Group",
                                     'process' => "GroupInvite",
+                                    'user_notification_content'=>$list->user_given_name.' invited you to join the group '.$group->group_title,
                                 );
                             }
                             break;
@@ -135,7 +144,6 @@ class NotificationController extends AbstractActionController
                             if(!empty($group)){
                                 $notification_list[] = array(
                                     'user_notification_id'=>$list->user_notification_id,
-                                    'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
@@ -149,6 +157,7 @@ class NotificationController extends AbstractActionController
                                     'group_seo_title'	=> $group->group_seo_title,
                                     'type' => "Group",
                                     'process' => "GroupJoiningRequest",
+                                    'user_notification_content'=>$list->user_given_name.' sent you a request to join the group '.$group->group_title,
                                 );
                             }
                             break;
@@ -157,7 +166,6 @@ class NotificationController extends AbstractActionController
                             if(!empty($group)){
                                 $notification_list[] = array(
                                     'user_notification_id'=>$list->user_notification_id,
-                                    'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
@@ -171,6 +179,7 @@ class NotificationController extends AbstractActionController
                                     'group_seo_title'	=> $group->group_seo_title,
                                     'type' => "Group",
                                     'process' => "GroupJoiningRequestAccepted",
+                                    'user_notification_content'=>$list->user_given_name.' joined your group '.$group->group_title,
                                 );
                             }
                             break;
@@ -179,7 +188,6 @@ class NotificationController extends AbstractActionController
                             if(!empty($group)){
                                 $notification_list[] = array(
                                     'user_notification_id'=>$list->user_notification_id,
-                                    'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
@@ -193,6 +201,7 @@ class NotificationController extends AbstractActionController
                                     'group_seo_title'	=> $group->group_seo_title,
                                     'type' => "Group",
                                     'process' => "GroupJoiningRequestRejected",
+                                    'user_notification_content'=>$list->user_given_name.' rejected your group joining invitation '.$group->group_title,
                                 );
                             }
                             break;
@@ -202,22 +211,26 @@ class NotificationController extends AbstractActionController
                                 $group  = $this->getGroupTable()->getPlanetinfo($discussion->group_discussion_group_id);
                                 if ($list->user_notification_process == "New Discussion"){
                                     $notification_process = "NewStatus";
+                                    $notification_content = $list->user_given_name.' added a new post in '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "comment"){
                                     $notification_process = "CommentMade";
+                                    $notification_content = $list->user_given_name.' commented on your post in '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "comment_hashed"){
                                     $notification_process = "MentionedInComment";
+                                    $notification_content = $list->user_given_name.' mentioned you in a comment on '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "like"){
                                     $notification_process = "Liked";
+                                    $notification_content = $list->user_given_name.' liked the status in '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "comment like"){
                                     $notification_process = "CommentLiked";
+                                    $notification_content = $list->user_given_name.' liked your comment in the group '.$group->group_title;
                                 }
                                 $notification_list[] = array(
                                     'user_notification_id'=>$list->user_notification_id,
-                                    'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
@@ -231,6 +244,7 @@ class NotificationController extends AbstractActionController
                                     'group_seo_title'	=> $group->group_seo_title,
                                     'type' => "Status",
                                     'process' => $notification_process,
+                                    'user_notification_content'=>$notification_content,
                                 );
                             }
                             break;
@@ -240,26 +254,31 @@ class NotificationController extends AbstractActionController
                                 $group  = $this->getGroupTable()->getPlanetinfo($activity->group_activity_group_id);
                                 if ($list->user_notification_process == "New Event"){
                                     $notification_process = "NewEvent";
+                                    $notification_content = $list->user_given_name.' added a new event in '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "comment"){
                                     $notification_process = "CommentMade";
+                                    $notification_content = $list->user_given_name.' commented  on the event  in '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "comment_hashed"){
                                     $notification_process = "MentionedInComment";
+                                    $notification_content = $list->user_given_name.' mentioned you in a comment in '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "like"){
                                     $notification_process = "Liked";
+                                    $notification_content = $list->user_given_name.' liked the event in '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "comment like"){
                                     $notification_process = "CommentLiked";
+                                    $notification_content = $list->user_given_name.' liked your comment in the group '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "Join Event"){
                                     $notification_process = "JoinedEvent";
+                                    $notification_content = $list->user_given_name.' joined the event in '.$group->group_title;
                                 }
 
                                 $notification_list[] = array(
                                     'user_notification_id'=>$list->user_notification_id,
-                                    'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
@@ -273,6 +292,7 @@ class NotificationController extends AbstractActionController
                                     'group_seo_title'	=> $group->group_seo_title,
                                     'type' => "Event",
                                     'process' => $notification_process,
+                                    'user_notification_content'=>$notification_content,
                                 );
                             }
                             break;
@@ -282,22 +302,26 @@ class NotificationController extends AbstractActionController
                                 $group  = $this->getGroupTable()->getPlanetinfo($media->media_added_group_id);
                                 if ($list->user_notification_process == "New Media"){
                                     $notification_process = "NewMedia";
+                                    $notification_content = $list->user_given_name.' added a new media in '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "comment"){
                                     $notification_process = "CommentMade";
+                                    $notification_content = $list->user_given_name.' added a new comment on the media in '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "comment_hashed"){
                                     $notification_process = "MentionedInComment";
+                                    $notification_content = $list->user_given_name.' mentioned you in a comment in '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "like"){
                                     $notification_process = "Liked";
+                                    $notification_content = $list->user_given_name.' liked the media in '.$group->group_title;
                                 }
                                 else if ($list->user_notification_process == "comment like"){
                                     $notification_process = "CommentLiked";
+                                    $notification_content = $list->user_given_name.' liked your comment in the group '.$group->group_title;
                                 }
                                 $notification_list[] = array(
                                     'user_notification_id'=>$list->user_notification_id,
-                                    'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
@@ -314,6 +338,7 @@ class NotificationController extends AbstractActionController
                                     'media_caption' => $media->media_caption,
                                     'type' => "Media",
                                     'process' => $notification_process,
+                                    'user_notification_content'=>$notification_content,
                                 );
                             }
                             break;
@@ -322,7 +347,6 @@ class NotificationController extends AbstractActionController
                             if(!empty($group)){
                                 $notification_list[] = array(
                                     'user_notification_id'=>$list->user_notification_id,
-                                    'user_notification_content'=>$list->user_notification_content,
                                     'user_notification_added_timestamp'=>$this->timeAgo($list->user_notification_added_timestamp),
                                     'user_notification_sender_id'=>$list->user_notification_sender_id,
                                     'user_notification_reference_id'=>$list->user_notification_reference_id,
@@ -338,6 +362,7 @@ class NotificationController extends AbstractActionController
                                     'group_seo_title'	=> $group->group_seo_title,
                                     'type' => "Group",
                                     'process' => "GroupAdminPromoted",
+                                    'user_notification_content'=>$list->user_given_name.' assigned you as an admin of the group '.$group->group_title,
                                 );
                             }
                             break;
@@ -381,6 +406,7 @@ class NotificationController extends AbstractActionController
         $request   = $this->getRequest();
         $notification_count = 0;
         if ($request->isPost()) {
+            $post = $request->getPost();
             $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
             $error = (empty($accToken)) ? "Request Not Authorised." : $error;
             $this->checkError($error);
@@ -398,7 +424,7 @@ class NotificationController extends AbstractActionController
         }
         $dataArr[0]['flag'] = (empty($error))?"Success":"Failure";
         $dataArr[0]['message'] = $error;
-        $dataArr[0]['notification_count'] = $notification_count;
+        $dataArr[0]['notification_list'] = $notification_list;
         echo json_encode($dataArr);
         exit;
     }
@@ -408,6 +434,7 @@ class NotificationController extends AbstractActionController
         $request   = $this->getRequest();
         $notification_count = 0;
         if ($request->isPost()) {
+            $post = $request->getPost();
             $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
             $error = (empty($accToken)) ? "Request Not Authorised." : $error;
             $this->checkError($error);
@@ -424,6 +451,140 @@ class NotificationController extends AbstractActionController
         echo json_encode($dataArr);
         exit;
 	}
+    public function UpdateNotificationStatusByIdAction(){
+        $sm = $this->getServiceLocator();
+        $error = '';
+        $request   = $this->getRequest();
+        $notification_count = 0;
+        if ($request->isPost()) {
+            $post = $request->getPost();
+            $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+            $error = (empty($accToken)) ? "Request Not Authorised." : $error;
+            $this->checkError($error);
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
+            $this->checkError($error);
+            $notificationIds = (isset($post['notificationId']) && is_array($post['notificationId']))?array_filter($post['notificationId']):'';
+
+            if ((empty($notificationIds))) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Please Input Notification Id[s] or Check Input Field Title Characters suffixed with [].";
+                echo json_encode($dataArr);
+                exit;
+            }
+
+            $notificationIds = explode(",", $notificationIds[0]);
+            if ($userinfo->user_id) {
+                if (count($notificationIds[0])) {
+                    foreach ($notificationIds as $notifyId) {
+                         if(is_numeric($notifyId)){
+                            $notificationdetails = $this->getUserNotificationTable()->getUserNotification($notifyId);
+                            if (!empty($notificationdetails)){
+                                if ($notificationdetails->user_notification_user_id == $userinfo->user_id){
+                                    $notification['user_notification_id'] = $notifyId;
+                                    $notification['user_notification_status'] = 'read';
+                                    $objnotification = new UserNotification();
+                                    $objnotification->exchangeArray($notification);
+                                    $this->getUserNotificationTable()->saveUserNotificationStatusByNotificationId($objnotification);
+                                    $message = "Notification status updated";
+                                }
+                                else{
+                                    $message = "Some notification id[s] does not belongs to access token user remaining got updated";
+                                }
+                            }
+                         }else{
+                             $message = "Some notification id[s] is not numeric remaining got updated";
+                         }
+                    }
+                }
+                else{
+                    $error = "Type a Valid Notification ID[s]";
+                }
+            }
+            else{
+                $error = "Request Not Authorized";
+            }
+        }
+        $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
+        $dataArr[0]['message'] = (empty($error))? $message : $error;
+        echo json_encode($dataArr);
+        exit;
+    }
+    public function registerDeviceAction(){
+        $sm = $this->getServiceLocator();
+        $error = '';
+        $request   = $this->getRequest();
+        if ($request->isPost()) {
+            $post = $request->getPost();
+            $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+            $error = (empty($accToken)) ? "Request Not Authorised." : $error;
+            $this->checkError($error);
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
+            $this->checkError($error);
+            $deviceToken = (isset($post['devicetoken']) && $post['devicetoken'] != null && $post['devicetoken'] != '' && $post['devicetoken'] != 'undefined') ? strip_tags(trim($post['devicetoken'])) : '';
+            $error = (empty($deviceToken)) ? "Invalid Device Token." : $error;
+            $this->checkError($error);
+            $userID = (isset($post['userid']) && $post['userid'] != null && $post['userid'] != '' && $post['userid'] != 'undefined') ? strip_tags(trim($post['userid'])) : '';
+            $error = (empty($userID)) ? "Invalid Device Type." : $error;
+            $this->checkError($error);
+            $deviceType = (isset($post['devicetype']) && $post['devicetype'] != null && $post['devicetype'] != '' && $post['devicetype'] != 'undefined') ? strip_tags(trim($post['devicetype'])) : '';
+            $error = (empty($deviceType)) ? "Request Not Authorised." : $error;
+            $this->checkError($error);
+            $pushNotificationTokenCheckData = $this->getPushNotificationTokenTable()->getPushNotificationTokenByDeviceTokenForUser($userID,$deviceToken);
+            if (empty($pushNotificationTokenCheckData)){
+                $pushNotificationTokenData['pushnotification_token_user_id'] = $userID;
+                $pushNotificationTokenData['device_token'] = $deviceToken;
+                $pushNotificationTokenData['device_type'] = $deviceType;
+                $pushNotificationDeviceToken = new PushNotificationDeviceToken();
+                $pushNotificationDeviceToken->exchangeArray($pushNotificationTokenData);
+                $insertedPushNotificationTokenId = $this->getPushNotificationTokenTable()->savePushNotificationToken($pushNotificationDeviceToken);
+            }else{
+                $error = "Already device token registered for user";
+            }
+        }
+        else{
+            $error = "Request Not Authorized";
+        }
+        $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
+        $dataArr[0]['message'] = $error;
+        echo json_encode($dataArr);
+        exit;
+
+    }
+    public function unregisterDeviceAction(){
+        $sm = $this->getServiceLocator();
+        $error = '';
+        $request   = $this->getRequest();
+        if ($request->isPost()) {
+            $post = $request->getPost();
+            $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+            $error = (empty($accToken)) ? "Request Not Authorised." : $error;
+            $this->checkError($error);
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
+            $this->checkError($error);
+
+            $userID = (isset($post['userid']) && $post['userid'] != null && $post['userid'] != '' && $post['userid'] != 'undefined') ? strip_tags(trim($post['userid'])) : '';
+            $error = (empty($userID)) ? "Invalid Device Type." : $error;
+            $this->checkError($error);
+
+            $pushNotificationTokenCheckData = $this->getPushNotificationTokenTable()->getPushNotificationTokenForUser($userID);
+            if (!empty($pushNotificationTokenCheckData)){
+                $this->getPushNotificationTokenTable()->deletePushNotificationTokenForUser($userID);
+            }else{
+                $error = "No device token exists for user";
+            }
+        }
+        else{
+            $error = "Request Not Authorized";
+        }
+        $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
+        $dataArr[0]['message'] = $error;
+        echo json_encode($dataArr);
+        exit;
+
+    }
     public function manipulateProfilePic($user_id, $profile_photo = null, $fb_id = null){
         $config = $this->getServiceLocator()->get('Config');
         $return_photo = null;
@@ -549,4 +710,8 @@ class NotificationController extends AbstractActionController
 		$sm = $this->getServiceLocator();
 		return  $this->userFriendTable = (!$this->userFriendTable)?$sm->get('User\Model\UserFriendTable'):$this->userFriendTable;    
 	}
+    public function getPushNotificationTokenTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->pushNotificationTokenTable = (!$this->pushNotificationTokenTable)?$sm->get('Notification\Model\PushNotificationTokenTable'):$this->pushNotificationTokenTable;
+    }
 }

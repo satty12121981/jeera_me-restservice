@@ -56,6 +56,7 @@ class IndexController extends AbstractActionController
     protected $WEB_STAMPTIME;
     protected $tagCategoryTable;
     protected $groupTagTable;
+    protected $countryTable;
 
 	public function  __construct() {
         $this->facebook = new Facebook(array(
@@ -131,6 +132,8 @@ class IndexController extends AbstractActionController
 			$email = trim($email);
 			$name = strip_tags($postedValues['name']);
 			$name = trim($name);
+            $countryId = strip_tags(trim($postedValues['country_id']));
+            $cityId = strip_tags(trim($postedValues['city_id']));
 			$user_details = $this->getUserTable()->getUserFromEmail(trim($email));
 			if ($user_details) {
 				$dataArr[0]['flag'] = "Failure";
@@ -138,6 +141,13 @@ class IndexController extends AbstractActionController
 				echo json_encode($dataArr);
 				exit;
 			}
+            $countryDetails = $this->getCountryTable()->getCountry($countryId);
+            if (empty($countryDetails)){
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Country does not exist in the system.";
+                echo json_encode($dataArr);
+                exit;
+            }
 			$bcrypt = new Bcrypt();
 			$data['user_password'] = $bcrypt->create($password);
 			$user_verification_key = md5('enckey'.rand().time());
@@ -157,12 +167,12 @@ class IndexController extends AbstractActionController
 			$this->getUserTable()->updateUser($data,$user_details->user_id);
 			if($insertedUserId){
 				$profile_data['user_profile_user_id'] = $insertedUserId;
-				$profile_data['user_profile_country_id'] = strip_tags($postedValues['country_id']);
-				$profile_data['user_profile_city_id'] = strip_tags($postedValues['city_id']);
+				$profile_data['user_profile_country_id'] = $countryId;
+				$profile_data['user_profile_city_id'] = $cityId;
 				$profile_data['user_profile_status'] = "available";
 				$userProfile = new UserProfile();
 				$userProfile->exchangeArray($profile_data);
-				$insertedUserProfileId = $this->getUserProfileTable()->saveUserProfileApi($userProfile);					 
+				$insertedUserProfileId = $this->getUserProfileTable()->saveUserProfile($userProfile);
 				$this->sendVerificationEmail($user_verification_key,$insertedUserId,$data['user_email']);
 				$dataArr = $this->getAllUserRelatedDetails($user_details->user_id,$data['user_accessToken']);
 				echo json_encode($dataArr);
@@ -1445,5 +1455,11 @@ class IndexController extends AbstractActionController
 		$sm = $this->getServiceLocator();
 		return $this->RecoveryemailsTable =(!$this->RecoveryemailsTable)?$sm->get('User\Model\RecoveryemailsTable'):$this->RecoveryemailsTable;
 	}
+
+    public function getCountryTable(){
+        $sm = $this->getServiceLocator();
+        return $this->countryTable =(!$this->countryTable)?$sm->get('Country\Model\CountryTable'):$this->countryTable;
+    }
+
 	
 }

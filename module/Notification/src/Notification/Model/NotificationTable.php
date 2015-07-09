@@ -51,8 +51,7 @@ class NotificationTable extends AbstractTableGateway
 
 
    public function getNotification($notification_type_id)
-
-    {
+   {
 
         $notification_type_id  = (int) $notification_type_id;
 
@@ -60,29 +59,13 @@ class NotificationTable extends AbstractTableGateway
 
         $row = $rowset->current();
 
-        
-
         return $row;
 
-    }
-
-	
-
-	 
-
-	
-
-	  
-
-
+   }
 
     public function saveNotification(Notification $notification)
-
     {
 
-	   
-
-	   
 
 	   $data = array(
 
@@ -102,52 +85,23 @@ class NotificationTable extends AbstractTableGateway
 
         );
 
-
-
         $notification_type_id = (int)$notification->notification_type_id;
-
         if ($notification_type_id == 0) {
-
             $this->insert($data);
-
 			return $this->adapter->getDriver()->getConnection()->getLastGeneratedValue();
-
         } else {
-
             if ($this->getNotification($notification_type_id)) {
-
                 $this->update($data, array('notification_type_id' => $notification_type_id));
-
             } else {
-
                 throw new \Exception('Form id does not exist');
-
             }
-
         }
-
     }
-
-
 
     public function deleteNotification($notification_type_id)
-
     {
-
         $this->delete(array('notification_type_id' => $notification_type_id));
-
     }
 
-	
-
-	
-
-	
-
-	 
-
-	
-
- 
 
 }

@@ -86,7 +86,7 @@ class GroupsController extends AbstractActionController
             $category = (isset($post['categories']) && $post['categories'] != null && $post['categories'] != '' && $post['categories'] != 'undefined') ? $post['categories'] : '';
             $myfriends = (isset($post['myfriends']) && $post['myfriends'] != null && $post['myfriends'] != '' && $post['myfriends'] != 'undefined' && $post['myfriends'] == true) ? strip_tags(trim($post['myfriends'])) : '';
             $offset = (isset($post['nparam']) && $post['nparam'] != null && $post['nparam'] != '' && $post['nparam'] != 'undefined') ? trim($post['nparam']) : 0;
-            $limit = (isset($post['countparam']) && $post['countparam'] != null && $post['countparam'] != '' && $post['countparam'] != 'undefined') ? trim($post['countparam']) : 30;
+            $limit = (isset($post['countparam']) && $post['countparam'] != null && $post['countparam'] != '' && $post['countparam'] != 'undefined') ? trim($post['countparam']) : 0;
             if (!empty($country) && !is_numeric($country)) {
                 $dataArr[0]['flag'] = "Failure";
                 $dataArr[0]['message'] = "Enter a valid country id.";
@@ -112,6 +112,7 @@ class GroupsController extends AbstractActionController
                 exit;
             }
             $arr_group_list = '';
+            $group_count = 0;
             $user_tag_available_status = '';
             $user_tag_status = $this->getUserTagTable()->checkTagExistForUser($user_id);
             $offset = (int)$offset;
@@ -121,6 +122,7 @@ class GroupsController extends AbstractActionController
             if ($user_tag_status[0]['tag_exists']) $user_tag_available_status = 1;
             $groups = $this->getUserGroupTable()->getMatchGroupsByUserTagsForRestApi($user_id, $user_tag_available_status, $city, $country, $myfriends, $category, (int)$limit, (int)$offset);
             if (!empty($groups)) {
+                $group_count = $this->getUserGroupTable()->getCountOfAllMatchedGroupsOfUserAPI($user_id,$user_tag_available_status)->group_count;
                 foreach ($groups as $list) {
                     if (!empty($list['group_photo_photo']))
                         $list['group_photo_photo'] = $config['pathInfo']['absolute_img_path'] . $config['image_folders']['group'] . $list['group_id'] . '/medium/' . $list['group_photo_photo'];
@@ -174,6 +176,7 @@ class GroupsController extends AbstractActionController
                     $dataArr[0]['usertagsexist'] = 'Yes';
                 else
                     $dataArr[0]['usertagsexist'] = 'No';
+                $dataArr[0]['groupscount'] = $group_count;
                 $dataArr[0]['groups'] = $arr_group_list;
                 echo json_encode($dataArr);
                 exit;
