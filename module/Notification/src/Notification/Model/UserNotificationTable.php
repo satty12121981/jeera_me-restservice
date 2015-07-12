@@ -521,8 +521,10 @@ class UserNotificationTable extends AbstractTableGateway
             $select->limit($limit);
             $select->offset($offset);
         }
+
         $statement = $this->adapter->createStatement();
         $select->prepareStatement($this->adapter, $statement);
+		//echo $select->getSqlString();die();
 
         $resultSet = new ResultSet();
         $resultSet->initialize($statement->execute());

@@ -32,7 +32,7 @@ class PushNotificationDeviceTokenTable extends AbstractTableGateway {
             $select->where(array('pushnotification_token_user_id'=>$pushnotification_token_user_id,'device_token'=>$pushnotification_device_token));
             $select->order('device_token_time DESC');
         });
-        return $resultSet;
+        return $resultSet->current();
     }
 
 	public function getPushNotificationTokenForUser($pushnotification_token_user_id){
@@ -44,12 +44,11 @@ class PushNotificationDeviceTokenTable extends AbstractTableGateway {
         return $resultSet;
     }
 
-    public function savePushNotificationToken(PushNotificationToken $push_notification_token){
+    public function savePushNotificationToken(PushNotificationDeviceToken $push_notification_token){
 		$data = array(
             'pushnotification_token_user_id' => $push_notification_token->pushnotification_token_user_id,
             'device_token'  => $push_notification_token->device_token,
 			'device_type'  => $push_notification_token->device_type,
-			'device_token_time'  => $push_notification_token->device_token_time,
         );
 		$pushnotification_token_id = (int)$push_notification_token->pushnotification_token_id;
         if ($pushnotification_token_id == 0) {
@@ -64,12 +63,14 @@ class PushNotificationDeviceTokenTable extends AbstractTableGateway {
         }
     }
 
-    public function deletePushNotificationToken($pushnotification_token_id)
-    {
+    public function deletePushNotificationToken($pushnotification_token_id){
         $this->delete(array('pushnotification_token_id' => $pushnotification_token_id));
     }
     public function deletePushNotificationTokenForUser($pushnotification_token_user_id){
         $this->delete(array('pushnotification_token_user_id' => $pushnotification_token_user_id));
+    }
+    public function deletePushNotificationTokenByDeviceTokenAndTypeForUser($pushnotification_token_user_id,$pushnotification_device_token,$pushnotification_device_type){
+        $this->delete(array('pushnotification_token_user_id' => $pushnotification_token_user_id,'device_token' => $pushnotification_device_token,'device_type' => $pushnotification_device_type));
     }
 
 }

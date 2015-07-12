@@ -7,8 +7,7 @@ use Zend\Authentication\Adapter\DbTable as AuthAdapter;
 use Notification\Model\Notification;
 use Notification\Model\NotificationTable;
 use Notification\Model\UserNotification;
-use Notification\Model\PushNotificationToken;
-use Notification\Model\PushNotificationTokenTable;
+use Notification\Model\PushNotificationDeviceTokenTable;
 use Application\Controller\Plugin\PushNotifications;
 use \Exception;
 
@@ -22,7 +21,7 @@ class NotificationController extends AbstractActionController
 	protected $groupTable;
 	protected $discussionTable;
 	protected $groupMediaTable;
-    protected $pushNotificationTokenTable;
+    protected $pushNotificationDeviceTokenTable;
     public function __construct(){
         $this->flagSuccess = "Success";
         $this->flagFailure = "Failure";
@@ -510,7 +509,7 @@ class NotificationController extends AbstractActionController
         echo json_encode($dataArr);
         exit;
     }
-    public function registerDeviceAction(){
+    public function RegisterPushNotificationDeviceTokenAction(){
         $sm = $this->getServiceLocator();
         $error = '';
         $request   = $this->getRequest();
@@ -526,19 +525,19 @@ class NotificationController extends AbstractActionController
             $error = (empty($deviceToken)) ? "Invalid Device Token." : $error;
             $this->checkError($error);
             $userID = (isset($post['userid']) && $post['userid'] != null && $post['userid'] != '' && $post['userid'] != 'undefined') ? strip_tags(trim($post['userid'])) : '';
-            $error = (empty($userID)) ? "Invalid Device Type." : $error;
+            $error = (empty($userID)) ? "Invalid User ID." : $error;
             $this->checkError($error);
             $deviceType = (isset($post['devicetype']) && $post['devicetype'] != null && $post['devicetype'] != '' && $post['devicetype'] != 'undefined') ? strip_tags(trim($post['devicetype'])) : '';
-            $error = (empty($deviceType)) ? "Request Not Authorised." : $error;
+            $error = (empty($deviceType)) ? "Invalid Device Type." : $error;
             $this->checkError($error);
-            $pushNotificationTokenCheckData = $this->getPushNotificationTokenTable()->getPushNotificationTokenByDeviceTokenForUser($userID,$deviceToken);
+            $pushNotificationTokenCheckData = $this->getPushNotificationDeviceTokenTable()->getPushNotificationTokenByDeviceTokenForUser($userID,$deviceToken);
             if (empty($pushNotificationTokenCheckData)){
                 $pushNotificationTokenData['pushnotification_token_user_id'] = $userID;
                 $pushNotificationTokenData['device_token'] = $deviceToken;
                 $pushNotificationTokenData['device_type'] = $deviceType;
                 $pushNotificationDeviceToken = new PushNotificationDeviceToken();
                 $pushNotificationDeviceToken->exchangeArray($pushNotificationTokenData);
-                $insertedPushNotificationTokenId = $this->getPushNotificationTokenTable()->savePushNotificationToken($pushNotificationDeviceToken);
+                $insertedPushNotificationTokenId = $this->getPushNotificationDeviceTokenTable()->savePushNotificationToken($pushNotificationDeviceToken);
             }else{
                 $error = "Already device token registered for user";
             }
@@ -547,12 +546,12 @@ class NotificationController extends AbstractActionController
             $error = "Request Not Authorized";
         }
         $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
-        $dataArr[0]['message'] = $error;
+        $dataArr[0]['message'] = (empty($error))?"Push Notification device token registered for the user":$error;
         echo json_encode($dataArr);
         exit;
 
     }
-    public function unregisterDeviceAction(){
+    public function UnRegisterPushNotificationDeviceTokenAction(){
         $sm = $this->getServiceLocator();
         $error = '';
         $request   = $this->getRequest();
@@ -564,23 +563,28 @@ class NotificationController extends AbstractActionController
             $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error = (empty($userinfo)) ? "Invalid Access Token." : $error;
             $this->checkError($error);
-
+            $deviceToken = (isset($post['devicetoken']) && $post['devicetoken'] != null && $post['devicetoken'] != '' && $post['devicetoken'] != 'undefined') ? strip_tags(trim($post['devicetoken'])) : '';
+            $error = (empty($deviceToken)) ? "Invalid Device Token." : $error;
+            $this->checkError($error);
             $userID = (isset($post['userid']) && $post['userid'] != null && $post['userid'] != '' && $post['userid'] != 'undefined') ? strip_tags(trim($post['userid'])) : '';
-            $error = (empty($userID)) ? "Invalid Device Type." : $error;
+            $error = (empty($userID)) ? "Invalid User ID." : $error;
+            $this->checkError($error);
+            $deviceType = (isset($post['devicetype']) && $post['devicetype'] != null && $post['devicetype'] != '' && $post['devicetype'] != 'undefined') ? strip_tags(trim($post['devicetype'])) : '';
+            $error = (empty($deviceType)) ? "Invalid Device Type." : $error;
             $this->checkError($error);
 
-            $pushNotificationTokenCheckData = $this->getPushNotificationTokenTable()->getPushNotificationTokenForUser($userID);
+            $pushNotificationTokenCheckData = $this->getPushNotificationDeviceTokenTable()->getPushNotificationTokenByDeviceTokenForUser($userID,$deviceToken);
             if (!empty($pushNotificationTokenCheckData)){
-                $this->getPushNotificationTokenTable()->deletePushNotificationTokenForUser($userID);
+                $this->getPushNotificationDeviceTokenTable()->deletePushNotificationTokenByDeviceTokenAndTypeForUser($userID,$deviceToken,$deviceType);
             }else{
-                $error = "No device token exists for user";
+                $error = "No device token exists for the user";
             }
         }
         else{
             $error = "Request Not Authorized";
         }
         $dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
-        $dataArr[0]['message'] = $error;
+        $dataArr[0]['message'] = (empty($error))?"Push Notification device token unregistered for the user":$error;
         echo json_encode($dataArr);
         exit;
 
@@ -710,8 +714,8 @@ class NotificationController extends AbstractActionController
 		$sm = $this->getServiceLocator();
 		return  $this->userFriendTable = (!$this->userFriendTable)?$sm->get('User\Model\UserFriendTable'):$this->userFriendTable;    
 	}
-    public function getPushNotificationTokenTable(){
+    public function getPushNotificationDeviceTokenTable(){
         $sm = $this->getServiceLocator();
-        return  $this->pushNotificationTokenTable = (!$this->pushNotificationTokenTable)?$sm->get('Notification\Model\PushNotificationTokenTable'):$this->pushNotificationTokenTable;
+        return  $this->pushNotificationDeviceTokenTable = (!$this->pushNotificationDeviceTokenTable)?$sm->get('Notification\Model\PushNotificationDeviceTokenTable'):$this->pushNotificationDeviceTokenTable;
     }
 }

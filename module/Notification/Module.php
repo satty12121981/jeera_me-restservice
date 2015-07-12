@@ -3,29 +3,28 @@ namespace Notification;
 use Notification\Model\Notification;
 use Notification\Model\NotificationTable;
 use Notification\Model\UserNotificationTable;
-use Zend\Db\ResultSet\ResultSet;	 
-use Zend\Db\TableGateway\TableGateway; 
+use Notification\Model\PushNotificationDeviceTokenTable;
+use Zend\Db\ResultSet\ResultSet;
+use Zend\Db\TableGateway\TableGateway;
 use Zend\Mvc\ModuleRouteListener;			#it is use to listen module
-
 /*************** Session *************/
 use Zend\Session\SessionManager;
 use Zend\Session\Container;
 
 class Module
-{    
+{
 	 public function onBootstrap($e) {
         $eventManager = $e->getApplication()->getEventManager();
         $moduleRouteListener = new ModuleRouteListener();
         $moduleRouteListener->attach($eventManager);
 		$this->bootstrapSession($e);
     }
-	
+
 	public function bootstrapSession($e){
         $session = $e->getApplication()
                      ->getServiceManager()
                      ->get('Zend\Session\SessionManager');
         $session->start();
-
         $container = new Container('initialized');
         if (!isset($container->init)) {
              $session->regenerateId(true);
@@ -33,7 +32,6 @@ class Module
         }
     }
 
-	
 	public function getAutoloaderConfig()
     {
         return array(
@@ -52,8 +50,8 @@ class Module
     {
         return include __DIR__ . '/config/module.config.php';
     }
-	
 	// Add this method:
+
     public function getServiceConfig()
     {
         return array(
@@ -68,12 +66,16 @@ class Module
                     $table = new UserNotificationTable($dbAdapter);
                     return $table;
                 },
+                'Notification\Model\PushNotificationDeviceTokenTable' =>  function($sm) {
+                    $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+                    $table = new PushNotificationDeviceTokenTable($dbAdapter);
+                    return $table;
+                },
 				//session start
 				'Zend\Session\SessionManager' => function ($sm) {
                     $config = $sm->get('config');
                     if (isset($config['session'])) {
                         $session = $config['session'];
-
                         $sessionConfig = null;
                         if (isset($session['config'])) {
                             $class = isset($session['config']['class'])  ? $session['config']['class'] : 'Zend\Session\Config\SessionConfig';
@@ -81,26 +83,22 @@ class Module
                             $sessionConfig = new $class();
                             $sessionConfig->setOptions($options);
                         }
-
                         $sessionStorage = null;
                         if (isset($session['storage'])) {
                             $class = $session['storage'];
                             $sessionStorage = new $class();
                         }
-
                         $sessionSaveHandler = null;
                         if (isset($session['save_handler'])) {
                             // class should be fetched from service manager since it will require constructor arguments
                             $sessionSaveHandler = $sm->get($session['save_handler']);
                         }
-
                         $sessionManager = new SessionManager($sessionConfig, $sessionStorage, $sessionSaveHandler);
                         if (isset($session['validator'])) {
                             $chain = $sessionManager->getValidatorChain();
                             foreach ($session['validator'] as $validator) {
                                 $validator = new $validator();
                                 $chain->attach('session.validate', array($validator, 'isValid'));
-
                             }
                         }
                     } else {
@@ -108,10 +106,9 @@ class Module
                     }
                     Container::setDefaultManager($sessionManager);
                     return $sessionManager;
-                	},				
+                	},
 				//session ends
             ),
         );
     }
-	
 }
