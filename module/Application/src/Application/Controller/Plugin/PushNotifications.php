@@ -228,8 +228,7 @@ class PushNotifications extends AbstractPlugin
         foreach ($feedresponses as $response) {
             echo "Response time: ".$response->getTime() . 'Token : ' . $response->getToken();
         }
-        exit;
-
+        return;
     }
 
     public function GCM($token,$messageString){
@@ -279,7 +278,7 @@ class PushNotifications extends AbstractPlugin
         echo 'Successful: ' . $response->getSuccessCount() . PHP_EOL;
         echo 'Failures: ' . $response->getFailureCount() . PHP_EOL;
         echo 'Canonicals: ' . $response->getCanonicalCount() . PHP_EOL;
-        exit;
+        return;
     }
 
 }

@@ -38,4 +38,15 @@ class SpamreasonsTable extends AbstractTableGateway
 		$resultSet->initialize($statement->execute());	  
 	  	return $resultSet->current();
 	}
+	public function getReasonDetailsWithTypeAndReasonId($type,$reason_id){
+		$select = new Select;
+		$select->from('y2m_spam_reasons')
+			->where(array('reason_id' =>$reason_id,'content_type' =>$type));
+		$statement = $this->adapter->createStatement();
+		$select->prepareStatement($this->adapter, $statement);
+		//echo $select->getSqlString();exit;
+		$resultSet = new ResultSet();
+		$resultSet->initialize($statement->execute());
+		return $resultSet->current();
+	}
 }
