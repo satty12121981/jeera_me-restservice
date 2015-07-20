@@ -432,7 +432,7 @@ class UserNotificationTable extends AbstractTableGateway
             ->join("y2m_notification_type","y2m_notification_type.notification_type_id = y2m_user_notification.user_notification_notification_type_id",array("notification_type_title","notification_type_id"))
             ->join('y2m_user','y2m_user.user_id = y2m_user_notification.user_notification_sender_id', array('user_given_name','user_id','user_profile_name','user_register_type','user_fbid'))
             ->join('y2m_user_profile_photo','y2m_user.user_profile_photo_id = y2m_user_profile_photo.profile_photo_id',array('profile_photo'),'left')
-            ->where(array("user_notification_user_id"=>$user_id));
+            ->where(array("user_notification_user_id"=>$user_id,"user_notification_status"=>'unread'));
         if($type=="user"){
             if($process=="friendrequest"){
                 $select->where(array("(y2m_user_notification.user_notification_notification_type_id = '1' and y2m_notification_type.notification_type_title='Friend Request')"));
@@ -524,8 +524,7 @@ class UserNotificationTable extends AbstractTableGateway
 
         $statement = $this->adapter->createStatement();
         $select->prepareStatement($this->adapter, $statement);
-		//echo $select->getSqlString();die();
-
+		//echo $select->getSqlString();
         $resultSet = new ResultSet();
         $resultSet->initialize($statement->execute());
         return $resultSet->buffer();

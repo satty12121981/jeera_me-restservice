@@ -6,13 +6,9 @@
 </style>
 <?php
 $form = $this->form;
-$form->setAttribute('action', $this->url('notifications/pushnotify'));
+$form->setAttribute('action', $this->url('notifications/pushnotifyregisteredusers'));
 //$form->prepare();
 ?><?php echo $this->form()->openTag($form);?>
-	<div><?php echo $this->formRow($form->get('type')); ?></div>
-	<div class="clear"></div>
-	<div><?php echo $this->formRow($form->get('token')); ?></div>
-	<div class="clear"></div>
 	<div><?php echo $this->formRow($form->get('message')); ?></div>
 	<div class="clear"></div>
 	<div><?php echo $this->formRow($form->get('submit')); ?></div>

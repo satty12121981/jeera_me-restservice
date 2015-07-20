@@ -527,6 +527,9 @@ class NotificationController extends AbstractActionController
             $userID = (isset($post['userid']) && $post['userid'] != null && $post['userid'] != '' && $post['userid'] != 'undefined') ? strip_tags(trim($post['userid'])) : '';
             $error = (empty($userID)) ? "Invalid User ID." : $error;
             $this->checkError($error);
+            $usercheck = $this->getUserTable()->getUser($userID);
+            $error = (empty($usercheck)) ? "Invalid User in System." : $error;
+            $this->checkError($error);
             $deviceType = (isset($post['devicetype']) && $post['devicetype'] != null && $post['devicetype'] != '' && $post['devicetype'] != 'undefined') ? strip_tags(trim($post['devicetype'])) : '';
             $error = (empty($deviceType)) ? "Invalid Device Type." : $error;
             $this->checkError($error);
@@ -568,6 +571,9 @@ class NotificationController extends AbstractActionController
             $this->checkError($error);
             $userID = (isset($post['userid']) && $post['userid'] != null && $post['userid'] != '' && $post['userid'] != 'undefined') ? strip_tags(trim($post['userid'])) : '';
             $error = (empty($userID)) ? "Invalid User ID." : $error;
+            $this->checkError($error);
+            $usercheck = $this->getUserTable()->getUser($userID);
+            $error = (empty($usercheck)) ? "Invalid User in System." : $error;
             $this->checkError($error);
             $deviceType = (isset($post['devicetype']) && $post['devicetype'] != null && $post['devicetype'] != '' && $post['devicetype'] != 'undefined') ? strip_tags(trim($post['devicetype'])) : '';
             $error = (empty($deviceType)) ? "Invalid Device Type." : $error;

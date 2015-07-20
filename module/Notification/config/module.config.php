@@ -101,6 +101,17 @@ return array(
                           ),
                       ),
                    ),
+                  'pushnotifyregisteredusers' => array(
+                      'type' => 'Literal',
+                      'options' => array(
+                          'route' => '/pushnotifyregisteredusers',
+                          'defaults' => array(
+                              '__NAMESPACE__' => 'Notification\Controller',
+                              'controller' => 'PushNotification',
+                              'action'     => 'PushNotifyRegisteredUsers',
+                          ),
+                      ),
+                  ),
                 ),
 			),
 		),

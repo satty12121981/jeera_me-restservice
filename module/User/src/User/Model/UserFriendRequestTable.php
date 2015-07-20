@@ -132,10 +132,9 @@ class UserFriendRequestTable extends AbstractTableGateway
         $select = new Select;
         $select->from ('y2m_user_friend_request');
         $select->where("(user_friend_request_status = 'requested' AND user_friend_request_sender_user_id = ".$request_id." AND user_friend_request_friend_user_id = ".$user_id.")");
-
         $statement = $this->adapter->createStatement();
         $select->prepareStatement($this->adapter, $statement);
-        //echo $select->getSqlString($this->adapter->getPlatform());exit;
+        //echo $select->getSqlString($this->adapter->getPlatform());//exit;
         $resultSet = new ResultSet();
         $resultSet->initialize($statement->execute());
        return $resultSet->toArray();

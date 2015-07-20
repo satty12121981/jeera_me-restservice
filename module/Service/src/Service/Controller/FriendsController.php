@@ -124,14 +124,14 @@ class FriendsController extends AbstractActionController
 					break;
 					case 'accept':
 						$isFriend = $this->getUserFriendTable()->isFriend($userId,$friend_id);
-						if($isFriend == 0){      
-							$arrFriendInfo  = $this->getUserFriendRequestTable()->GetActiveFriendRequest($friend_id, $userId);
-							if(!empty($arrFriendInfo)){                           
-								$intFriendStatus = $this->getUserFriendRequestTable()->makeActiveRequestTOProcessed($friend_id, $userId);
+						if($isFriend == 0){
+							$arrFriendInfo  = $this->getUserFriendRequestTable()->GetActiveFriendRequest($userId, $friend_id);
+							if(!empty($arrFriendInfo)){
+								$intFriendStatus = $this->getUserFriendRequestTable()->makeActiveRequestTOProcessed($userId, $friend_id);
 								if($intFriendStatus){
-									$objUserFriend                                  = new UserFriend();                                
-									$objUserFriend->user_friend_sender_user_id      = $userId;
-									$objUserFriend->user_friend_friend_user_id      = $friend_id;
+									$objUserFriend                                  = new UserFriend();
+									$objUserFriend->user_friend_sender_user_id      = $friend_id;
+									$objUserFriend->user_friend_friend_user_id      = $userId;
 									$objUserFriend->user_friend_added_ip_address    = $_SERVER["SERVER_ADDR"];
 									$objUserFriend->user_friend_status              = 'available';
 
@@ -139,37 +139,37 @@ class FriendsController extends AbstractActionController
 
 									if($insertedUserId != ''){
 										$config = $this->getServiceLocator()->get('Config');
-										$base_url = $config['pathInfo']['base_url'];								 
+										$base_url = $config['pathInfo']['base_url'];
 										$msg = '<a href="'.$base_url.$logged_user_details->user_profile_name.'">'.$logged_user_details->user_given_name." accept your friend request</a>";
 										$subject = 'Friend request';
 										$from = 'admin@jeera.com';
 										$process = 'accepted';
 										$this->UpdateNotifications($user_details->user_id,$msg,2,$subject,$from,$logged_user_details->user_id,$user_details->user_id,$process);
-									  $dataArr[0]['flag']                           = $this->flagSuccess;
-									  $dataArr[0]['message']                        = "User friend added successfully.";
+										$dataArr[0]['flag']                           = $this->flagSuccess;
+										$dataArr[0]['message']                        = "User friend added successfully.";
 									}else{
-									  $dataArr[0]['flag']                           = $this->flagError;
-									  $dataArr[0]['message']                        = "Some error occured.";
+										$dataArr[0]['flag']                           = $this->flagError;
+										$dataArr[0]['message']                        = "Some error occured.";
 									}
-							   }else{
+								}else{
 									$dataArr[0]['flag']                             = $this->flagError;
 									$dataArr[0]['message']                          = "Some error occured.";
-							   }
+								}
 							}else{
-								 $dataArr[0]['flag']                                = $this->flagError;
-								 $dataArr[0]['message']                             = "No active request exist from this user.";
+								$dataArr[0]['flag']                                = $this->flagError;
+								$dataArr[0]['message']                             = "No active request exist from this user.";
 							}
 						}else{
-							 $dataArr[0]['flag']                = $this->flagError;
-							 $dataArr[0]['message']             = "User is already friend.";
+							$dataArr[0]['flag']                = $this->flagError;
+							$dataArr[0]['message']             = "User is already friend.";
 						}
-					break;
+						break;
 					case 'reject':
 						$isFriend = $this->getUserFriendTable()->isFriend($userId,$friend_id);
 						if($isFriend == 0){
-							$arrFriendInfo = $this->getUserFriendRequestTable()->GetActiveFriendRequest($friend_id, $userId);
-							if(!empty($arrFriendInfo)){                         
-								$intFriendStatus  = $this->getUserFriendRequestTable()->DeclineFriendRequest($friend_id, $userId);
+							$arrFriendInfo = $this->getUserFriendRequestTable()->GetActiveFriendRequest($userId, $friend_id);
+							if(!empty($arrFriendInfo)){
+								$intFriendStatus  = $this->getUserFriendRequestTable()->DeclineFriendRequest($userId, $friend_id);
 								if($intFriendStatus){
 									$dataArr[0]['flag']                                 = $this->flagSuccess;
 									$dataArr[0]['message']                              = "Friend request has been rejected.";
@@ -182,19 +182,19 @@ class FriendsController extends AbstractActionController
 								$dataArr[0]['message']                                 = "No active request exist from this user.";
 							}
 						}else{
-							 $dataArr[0]['flag']                = $this->flagError;
-							 $dataArr[0]['message']             = "User is already friend.";
+							$dataArr[0]['flag']                = $this->flagError;
+							$dataArr[0]['message']             = "User is already friend.";
 						}
-					break;
+						break;
 					case 'remove':
 						$isFriend  = $this->getUserFriendTable()->isFriend($userId,$friend_id);
 						if($isFriend == 1){                       
-							$friendStatus                                          = $this->getUserFriendTable()->RemoveFrined($userId,$friend_id);
+							$friendStatus                                          = $this->getUserFriendTable()->RemoveFrined($friend_id, $userId);
 							if($friendStatus){                             
-								$intFriendStatus  = $this->getUserFriendRequestTable()->DeclineFriendRequest($friend_id, $userId);
+								$intFriendStatus  = $this->getUserFriendRequestTable()->DeclineFriendRequest($userId, $friend_id);
 								if($intFriendStatus){
 									$dataArr[0]['flag']                             = $this->flagSuccess;
-									$dataArr[0]['message']                          = "Friend request has been removed.";
+									$dataArr[0]['message']                          = "Friend has been removed.";
 								}else{
 									$dataArr[0]['flag']                             = $this->flagError;
 									$dataArr[0]['message']                          = "Some error occured.";

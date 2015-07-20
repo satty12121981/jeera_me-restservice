@@ -44,6 +44,19 @@ class PushNotificationDeviceTokenTable extends AbstractTableGateway {
         return $resultSet;
     }
 
+    public function getAllPushNotificationTokens($limit=0,$offset=0){
+
+        $resultSet = $this->select(function (Select $select) use($limit,$offset) {
+            $select->group('pushnotification_token_user_id');
+            $select->order('device_token_time DESC');
+            if ($limit) {
+                $select->limit($limit);
+                $select->offset($offset);
+            }
+        });
+        return $resultSet;
+    }
+
     public function savePushNotificationToken(PushNotificationDeviceToken $push_notification_token){
 		$data = array(
             'pushnotification_token_user_id' => $push_notification_token->pushnotification_token_user_id,

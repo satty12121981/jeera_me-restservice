@@ -110,6 +110,7 @@ return array(
 		'Service\Controller\Like' => 'Service\Controller\LikeController',
 		'Service\Controller\Comment' => 'Service\Controller\CommentController',
 		'Service\Controller\Notification' => 'Service\Controller\NotificationController',
+		'Service\Controller\Spam' => 'Service\Controller\SpamController',
         ),
     ),
 

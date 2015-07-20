@@ -293,7 +293,7 @@ class UserFriendTable extends AbstractTableGateway
 		$select->from('y2m_user')
 			    ->columns(array(new Expression('COUNT(y2m_user.user_id) as friends_count')))	  
 			   ->join(array("temp"=>$subselectcommon),'y2m_user.user_id = temp.friend_user',array())
-			    
+
 			   
 			   ;
 	     

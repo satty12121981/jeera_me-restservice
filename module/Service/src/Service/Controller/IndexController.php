@@ -60,8 +60,8 @@ class IndexController extends AbstractActionController
 
 	public function  __construct() {
         $this->facebook = new Facebook(array(
-            'appId'  => '739393236113308',
-            'secret' => '9da375419c2da6d66b7237673b285ff0'
+            'appId'  => '192944648275',
+            'secret' => '7b6b38a228f47c9e7c70e4e0669bd6e8'
         ));
         $this->flagSuccess = "Success";
 		$this->flagError = "Failure";
@@ -202,13 +202,13 @@ class IndexController extends AbstractActionController
 			$accesstoken = (isset($postedValues['accesstoken']))?trim($postedValues['accesstoken']):'';
 			if(empty($fbid)){
 				$dataArr[0]['flag'] = "Failure";
-				$dataArr[0]['message'] = "Fb id required";
+				$dataArr[0]['message'] = "Fb Id required";
 				echo json_encode($dataArr);
 				exit;
 			}
 			if(empty($accesstoken)){
 				$dataArr[0]['flag'] = "Failure";
-				$dataArr[0]['message'] = "Access token required";
+				$dataArr[0]['message'] = "Access Token Required";
 				echo json_encode($dataArr);
 				exit;
 			}
@@ -278,13 +278,13 @@ class IndexController extends AbstractActionController
 						}
 					}else{
 						$dataArr[0]['flag'] = "Failure";
-						$dataArr[0]['message'] = "Fb id mismatch";
+						$dataArr[0]['message'] = "Fb Id Mismatch";
 						echo json_encode($dataArr);
 						exit;
 					}
 				}else{
 					$dataArr[0]['flag'] = "Failure";
-					$dataArr[0]['message'] = "Invalid access tocken";
+					$dataArr[0]['message'] = "Invalid Access Token";
 					echo json_encode($dataArr);
 					exit;
 				}			
