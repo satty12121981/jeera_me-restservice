@@ -484,6 +484,189 @@ class GroupPostsController extends AbstractActionController
         }
         return;
     }
+    public function PostEditAction(){
+        $error = '';
+        $request   = $this->getRequest();
+        if ($request->isPost()) {
+            $post = $request->getPost();
+            $config = $this->getServiceLocator()->get('Config');
+            $accToken = (isset($post['accesstoken'])&&$post['accesstoken']!=null&&$post['accesstoken']!=''&&$post['accesstoken']!='undefined')?strip_tags(trim($post['accesstoken'])):'';
+            if (empty($accToken)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Request Not Authorised.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            $error =($post['mediatype']==null || $post['mediatype']=='' || $post['mediatype']=='undefined')? "Media Type Required":$error;
+            $error =($post['mediatype']!="status" && $post['mediatype']!="media" && $post['mediatype']!="event")? "Please Post With Valid Media Type":$error;
+            $error =(empty($userinfo))?"Invalid Access Token.":$error;
+            if (!empty($error)){
+                $dataArr[0]['flag'] = $this->flagFailure;
+                $dataArr[0]['message'] = $error;
+                echo json_encode($dataArr);
+                exit;
+            }
+            if(!empty($post)) {
+                $content_id = $post['postid'];
+                $content = $post['content'];
+                $media_type = $post['mediatype'];
+                $error =($post['postid']==null || $post['postid']=='' || $post['postid']=='undefined' || !is_numeric($post['postid']))? "Please input a alid post id":$error;
+                $error =($post['content']==null || $post['content']=='' || $post['content']=='undefined')? "Please input a valid post id":$error;
+                switch($media_type) {
+                    case 'media':
+                        if ($content_id != '') {
+                            $Mediadata = $this->getGroupMediaTable()->getMedia($content_id);
+                            if (!empty($Mediadata)) {
+                                if ($Mediadata->media_added_user_id == $userinfo->user_id || $this->getUserGroupTable()->checkOwner($Mediadata->media_added_group_id, $userinfo->user_id)) {
+                                    $media_dataaarray['media_caption'] = $content;
+                                    $this->getGroupMediaTable()->updateMedia($media_dataaarray, $content_id);
+                                } else {
+                                    $error = "Sorry ! You don't have the permission to do this";
+                                }
+                            } else {
+                                $error = "This status is not existing in the system";
+                            }
+                        } else {
+                            $error = "Forms are incomplete. Some values are missing";
+                        }
+                    break;
+                    case 'activity':
+                        $error =($post['title']==''||$post['title']=='undefined')? "Event title required":$error;
+                        $error =($post['event_date']==''||$post['event_date']=='undefined')? "Event date required":$error;
+                        $error =($post['event_location']==''||$post['event_location']=='undefined')? "Event location required":$error;
+                        $error =($post['event_description']==''||$post['event_description']=='undefined')? "Event description required":$error;
+                        $error = ($this->is_date($post['event_date']))?$error:"Enter a valid date";
+                        if($post['event_time']!='00:00 AM'&&$post['event_time']!='00:00 PM'){
+                            $stamp = strtotime($post['event_date'].' '.$post['event_time']);
+                        }else{
+                            $stamp = strtotime($post['event_date']);
+                        }
+                        if($error ==''){
+                            $activity_details = $this->getActivityTable()->getActivity($content_id);
+                            if(!empty($activity_details)){
+                                if($activity_details->group_activity_owner_user_id == $userinfo->user_id ||$this->getUserGroupTable()->checkOwner($activity_details->group_activity_group_id,$userinfo->user_id)){
+                                    if($stamp!=strtotime($activity_details->group_activity_start_timestamp)){
+                                        $error = ($stamp<=time())?"Past date events are not allowed":$error;
+                                    }
+                                    if($error ==''){
+                                        $activity_data['group_activity_content'] =$post['event_description'];
+                                        $activity_data['group_activity_title'] =$post['title'];
+                                        $activity_data['group_activity_location'] =$post['event_location'];
+                                        $activity_data['group_activity_location_lat'] =$post['event_location_lat'];
+                                        $activity_data['group_activity_location_lng'] =$post['event_location_lng'];
+                                        $activity_data['group_activity_start_timestamp'] = date("Y-m-d H:i:s",$stamp);
+                                        $activity_data['group_activity_modifed_timestamp'] = date("Y-m-d H:i:s");
+                                        $activity_data['group_activity_modified_ip_address'] = $_SERVER["SERVER_ADDR"];
+                                        $this->getActivityTable()->updateActivity($content_id,$activity_data);
+                                    }
+                                }else{$error = "Sorry ! You don't have the permission to do this";}
+                            }else{$error = "This status is not existing in the system";}
+                        }
+                    break;
+                    case 'status':
+                        if($content_id!=''&&$content!=''){
+                            $discussion_data = $this->getDiscussionTable()->getDiscussion($content_id);
+                            if(!empty($discussion_data)){
+                                if($discussion_data->group_discussion_owner_user_id == $userinfo->user_id ||$this->getUserGroupTable()->checkOwner($discussion_data->group_discussion_group_id,$userinfo->user_id)){
+                                    $discussion_dataaarray['group_discussion_content'] = $content;
+                                    $discussion_dataaarray['group_discussion_modified_timestamp'] = date("Y-m-d H:i:s");
+                                    $discussion_dataaarray['group_discussion_modified_ip_address'] = $_SERVER["SERVER_ADDR"];
+                                    $this->getDiscussionTable()->updateDiscussionData($discussion_dataaarray,$content_id);
+                                }else{$error = "Sorry ! You don't have the permission to do this";}
+                            }else{$error = "This status is not existing in the system";}
+                        }else{$error = "Forms are incomplete. Some values are missing";}
+                    break;
+                }
+            }else{$error = "Unable to process";}
+
+        }
+    }
+    public function PostDeleteAction(){
+        $error = '';
+        $request   = $this->getRequest();
+        if ($request->isPost()) {
+            $post = $request->getPost();
+            $config = $this->getServiceLocator()->get('Config');
+            $accToken = (isset($post['accesstoken'])&&$post['accesstoken']!=null&&$post['accesstoken']!=''&&$post['accesstoken']!='undefined')?strip_tags(trim($post['accesstoken'])):'';
+            if (empty($accToken)) {
+                $dataArr[0]['flag'] = "Failure";
+                $dataArr[0]['message'] = "Request Not Authorised.";
+                echo json_encode($dataArr);
+                exit;
+            }
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+            $error =($post['mediatype']==null || $post['mediatype']=='' || $post['mediatype']=='undefined')? "Media Type Required":$error;
+            $error =($post['mediatype']!="status" && $post['mediatype']!="media" && $post['mediatype']!="event")? "Please Post With Valid Media Type":$error;
+            $error =(empty($userinfo))?"Invalid Access Token.":$error;
+            if (!empty($error)){
+                $dataArr[0]['flag'] = $this->flagFailure;
+                $dataArr[0]['message'] = $error;
+                echo json_encode($dataArr);
+                exit;
+            }
+            if(!empty($post)) {
+                $content_id = $post['postid'];
+                $content = $post['content'];
+                $media_type = $post['mediatype'];
+                $error =($post['postid']==null || $post['postid']=='' || $post['postid']=='undefined' || !is_numeric($post['postid']))? "Please input a alid post id":$error;
+                $error =($post['content']==null || $post['content']=='' || $post['content']=='undefined')? "Please input a valid post id":$error;
+                switch($media_type) {
+                    case 'media':
+                        if ($content_id != '') {
+                            $Mediadata = $this->getGroupMediaTable()->getMedia($content_id);
+                            $Mediadata = $this->getGroupMediaTable()->getMedia($content_id);
+                            if(!empty($Mediadata)){
+                                if($Mediadata->media_added_user_id == $userinfo->user_id ||$this->getUserGroupTable()->checkOwner($Mediadata->media_added_group_id,$userinfo->user_id)){
+                                    $SystemTypeData = $this->getGroupTable()->fetchSystemType('Media');
+                                    $this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$content_id);
+                                    $this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$content_id);
+                                    $this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$content_id);
+                                    $this->getGroupMediaTable()->deleteMedia($content_id);
+                                    $this->getUserNotificationTable()->deleteSystemNotifications(8,$content_id);
+                                }else{$error = "Sorry ! You don't have the permission to do this";}
+                            }else{$error = "This status is not existing in the system";}
+                        } else {
+                            $error = "Forms are incomplete. Some values are missing";
+                        }
+                        break;
+                    case 'activity':
+                        if($error ==''){
+                            $activity_details = $this->getActivityTable()->getActivity($content_id);
+                            if(!empty($activity_details)){
+                                if($activity_details->group_activity_owner_user_id == $userinfo->user_id ||$this->getUserGroupTable()->checkOwner($activity_details->group_activity_group_id,$userinfo->user_id)){
+                                    $SystemTypeData = $this->getGroupTable()->fetchSystemType('Activity');
+                                    $this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$content_id);
+                                    $this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$content_id);
+                                    $this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$content_id);
+                                    $this->getActivityRsvpTable()->deleteAllActivityRsvp($content_id);
+                                    $this->getActivityInviteTable()->deleteAllInviteActivity($content_id);
+                                    $this->getActivityTable()->deleteActivity($content_id);
+                                    $this->getUserNotificationTable()->deleteSystemNotifications(8,$content_id);
+                                }else{$error = "Sorry ! You don't have the permission to do this";}
+                            }else{$error = "This status is not existing in the system";}
+                        }
+                        break;
+                    case 'status':
+                        if($content_id!=''&&$content!=''){
+                            $discussion_data = $this->getDiscussionTable()->getDiscussion($content_id);
+                            if(!empty($discussion_data)){
+                                if($discussion_data->group_discussion_owner_user_id == $userinfo->user_id ||$this->getUserGroupTable()->checkOwner($discussion_data->group_discussion_group_id,$userinfo->user_id)){
+                                    $SystemTypeData = $this->getGroupTable()->fetchSystemType('Discussion');
+                                    $this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$content_id);
+                                    $this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$content_id);
+                                    $this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$content_id);
+                                    $this->getDiscussionTable()->deleteDiscussion($content_id);
+                                    $this->getUserNotificationTable()->deleteSystemNotifications(6,$content_id);
+                                }else{$error = "Sorry ! You don't have the permission to do this";}
+                            }else{$error = "This status is not existing in the system";}
+                        }else{$error = "Forms are incomplete. Some values are missing";}
+                        break;
+                }
+            }else{$error = "Unable to process";}
+
+        }
+    }
     public function manipulateProfilePic($user_path_id, $profile_path_photo = null, $fb_path_id = null){
         $config = $this->getServiceLocator()->get('Config');
         $return_photo = null;

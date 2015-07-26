@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0b736442-2289-4c94-904e-bdd89460f66f" name="Default" comment="Adding New comment service to add edit delete getlist of comments&#10;">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Notification/src/Notification/Controller/PushNotificationController.php" afterPath="$PROJECT_DIR$/module/Notification/src/Notification/Controller/PushNotificationController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/PushNotifications.php" afterPath="$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/PushNotifications.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/SpamController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/SpamController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Spam/src/Spam/Model/SpamreasonsTable.php" afterPath="$PROJECT_DIR$/module/Spam/src/Spam/Model/SpamreasonsTable.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="jeera_me-restservice.iws" />
@@ -27,7 +24,21 @@
     <favorites_list name="jeera_me-restservice" />
   </component>
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file leaf-file-name="GroupPostsController.php" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.5903614">
+              <caret line="657" column="32" selection-start-line="657" selection-start-column="32" selection-end-line="657" selection-end-column="32" />
+              <folding>
+                <element signature="e#1133#16720#0#PHP" expanded="false" />
+                <element signature="e#16725#31961#0#PHP" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="Git.Settings">
     <option name="PREVIOUS_COMMIT_AUTHORS">
@@ -65,7 +76,6 @@
         <option value="$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php" />
         <option value="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupsTable.php" />
         <option value="$PROJECT_DIR$/module/Notification/src/Notification/Form/PushNotificationForm.php" />
-        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
         <option value="$PROJECT_DIR$/module/Tag/src/Tag/Model/UserTagTable.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupsController.php" />
         <option value="$PROJECT_DIR$/module/Groups/src/Groups/Model/UserGroupTable.php" />
@@ -92,6 +102,7 @@
         <option value="$PROJECT_DIR$/config/application.config.php" />
         <option value="$PROJECT_DIR$/module/Notification/src/Notification/Controller/PushNotificationController.php" />
         <option value="$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/PushNotifications.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
       </list>
     </option>
   </component>
@@ -154,6 +165,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -200,106 +212,6 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Spam" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="module" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Spam" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Spam" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Model" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="module" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Spam" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Spam" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Controller" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="module" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Spam" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="config" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="module" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
               <option name="myItemId" value="Service" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -331,109 +243,12 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="Controller" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="module" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Application" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="module" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Application" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Application" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Controller" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="module" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Application" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Application" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Controller" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Plugin" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="config" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
       <pane id="Scratches" />
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -486,10 +301,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
-    <editor active="false" />
+    <frame x="-8" y="-8" width="1382" height="744" extended-state="7" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24743778" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24743778" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32755905" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
@@ -532,20 +347,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/module/Admin/view/admin/admin/index.phtml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Admin/view/admin/admin/login.phtml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/Admin/view/admin/admin-planet-tag/get-tag-list.phtml">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -564,20 +365,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-1.0774527">
           <caret line="46" column="49" selection-start-line="46" selection-start-column="49" selection-end-line="46" selection-end-column="49" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="6.6549296">
-          <caret line="259" column="75" selection-start-line="259" selection-start-column="75" selection-end-line="259" selection-end-column="75" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Desktop/layout_user.phtml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8080986">
-          <caret line="285" column="177" selection-start-line="285" selection-start-column="140" selection-end-line="285" selection-end-column="177" />
         </state>
       </provider>
     </entry>
@@ -676,7 +463,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-1.4922547">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -684,7 +470,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="2.1359725">
           <caret line="79" column="107" selection-start-line="79" selection-start-column="12" selection-end-line="79" selection-end-column="107" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -692,7 +477,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.29259896">
           <caret line="16" column="41" selection-start-line="16" selection-start-column="4" selection-end-line="16" selection-end-column="41" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -700,7 +484,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-1.3993115">
           <caret line="140" column="43" selection-start-line="140" selection-start-column="43" selection-end-line="140" selection-end-column="43" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -708,12 +491,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-6.695353">
           <caret line="97" column="0" selection-start-line="97" selection-start-column="0" selection-end-line="97" selection-end-column="0" />
-          <folding>
-            <element signature="e#856#2431#0#PHP" expanded="false" />
-            <element signature="e#2434#14150#0#PHP" expanded="false" />
-            <element signature="e#14153#14763#0#PHP" expanded="false" />
-            <element signature="e#14770#15647#0#PHP" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -728,7 +505,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.11703958">
           <caret line="4" column="38" selection-start-line="4" selection-start-column="38" selection-end-line="4" selection-end-column="38" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -736,7 +512,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.6179002">
           <caret line="127" column="93" selection-start-line="127" selection-start-column="82" selection-end-line="127" selection-end-column="93" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -744,7 +519,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.39492753">
           <caret line="351" column="51" selection-start-line="351" selection-start-column="51" selection-end-line="351" selection-end-column="51" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -752,7 +526,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="20" column="2" selection-start-line="20" selection-start-column="2" selection-end-line="20" selection-end-column="2" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -760,7 +533,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="102" column="21" selection-start-line="102" selection-start-column="21" selection-end-line="102" selection-end-column="21" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -768,7 +540,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="22" column="38" selection-start-line="22" selection-start-column="38" selection-end-line="22" selection-end-column="38" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -776,7 +547,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="4" column="5" selection-start-line="4" selection-start-column="5" selection-end-line="4" selection-end-column="5" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -784,7 +554,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -792,7 +561,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.35800344">
           <caret line="198" column="68" selection-start-line="198" selection-start-column="68" selection-end-line="198" selection-end-column="68" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -800,9 +568,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.3666093">
           <caret line="833" column="46" selection-start-line="833" selection-start-column="33" selection-end-line="833" selection-end-column="46" />
-          <folding>
-            <element signature="e#37#52#0#PHP" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -810,7 +575,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.16179001">
           <caret line="26" column="1" selection-start-line="26" selection-start-column="1" selection-end-line="26" selection-end-column="1" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -818,9 +582,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.25301206">
           <caret line="48" column="60" selection-start-line="48" selection-start-column="60" selection-end-line="48" selection-end-column="60" />
-          <folding>
-            <element signature="e#35#84#0#PHP" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -828,7 +589,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.14629948">
           <caret line="51" column="25" selection-start-line="51" selection-start-column="25" selection-end-line="51" selection-end-column="25" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -836,12 +596,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="46" column="48" selection-start-line="46" selection-start-column="20" selection-end-line="46" selection-end-column="48" />
-          <folding>
-            <element signature="e#327#591#0#PHP" expanded="false" />
-            <element signature="e#661#957#0#PHP" expanded="false" />
-            <element signature="e#963#1561#0#PHP" expanded="false" />
-            <element signature="e#1564#1993#0#PHP" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -849,7 +603,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="54" column="27" selection-start-line="54" selection-start-column="20" selection-end-line="54" selection-end-column="27" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -857,16 +610,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.29166666">
           <caret line="513" column="13" selection-start-line="513" selection-start-column="13" selection-end-line="513" selection-end-column="13" />
-          <folding>
-            <element signature="e#650#927#0#PHP" expanded="false" />
-            <element signature="e#931#1357#0#PHP" expanded="false" />
-            <element signature="e#1361#2183#0#PHP" expanded="false" />
-            <element signature="e#4620#5358#0#PHP" expanded="false" />
-            <element signature="e#5361#6107#0#PHP" expanded="false" />
-            <element signature="e#6110#7045#0#PHP" expanded="false" />
-            <element signature="e#7272#8902#0#PHP" expanded="false" />
-            <element signature="e#8905#10583#0#PHP" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -874,7 +617,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-1.475043">
           <caret line="16" column="44" selection-start-line="16" selection-start-column="44" selection-end-line="16" selection-end-column="44" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -882,7 +624,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -890,7 +631,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.29259896">
           <caret line="10" column="28" selection-start-line="10" selection-start-column="28" selection-end-line="10" selection-end-column="28" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -898,7 +638,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.63176894">
           <caret line="40" column="73" selection-start-line="40" selection-start-column="20" selection-end-line="40" selection-end-column="73" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -906,12 +645,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.8777969">
           <caret line="80" column="70" selection-start-line="80" selection-start-column="33" selection-end-line="80" selection-end-column="70" />
-          <folding>
-            <element signature="e#36#85#0#PHP" expanded="true" />
-            <element signature="e#4607#4784#0#PHP" expanded="false" />
-            <element signature="e#4958#5166#0#PHP" expanded="false" />
-            <element signature="e#5168#5373#0#PHP" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -919,7 +652,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.49741825">
           <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -927,9 +659,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.8537005">
           <caret line="68" column="51" selection-start-line="68" selection-start-column="51" selection-end-line="68" selection-end-column="51" />
-          <folding>
-            <element signature="e#41#90#0#PHP" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -937,7 +666,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="7.344234">
           <caret line="265" column="21" selection-start-line="265" selection-start-column="21" selection-end-line="265" selection-end-column="21" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -945,28 +673,86 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.09638554">
           <caret line="19" column="36" selection-start-line="19" selection-start-column="36" selection-end-line="19" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Activity/src/Activity/Controller/ActivityController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.35111877">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#36#87#0#PHP" expanded="true" />
-            <element signature="e#823#939#0#PHP" expanded="false" />
-            <element signature="e#941#27026#0#PHP" expanded="false" />
-            <element signature="e#27028#28177#0#PHP" expanded="false" />
-            <element signature="e#28182#29527#0#PHP" expanded="false" />
-            <element signature="e#29529#30688#0#PHP" expanded="false" />
-            <element signature="e#30693#33924#0#PHP" expanded="false" />
-            <element signature="e#33929#37005#0#PHP" expanded="false" />
-            <element signature="e#37010#39678#0#PHP" expanded="false" />
-            <element signature="e#39683#40311#0#PHP" expanded="false" />
-            <element signature="e#40316#40532#0#PHP" expanded="false" />
-            <element signature="e#40537#40684#0#PHP" expanded="false" />
-            <element signature="e#40689#40917#0#PHP" expanded="false" />
-            <element signature="e#40919#41150#0#PHP" expanded="false" />
-            <element signature="e#41152#42435#0#PHP" expanded="false" />
-            <element signature="e#42437#42675#0#PHP" expanded="false" />
-            <element signature="e#42677#42858#0#PHP" expanded="false" />
-            <element signature="e#42860#43030#0#PHP" expanded="false" />
-            <element signature="e#43032#43241#0#PHP" expanded="false" />
-            <element signature="e#43243#43456#0#PHP" expanded="false" />
-            <element signature="e#43458#43662#0#PHP" expanded="false" />
+            <element signature="e#1147#6274#0#PHP" expanded="false" />
+            <element signature="e#6276#6561#0#PHP" expanded="false" />
+            <element signature="e#6563#7752#0#PHP" expanded="false" />
+            <element signature="e#7754#9634#0#PHP" expanded="false" />
+            <element signature="e#9636#10888#0#PHP" expanded="false" />
+            <element signature="e#10890#11768#0#PHP" expanded="false" />
+            <element signature="e#11771#11945#0#PHP" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Groups/src/Groups/Controller/GroupsController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.22891566">
+          <caret line="2289" column="5" selection-start-line="2221" selection-start-column="4" selection-end-line="2289" selection-end-column="5" />
+          <folding>
+            <element signature="e#1460#4565#0#PHP" expanded="false" />
+            <element signature="e#4567#15657#0#PHP" expanded="false" />
+            <element signature="e#15659#16274#0#PHP" expanded="false" />
+            <element signature="e#16276#16444#0#PHP" expanded="false" />
+            <element signature="e#16446#21907#0#PHP" expanded="false" />
+            <element signature="e#21910#23150#0#PHP" expanded="false" />
+            <element signature="e#23152#23560#0#PHP" expanded="false" />
+            <element signature="e#23562#30800#0#PHP" expanded="false" />
+            <element signature="e#30802#32004#0#PHP" expanded="false" />
+            <element signature="e#32006#34995#0#PHP" expanded="false" />
+            <element signature="e#34997#38822#0#PHP" expanded="false" />
+            <element signature="e#38824#40206#0#PHP" expanded="false" />
+            <element signature="e#40208#41816#0#PHP" expanded="false" />
+            <element signature="e#41818#47258#0#PHP" expanded="false" />
+            <element signature="e#47262#51822#0#PHP" expanded="false" />
+            <element signature="e#51824#53839#0#PHP" expanded="false" />
+            <element signature="e#53841#53992#0#PHP" expanded="false" />
+            <element signature="e#53994#58261#0#PHP" expanded="false" />
+            <element signature="e#58263#59329#0#PHP" expanded="false" />
+            <element signature="e#59331#61260#0#PHP" expanded="false" />
+            <element signature="e#61262#62998#0#PHP" expanded="false" />
+            <element signature="e#63000#65301#0#PHP" expanded="false" />
+            <element signature="e#65303#69056#0#PHP" expanded="false" />
+            <element signature="e#69058#70244#0#PHP" expanded="false" />
+            <element signature="e#70246#72152#0#PHP" expanded="false" />
+            <element signature="e#72154#73425#0#PHP" expanded="false" />
+            <element signature="e#73427#75031#0#PHP" expanded="false" />
+            <element signature="e#75033#76203#0#PHP" expanded="false" />
+            <element signature="e#76205#86973#0#PHP" expanded="false" />
+            <element signature="e#86975#90081#0#PHP" expanded="false" />
+            <element signature="e#90083#92514#0#PHP" expanded="false" />
+            <element signature="e#92516#97038#0#PHP" expanded="false" />
+            <element signature="e#97040#98175#0#PHP" expanded="false" />
+            <element signature="e#98177#103297#0#PHP" expanded="false" />
+            <element signature="e#103299#105822#0#PHP" expanded="false" />
+            <element signature="e#105824#107371#0#PHP" expanded="false" />
+            <element signature="e#107373#109193#0#PHP" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/CommentController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-9.070568">
+          <caret line="24" column="1" selection-start-line="24" selection-start-column="1" selection-end-line="24" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5903614">
+          <caret line="657" column="32" selection-start-line="657" selection-start-column="32" selection-end-line="657" selection-end-column="32" />
+          <folding>
+            <element signature="e#1133#16720#0#PHP" expanded="false" />
+            <element signature="e#16725#31961#0#PHP" expanded="false" />
           </folding>
         </state>
       </provider>
