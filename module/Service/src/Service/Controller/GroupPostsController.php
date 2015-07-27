@@ -521,6 +521,7 @@ class GroupPostsController extends AbstractActionController
                                 if ($Mediadata->media_added_user_id == $userinfo->user_id || $this->getUserGroupTable()->checkOwner($Mediadata->media_added_group_id, $userinfo->user_id)) {
                                     $media_dataaarray['media_caption'] = $content;
                                     $this->getGroupMediaTable()->updateMedia($media_dataaarray, $content_id);
+                                    $dataArr[0]['flag'] = $this->flagSuccess; $error = "Media Edited Successfully";
                                 } else {
                                     $dataArr[0]['flag'] = $this->flagFailure;
                                     $error = "Sorry ! You don't have the permission to do this";
@@ -529,12 +530,11 @@ class GroupPostsController extends AbstractActionController
                                 $dataArr[0]['flag'] = $this->flagFailure;
                                 $error = "This status is not existing in the system";
                             }
-                            $dataArr[0]['flag'] = $this->flagSuccess; $error = "Media Edited Successfully";
                         } else {
                             $dataArr[0]['flag'] = $this->flagFailure;
                             $error = "Inputs are incomplete. Some values are missing";
                         }
-                    break;
+                        break;
                     case 'event':
                         $error =($post['title']==''||$post['title']=='undefined')? "Event title required":$error;
                         $error =($post['date']==''||$post['date']=='undefined')? "Event date required":$error;
@@ -568,7 +568,7 @@ class GroupPostsController extends AbstractActionController
                                 }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry ! You don't have the permission to do this";}
                             }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "This status is not existing in the system";}
                         }else{$dataArr[0]['flag'] = $this->flagFailure;}
-                    break;
+                        break;
                     case 'status':
                         $error =($post['content']==null || $post['content']=='' || $post['content']=='undefined')? "Please input a valid content":$error;
                         $this->checkError($error);
@@ -585,7 +585,7 @@ class GroupPostsController extends AbstractActionController
                                 }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry ! You don't have the permission to do this";}
                             }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "This status is not existing in the system";}
                         }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Inputs are incomplete. Some values are missing";}
-                    break;
+                        break;
                 }
                 $dataArr[0]['message'] = $error;
                 echo json_encode($dataArr);
@@ -607,6 +607,8 @@ class GroupPostsController extends AbstractActionController
     public function PostDeleteAction(){
         $error = '';
         $request   = $this->getRequest();
+        $Mediadata = array();
+        $dataArr = array();
         if ($request->isPost()) {
             $post = $request->getPost();
             $config = $this->getServiceLocator()->get('Config');
@@ -617,10 +619,13 @@ class GroupPostsController extends AbstractActionController
                 echo json_encode($dataArr);
                 exit;
             }
-            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error =($post['mediatype']==null || $post['mediatype']=='' || $post['mediatype']=='undefined')? "Media Type Required":$error;
+            $this->checkError($error);
             $error =($post['mediatype']!="status" && $post['mediatype']!="media" && $post['mediatype']!="event")? "Please Post With Valid Media Type":$error;
+            $this->checkError($error);
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error =(empty($userinfo))?"Invalid Access Token.":$error;
+            $this->checkError($error);
             if (!empty($error)){
                 $dataArr[0]['flag'] = $this->flagFailure;
                 $dataArr[0]['message'] = $error;
@@ -628,11 +633,10 @@ class GroupPostsController extends AbstractActionController
                 exit;
             }
             if(!empty($post)) {
-                $content_id = $post['postid'];
-                $content = $post['content'];
-                $media_type = $post['mediatype'];
                 $error =($post['postid']==null || $post['postid']=='' || $post['postid']=='undefined' || !is_numeric($post['postid']))? "Please input a alid post id":$error;
-                $error =($post['content']==null || $post['content']=='' || $post['content']=='undefined')? "Please input a valid post id":$error;
+                $this->checkError($error);
+                $content_id = $post['postid'];
+                $media_type = $post['mediatype'];
                 switch($media_type) {
                     case 'media':
                         if ($content_id != '') {
@@ -646,13 +650,15 @@ class GroupPostsController extends AbstractActionController
                                     $this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$content_id);
                                     $this->getGroupMediaTable()->deleteMedia($content_id);
                                     $this->getUserNotificationTable()->deleteSystemNotifications(8,$content_id);
-                                }else{$error = "Sorry ! You don't have the permission to do this";}
-                            }else{$error = "This status is not existing in the system";}
+                                    $dataArr[0]['flag'] = $this->flagSuccess; $error = "Media Deleted successfully";
+                                }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry ! You don't have the permission to do this";}
+                            }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "This status is not existing in the system";}
                         } else {
-                            $error = "Forms are incomplete. Some values are missing";
+                            $dataArr[0]['flag'] = $this->flagFailure;
+                            $error = "Inputs are incomplete. Some values are missing";
                         }
                         break;
-                    case 'activity':
+                    case 'event':
                         if($error ==''){
                             $activity_details = $this->getActivityTable()->getActivity($content_id);
                             if(!empty($activity_details)){
@@ -665,12 +671,13 @@ class GroupPostsController extends AbstractActionController
                                     $this->getActivityInviteTable()->deleteAllInviteActivity($content_id);
                                     $this->getActivityTable()->deleteActivity($content_id);
                                     $this->getUserNotificationTable()->deleteSystemNotifications(8,$content_id);
-                                }else{$error = "Sorry ! You don't have the permission to do this";}
-                            }else{$error = "This status is not existing in the system";}
+                                    $dataArr[0]['flag'] = $this->flagSuccess; $error = "Event Deleted successfully";
+                                }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry ! You don't have the permission to do this";}
+                            }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "This status is not existing in the system";}
                         }
                         break;
                     case 'status':
-                        if($content_id!=''&&$content!=''){
+                        if($content_id!=''){
                             $discussion_data = $this->getDiscussionTable()->getDiscussion($content_id);
                             if(!empty($discussion_data)){
                                 if($discussion_data->group_discussion_owner_user_id == $userinfo->user_id ||$this->getUserGroupTable()->checkOwner($discussion_data->group_discussion_group_id,$userinfo->user_id)){
@@ -680,15 +687,19 @@ class GroupPostsController extends AbstractActionController
                                     $this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$content_id);
                                     $this->getDiscussionTable()->deleteDiscussion($content_id);
                                     $this->getUserNotificationTable()->deleteSystemNotifications(6,$content_id);
-                                }else{$error = "Sorry ! You don't have the permission to do this";}
-                            }else{$error = "This status is not existing in the system";}
-                        }else{$error = "Forms are incomplete. Some values are missing";}
+                                    $dataArr[0]['flag'] = $this->flagSuccess; $error = "Status Deleted successfully";
+                                }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry ! You don't have the permission to do this";}
+                            }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "This status is not existing in the system";}
+                        }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Inputs are incomplete. Some values are missing";}
                         break;
                 }
-            }else{$error = "Unable to process";}
-            $dataArr[0]['message'] = $error;
-            echo json_encode($dataArr);
-            exit;
+                $dataArr[0]['message'] = $error;
+                echo json_encode($dataArr);
+                exit;
+            } else {
+                $error = "Unable to process";
+                $dataArr[0]['message'] = $error;
+            }
         }
         else{
             $dataArr[0]['flag'] = $this->flagFailure;
@@ -787,6 +798,12 @@ class GroupPostsController extends AbstractActionController
             }
         }
     }
+    public function get_youtube_id_from_url($url){
+        if (stristr($url,'youtu.be/'))
+        {preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return isset($final_ID[4])?$final_ID[4]:''; }
+        else
+        {@preg_match('/(https:|http:|):(\/\/www\.|\/\/|)(.*?)\/(embed\/|watch.*?v=|channel\/)([a-z_A-Z0-9\-]{11})/i', $url, $IDD); return isset($IDD[5])?$IDD[5]:''; }
+    }
     public function checkError($error){
         if (!empty($error)){
             $dataArr[0]['flag'] = $this->flagFailure;
@@ -794,12 +811,6 @@ class GroupPostsController extends AbstractActionController
             echo json_encode($dataArr);
             exit;
         }
-    }
-    public function get_youtube_id_from_url($url){
-        if (stristr($url,'youtu.be/'))
-        {preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return isset($final_ID[4])?$final_ID[4]:''; }
-        else
-        {@preg_match('/(https:|http:|):(\/\/www\.|\/\/|)(.*?)\/(embed\/|watch.*?v=|channel\/)([a-z_A-Z0-9\-]{11})/i', $url, $IDD); return isset($IDD[5])?$IDD[5]:''; }
     }
     public function is_date( $str ){
         $stamp = strtotime( $str );

@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0b736442-2289-4c94-904e-bdd89460f66f" name="Default" comment="Adding New comment service to add edit delete getlist of comments&#10;">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupMediaTable.php" afterPath="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupMediaTable.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="jeera_me-restservice.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -25,21 +23,7 @@
     <favorites_list name="jeera_me-restservice" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="GroupPostsController.php" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.53184164">
-              <caret line="526" column="33" selection-start-line="526" selection-start-column="33" selection-end-line="526" selection-end-column="33" />
-              <folding>
-                <element signature="e#1133#16720#0#PHP" expanded="false" />
-                <element signature="e#16725#31961#0#PHP" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="Git.Settings">
     <option name="PREVIOUS_COMMIT_AUTHORS">
@@ -103,8 +87,8 @@
         <option value="$PROJECT_DIR$/config/application.config.php" />
         <option value="$PROJECT_DIR$/module/Notification/src/Notification/Controller/PushNotificationController.php" />
         <option value="$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/PushNotifications.php" />
-        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
         <option value="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupMediaTable.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
       </list>
     </option>
   </component>
@@ -779,11 +763,10 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.53184164">
-          <caret line="526" column="33" selection-start-line="526" selection-start-column="33" selection-end-line="526" selection-end-column="33" />
+        <state vertical-scroll-proportion="1.0877796">
+          <caret line="523" column="115" selection-start-line="523" selection-start-column="115" selection-end-line="523" selection-end-column="115" />
           <folding>
             <element signature="e#1133#16720#0#PHP" expanded="false" />
-            <element signature="e#16725#31961#0#PHP" expanded="false" />
           </folding>
         </state>
       </provider>
