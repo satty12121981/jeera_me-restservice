@@ -487,6 +487,7 @@ class GroupPostsController extends AbstractActionController
     public function PostEditAction(){
         $error = '';
         $request   = $this->getRequest();
+        $dataArr = array();
         if ($request->isPost()) {
             $post = $request->getPost();
             $config = $this->getServiceLocator()->get('Config');
@@ -497,24 +498,23 @@ class GroupPostsController extends AbstractActionController
                 echo json_encode($dataArr);
                 exit;
             }
-            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error =($post['mediatype']==null || $post['mediatype']=='' || $post['mediatype']=='undefined')? "Media Type Required":$error;
+            $this->checkError($error);
             $error =($post['mediatype']!="status" && $post['mediatype']!="media" && $post['mediatype']!="event")? "Please Post With Valid Media Type":$error;
+            $this->checkError($error);
+            $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error =(empty($userinfo))?"Invalid Access Token.":$error;
-            if (!empty($error)){
-                $dataArr[0]['flag'] = $this->flagFailure;
-                $dataArr[0]['message'] = $error;
-                echo json_encode($dataArr);
-                exit;
-            }
+            $this->checkError($error);
             if(!empty($post)) {
+                $error =($post['postid']==null || $post['postid']=='' || $post['postid']=='undefined' || !is_numeric($post['postid']))? "Please input a valid post id":$error;
+                $this->checkError($error);
                 $content_id = $post['postid'];
-                $content = $post['content'];
                 $media_type = $post['mediatype'];
-                $error =($post['postid']==null || $post['postid']=='' || $post['postid']=='undefined' || !is_numeric($post['postid']))? "Please input a alid post id":$error;
-                $error =($post['content']==null || $post['content']=='' || $post['content']=='undefined')? "Please input a valid post id":$error;
                 switch($media_type) {
                     case 'media':
+                        $error =($post['content']==null || $post['content']=='' || $post['content']=='undefined')? "Please input a valid content":$error;
+                        $this->checkError($error);
+                        $content = $post['content'];
                         if ($content_id != '') {
                             $Mediadata = $this->getGroupMediaTable()->getMedia($content_id);
                             if (!empty($Mediadata)) {
@@ -522,25 +522,29 @@ class GroupPostsController extends AbstractActionController
                                     $media_dataaarray['media_caption'] = $content;
                                     $this->getGroupMediaTable()->updateMedia($media_dataaarray, $content_id);
                                 } else {
+                                    $dataArr[0]['flag'] = $this->flagFailure;
                                     $error = "Sorry ! You don't have the permission to do this";
                                 }
                             } else {
+                                $dataArr[0]['flag'] = $this->flagFailure;
                                 $error = "This status is not existing in the system";
                             }
+                            $dataArr[0]['flag'] = $this->flagSuccess; $error = "Media Edited Successfully";
                         } else {
-                            $error = "Forms are incomplete. Some values are missing";
+                            $dataArr[0]['flag'] = $this->flagFailure;
+                            $error = "Inputs are incomplete. Some values are missing";
                         }
                     break;
-                    case 'activity':
+                    case 'event':
                         $error =($post['title']==''||$post['title']=='undefined')? "Event title required":$error;
-                        $error =($post['event_date']==''||$post['event_date']=='undefined')? "Event date required":$error;
-                        $error =($post['event_location']==''||$post['event_location']=='undefined')? "Event location required":$error;
-                        $error =($post['event_description']==''||$post['event_description']=='undefined')? "Event description required":$error;
-                        $error = ($this->is_date($post['event_date']))?$error:"Enter a valid date";
-                        if($post['event_time']!='00:00 AM'&&$post['event_time']!='00:00 PM'){
-                            $stamp = strtotime($post['event_date'].' '.$post['event_time']);
+                        $error =($post['date']==''||$post['date']=='undefined')? "Event date required":$error;
+                        $error =($post['location']==''||$post['location']=='undefined')? "Event location required":$error;
+                        $error =($post['description']==''||$post['description']=='undefined')? "Event description required":$error;
+                        $error = ($this->is_date($post['date']))?$error:"Enter a valid date";
+                        if($post['time']!='00:00 AM'&&$post['time']!='00:00 PM'){
+                            $stamp = strtotime($post['date'].' '.$post['time']);
                         }else{
-                            $stamp = strtotime($post['event_date']);
+                            $stamp = strtotime($post['date']);
                         }
                         if($error ==''){
                             $activity_details = $this->getActivityTable()->getActivity($content_id);
@@ -550,21 +554,25 @@ class GroupPostsController extends AbstractActionController
                                         $error = ($stamp<=time())?"Past date events are not allowed":$error;
                                     }
                                     if($error ==''){
-                                        $activity_data['group_activity_content'] =$post['event_description'];
+                                        $activity_data['group_activity_content'] =$post['description'];
                                         $activity_data['group_activity_title'] =$post['title'];
-                                        $activity_data['group_activity_location'] =$post['event_location'];
-                                        $activity_data['group_activity_location_lat'] =$post['event_location_lat'];
-                                        $activity_data['group_activity_location_lng'] =$post['event_location_lng'];
+                                        $activity_data['group_activity_location'] =$post['location'];
+                                        $activity_data['group_activity_location_lat'] =$post['location_lat'];
+                                        $activity_data['group_activity_location_lng'] =$post['location_lng'];
                                         $activity_data['group_activity_start_timestamp'] = date("Y-m-d H:i:s",$stamp);
                                         $activity_data['group_activity_modifed_timestamp'] = date("Y-m-d H:i:s");
                                         $activity_data['group_activity_modified_ip_address'] = $_SERVER["SERVER_ADDR"];
                                         $this->getActivityTable()->updateActivity($content_id,$activity_data);
-                                    }
-                                }else{$error = "Sorry ! You don't have the permission to do this";}
-                            }else{$error = "This status is not existing in the system";}
-                        }
+                                        $dataArr[0]['flag'] = $this->flagSuccess; $error = "Event Edited successfully";
+                                    }else{$dataArr[0]['flag'] = $this->flagFailure;}
+                                }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry ! You don't have the permission to do this";}
+                            }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "This status is not existing in the system";}
+                        }else{$dataArr[0]['flag'] = $this->flagFailure;}
                     break;
                     case 'status':
+                        $error =($post['content']==null || $post['content']=='' || $post['content']=='undefined')? "Please input a valid content":$error;
+                        $this->checkError($error);
+                        $content = $post['content'];
                         if($content_id!=''&&$content!=''){
                             $discussion_data = $this->getDiscussionTable()->getDiscussion($content_id);
                             if(!empty($discussion_data)){
@@ -573,14 +581,28 @@ class GroupPostsController extends AbstractActionController
                                     $discussion_dataaarray['group_discussion_modified_timestamp'] = date("Y-m-d H:i:s");
                                     $discussion_dataaarray['group_discussion_modified_ip_address'] = $_SERVER["SERVER_ADDR"];
                                     $this->getDiscussionTable()->updateDiscussionData($discussion_dataaarray,$content_id);
-                                }else{$error = "Sorry ! You don't have the permission to do this";}
-                            }else{$error = "This status is not existing in the system";}
-                        }else{$error = "Forms are incomplete. Some values are missing";}
+                                    $dataArr[0]['flag'] = $this->flagSuccess; $error = "Status Edited successfully";
+                                }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry ! You don't have the permission to do this";}
+                            }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "This status is not existing in the system";}
+                        }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Inputs are incomplete. Some values are missing";}
                     break;
                 }
-            }else{$error = "Unable to process";}
-
+                $dataArr[0]['message'] = $error;
+                echo json_encode($dataArr);
+                exit;
+            } else {
+                $error = "Unable to process";
+                $dataArr[0]['message'] = $error;
+                echo json_encode($dataArr);
+                exit;
+            }
+        } else {
+            $dataArr[0]['flag'] = $this->flagFailure;
+            $dataArr[0]['message'] = "Request Not Authorised.";
+            echo json_encode($dataArr);
+            exit;
         }
+        return;
     }
     public function PostDeleteAction(){
         $error = '';
@@ -664,8 +686,17 @@ class GroupPostsController extends AbstractActionController
                         break;
                 }
             }else{$error = "Unable to process";}
-
+            $dataArr[0]['message'] = $error;
+            echo json_encode($dataArr);
+            exit;
         }
+        else{
+            $dataArr[0]['flag'] = $this->flagFailure;
+            $dataArr[0]['message'] = "Request Not Authorised.";
+            echo json_encode($dataArr);
+            exit;
+        }
+        return;
     }
     public function manipulateProfilePic($user_path_id, $profile_path_photo = null, $fb_path_id = null){
         $config = $this->getServiceLocator()->get('Config');
@@ -756,12 +787,6 @@ class GroupPostsController extends AbstractActionController
             }
         }
     }
-    public function get_youtube_id_from_url($url){
-        if (stristr($url,'youtu.be/'))
-        {preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return isset($final_ID[4])?$final_ID[4]:''; }
-        else
-        {@preg_match('/(https:|http:|):(\/\/www\.|\/\/|)(.*?)\/(embed\/|watch.*?v=|channel\/)([a-z_A-Z0-9\-]{11})/i', $url, $IDD); return isset($IDD[5])?$IDD[5]:''; }
-    }
     public function checkError($error){
         if (!empty($error)){
             $dataArr[0]['flag'] = $this->flagFailure;
@@ -769,6 +794,12 @@ class GroupPostsController extends AbstractActionController
             echo json_encode($dataArr);
             exit;
         }
+    }
+    public function get_youtube_id_from_url($url){
+        if (stristr($url,'youtu.be/'))
+        {preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return isset($final_ID[4])?$final_ID[4]:''; }
+        else
+        {@preg_match('/(https:|http:|):(\/\/www\.|\/\/|)(.*?)\/(embed\/|watch.*?v=|channel\/)([a-z_A-Z0-9\-]{11})/i', $url, $IDD); return isset($IDD[5])?$IDD[5]:''; }
     }
     public function is_date( $str ){
         $stamp = strtotime( $str );

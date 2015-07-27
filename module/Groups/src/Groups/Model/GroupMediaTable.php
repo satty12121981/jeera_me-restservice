@@ -104,4 +104,10 @@ class GroupMediaTable extends AbstractTableGateway
 		$resultSet->initialize($statement->execute());	  
 		return $resultSet->toArray();
 	}
+	public function updateMedia($data,$group_media_id){
+		return $this->update($data, array('group_media_id' => $group_media_id));
+	}
+	public function deleteMedia($group_media_id){
+        return $this->delete(array('group_media_id' => $group_media_id));
+    }
 }
