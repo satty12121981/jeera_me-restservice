@@ -30,6 +30,7 @@ class GroupMediaTable extends AbstractTableGateway
 			'media_added_ip'        => $ip,
 			'media_status'          => $objGroupMedia->media_status,
 			'media_added_date'		=> date("Y-m-d H:i:s"),
+			'media_album_id'		=> $objGroupMedia->media_album_id,
 		);
         if($group_media_id != ''){
 			$this->update($data, array('group_media_id' => $group_media_id));
@@ -41,8 +42,17 @@ class GroupMediaTable extends AbstractTableGateway
     }
 	public function getMediaForFeed($media_id){
 		$media_id  = (int) $media_id;
-        $rowset = $this->select(array('group_media_id' => $media_id));
-        $row = $rowset->current();
+		$select = new Select;
+		$select->from('y2m_group_media')
+				->join('y2m_group_album','y2m_group_album.album_id = y2m_group_media.media_album_id',array('album_title'),'left')
+				->where(array("y2m_group_media.group_media_id"=>$media_id));
+        $statement = $this->adapter->createStatement();
+		
+		$select->prepareStatement($this->adapter, $statement);
+		//echo $select->getSqlString();die();
+		$resultSet = new ResultSet();		
+		$resultSet->initialize($statement->execute());
+        $row = $resultSet->current();
         return $row;
 	}
 	public function getMedia($media_id){

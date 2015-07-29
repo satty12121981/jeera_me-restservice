@@ -38,6 +38,8 @@ class UserProfileController extends AbstractActionController
 	protected $notifymeTable;
 	protected $userProfilePhotoTable;
 	protected $activityRsvpTable;
+	protected $groupTagTable;
+	protected $groupMediaContentTable;
 	protected function getViewHelper($helperName){
     	return $this->getServiceLocator()->get('viewhelpermanager')->get($helperName);
 	}	 
@@ -80,7 +82,8 @@ class UserProfileController extends AbstractActionController
 				$user_profileData = $this->getUserTable()->getProfileDetails($identity->user_id);				 
 				$viewModel->setVariable( 'userinfo', $user_profileData);				
 				$viewModel->setVariable( 'error', $error);
-				$viewModel->setVariable( 'user_tags' , $user_tags); 			
+				$viewModel->setVariable( 'user_tags' , $user_tags); 
+				$viewModel->setVariable( 'flashmessage' , $this->flashMessenger()->getMessages()); 
 				return $viewModel; 
 			}else{
 				$error = "User not exist in the system";
@@ -129,7 +132,7 @@ class UserProfileController extends AbstractActionController
 				return $result;
 			}
 		}else{
-			$error = "Your session has to be expired";
+			$error = "Your session expired, please log in again to continue";
 		}
 	}
 	public function updateProfileAction(){ 
@@ -149,10 +152,12 @@ class UserProfileController extends AbstractActionController
 						$data = array();
 						if($post['user_name']!=''&&$post['country']!=""&&$post['city']!=''){
 							$data['user_given_name'] = $post['user_name'];
+							$data['user_gender'] = $post['gender'];
 							$data_profile['user_profile_user_id'] = $myinfo->user_id;
 							$data_profile['user_profile_city_id'] = $post['city'];
 							$data_profile['user_profile_country_id'] = $post['country'];
 							$data_profile['user_profile_about_me'] = $post['about'];
+							$data_profile['user_profile_dob'] = date("Y-m-d",strtotime($post['dateofbirth']));
 							if($this->getUserTable()->updateUser($data,$myinfo->user_id)){
 								$this->getUserProfileTable()->updateUserProfile($data_profile,$myinfo->user_id);
 								$userinfo = $this->getUserTable()->getUser($myinfo->user_id);
@@ -163,7 +168,7 @@ class UserProfileController extends AbstractActionController
 					}else{$error = "Unable to process";}
 				}else{$error = "Unable to process";}
 			}else{$error = "User not exist in the system";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;		 
@@ -211,7 +216,7 @@ class UserProfileController extends AbstractActionController
 					}else{$error = "Unable to process";}
 				}else{$error = "Unable to process";}
 			}else{$error = "User not exist in the system";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;		
@@ -237,7 +242,7 @@ class UserProfileController extends AbstractActionController
 					$tags = $this->getUserTagTable()->getAllUserTags($identity->user_id);
 				}else{$error = "Unable to process";}				 
 			}else{$error = "User not exist in the system";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;		
@@ -270,7 +275,7 @@ class UserProfileController extends AbstractActionController
 								$base_url = $config['pathInfo']['base_url'];								 
 								$msg = '<a href="'.$base_url.$myinfo->user_profile_name.'">'.$identity->user_given_name." Sent you a friend request</a>";
 								$subject = 'Friend request';
-								$from = 'admin@jeera.com';
+								$from = 'admin@jeera.me';
 								$process = 'requested';
 								$this->UpdateNotifications($userinfo->user_id,$msg,1,$subject,$from,$identity->user_id,$identity->user_id,$process);							 
 							}else{$error = "Some error occurred.Please try again";}
@@ -278,7 +283,7 @@ class UserProfileController extends AbstractActionController
 					}else{$error = "Unable to process";}
 				}else{$error = "Unable to process";}
 			}else{$error = "User not exist in the system";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;			 		 		
@@ -306,7 +311,7 @@ class UserProfileController extends AbstractActionController
 								$base_url = $config['pathInfo']['base_url'];								 
 								$msg = '<a href="'.$base_url.$identity->user_profile_name.'">'.$identity->user_given_name." accept your friend request</a>";
 								$subject = 'Friend request';
-								$from = 'admin@jeera.com';
+								$from = 'admin@jeera.me';
 								$process = 'accepted';
 								$this->UpdateNotifications($userinfo->user_id,$msg,2,$subject,$from,$identity->user_id,$identity->user_id,$process);
 							}else{$error = "Some error occurred. Please try again";}						 
@@ -314,7 +319,7 @@ class UserProfileController extends AbstractActionController
 					}else{$error = "Unable to process";}
 				}else{$error = "Unable to process";}
 			}else{$error = "User not exist in the system";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;			 		 		
@@ -343,7 +348,7 @@ class UserProfileController extends AbstractActionController
 					}else{$error = "Unable to process";}
 				}else{$error = "Unable to process";}
 			}else{$error = "User not exist in the system";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;			 		 		
@@ -372,7 +377,7 @@ class UserProfileController extends AbstractActionController
 					}else{$error = "Unable to process";}
 				}else{$error = "Unable to process";}
 			}else{$error = "User not exist in the system";}
-		}else{$error = "Your session has to be expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;			 		 		
@@ -385,6 +390,7 @@ class UserProfileController extends AbstractActionController
 		$error = '';
 		$auth = new AuthenticationService();
 		$viewModel = new ViewModel();
+		$requests = $this->params()->fromQuery('requests');
 		if ($auth->hasIdentity()) {
 			$this->layout('layout/layout_user');
 			$identity = $auth->getIdentity();
@@ -406,6 +412,8 @@ class UserProfileController extends AbstractActionController
 											'action' => 'profile',
 											'member_profile'     => $profilename,							 
 										));
+										
+				 
 				$viewModel->addChild($profileWidget, 'profileWidget');
 				$profile_type = ($userinfo->user_id!=$identity->user_id)?'other':'mine';
 				$intTotalGroups      = $this->getUserGroupTable()->fetchAllUserGroupCount( $userinfo->user_id,$identity->user_id,'',$profile_type);
@@ -418,6 +426,10 @@ class UserProfileController extends AbstractActionController
 				$viewModel->setVariable( 'sent_count' , $sent_count);	
 				$friendslist = $this->getUserFriendTable()->getAllFriends($userinfo->user_id,$identity->user_id,0,10);
 				$arrFriends = array();
+				$viewModel->setVariable( 'showRequests' , 0);
+				if($userinfo->user_id == $identity->user_id&&$requests==1){	
+					$viewModel->setVariable( 'showRequests' , 1);
+				}				
 				$mutual_friends_count =  0;
 				if($userinfo->user_id != $identity->user_id){
 					$mutual_friends_count = $this->getUserFriendTable()->getAllMutualFriendsCount($userinfo->user_id,$identity->user_id)->friends_count;
@@ -515,7 +527,7 @@ class UserProfileController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{	$error = "User not exist in the system"; }
-		}else{$error = "Your session is already expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -581,7 +593,7 @@ class UserProfileController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{	$error = "User not exist in the system"; }
-		}else{$error = "Your session is already expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -647,7 +659,7 @@ class UserProfileController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{	$error = "User not exist in the system"; }
-		}else{$error = "Your session is already expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -713,7 +725,7 @@ class UserProfileController extends AbstractActionController
 					}
 				}else{$error = "Unable to process";}
 			}else{	$error = "User not exist in the system"; }
-		}else{$error = "Your session is already expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -773,55 +785,55 @@ class UserProfileController extends AbstractActionController
 		$years      = round($time_elapsed / 31207680 );
 		// Seconds
 		if($seconds <= 60){
-			return "just now";
+			return "0m";
 		}
 		//Minutes
 		else if($minutes <=60){
 			if($minutes==1){
-				return "one minute ago";
+				return "1m";
 			}
 			else{
-				return "$minutes minutes ago";
+				return $minutes."m";
 			}
 		}
 		//Hours
 		else if($hours <=24){
 			if($hours==1){
-				return "an hour ago";
+				return "1h";
 			}else{
-				return "$hours hrs ago";
+				return $hours."h";
 			}
 		}
 		//Days
 		else if($days <= 7){
 			if($days==1){
-				return "yesterday";
+				return "1d";
 			}else{
-				return "$days days ago";
+				return $days."d";
 			}
 		}
 		//Weeks
 		else if($weeks <= 4.3){
 			if($weeks==1){
-				return "a week ago";
+				return "1w";
 			}else{
-				return "$weeks weeks ago";
+				return $weeks."w";
 			}
 		}
 		//Months
 		else if($months <=12){
 			if($months==1){
-				return "a month ago";
+				return "1mo";
 			}else{
-				return "$months months ago";
+				return $months."mo";
 			}
 		}
 		//Years
 		else{
 			if($years==1){
-				return "one year ago";
+				return "1yr";
 			}else{
-				return "$years years ago";
+				return $years."yr";
 			}
 		}
 	}
@@ -836,6 +848,7 @@ class UserProfileController extends AbstractActionController
 		$auth = new AuthenticationService();
 		$viewModel = new ViewModel();
 		$config = $this->getServiceLocator()->get('Config');
+		$similar = $this->params()->fromQuery('similar');
 		if ($auth->hasIdentity()) {
 			$this->layout('layout/layout_user');
 			$identity = $auth->getIdentity();
@@ -848,6 +861,11 @@ class UserProfileController extends AbstractActionController
 			$userinfo = $this->getUserTable()->getUser($identity->user_id);
 			$viewModel->setVariable('image_folders',$config['image_folders']);
 			$viewModel->setVariable('profilename',$identity->user_profile_name);
+			$similarTagCategories = array();
+			if(!empty($similar)){
+				$similarTagCategories = $this->getGroupTagTable()->getAllGroupTagCategiry($similar);
+			}
+			$viewModel->setVariable( 'similarTagCategories' ,  $similarTagCategories);
 			if(!empty($userinfo)&&$userinfo->user_id){
 				$group_count = $this->getUserTagTable()->getCountOfAllMatchedGroupsofUser($identity->user_id)->group_count;
 				$viewModel->setVariable( 'group_count' ,  $group_count);
@@ -975,7 +993,7 @@ class UserProfileController extends AbstractActionController
 					}else{$error = "Unable to process";}
 				}else{$error = "Unable to process";}
 			}else{	$error = "User not exist in the system"; }
-		}else{$error = "Your session is already expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;		 
@@ -1000,7 +1018,7 @@ class UserProfileController extends AbstractActionController
 					}else{$error = "Unable to process";}
 				}else{$error = "Unable to process";}
 			}else{	$error = "User not exist in the system"; }
-		}else{$error = "Your session is already expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;		 
@@ -1049,7 +1067,7 @@ class UserProfileController extends AbstractActionController
 					}else{$error = "Unable to process";}
 				}else{$error = "Unable to process";}
 			}else{	$error = "User not exist in the system"; }
-		}else{$error = "Your session is already expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;		 
@@ -1085,6 +1103,10 @@ class UserProfileController extends AbstractActionController
 						$is_admin = 0;
 						if($this->getUserGroupTable()->checkOwner($list['group_id'],$list['user_id'])){
 							$is_admin = 1;
+						}
+						$is_logged_user_admin = 0;
+						if($this->getUserGroupTable()->checkOwner($list['group_id'],$identity->user_id)){
+							$is_logged_user_admin = 1;
 						}
 						switch($list['type']){
 							case "New Activity":
@@ -1122,7 +1144,7 @@ class UserProfileController extends AbstractActionController
 													"group_activity_location_lat" => $activity->group_activity_location_lat,
 													"group_activity_location_lng" => $activity->group_activity_location_lng,
 													"group_activity_content" => $activity->group_activity_content,
-													"group_activity_start_timestamp" => date("M d,Y H:s a",strtotime($activity->group_activity_start_timestamp)),												 
+													"group_activity_start_timestamp" => date("M d,Y h:i a",strtotime($activity->group_activity_start_timestamp)),												 
 													"user_given_name" => $list['user_given_name'],
 													"group_title" =>$list['group_title'],
 													"group_seo_title" =>$list['group_seo_title'],
@@ -1142,6 +1164,7 @@ class UserProfileController extends AbstractActionController
 													"attending_users" =>$attending_users,
 													"allow_join" =>$allow_join,
 													'is_admin'=>$is_admin,
+													'is_logged_user_admin' =>$is_logged_user_admin,
 													);
 							$feeds[] = array('content' => $activity_details,
 											'type'=>$list['type'],
@@ -1186,6 +1209,7 @@ class UserProfileController extends AbstractActionController
 													"comment_counts"	=>$comment_details['comment_counts'],
 													"is_commented"	=>$comment_details['is_commented'],
 													'is_admin'=>$is_admin,
+													'is_logged_user_admin' =>$is_logged_user_admin,
 													);
 								$feeds[] = array('content' => $discussion_details,
 												'type'=>$list['type'],
@@ -1194,10 +1218,23 @@ class UserProfileController extends AbstractActionController
 							break;
 							case "New Media":
 								$media_details = array();
-								$media = $this->getGroupMediaTable()->getMediaForFeed($list['event_id']);
-								$video_id  = '';
-								if($media->media_type == 'video')
-								$video_id  = $this->get_youtube_id_from_url($media->media_content);
+								$media = $this->getGroupMediaTable()->getMediaForFeed($list['event_id']); 
+								$media_contents = $this->getGroupMediaContentTable()->getMediaContents(json_decode($media->media_content));
+								$media_files = [];
+								foreach($media_contents as $mfile){
+									if($media->media_type == 'video'){
+										$media_files[] = array(
+												'id'=>$mfile['media_content_id'],
+												'files'=>$mfile['content'],
+												'video_id'=>$this->get_youtube_id_from_url($mfile['content']),
+												);
+									}else{
+										$media_files[] = array(
+														'id'=>$mfile['media_content_id'],
+														'files'=>$mfile['content'],
+														);
+									}
+								}								 
 								$SystemTypeData = $this->groupTable->fetchSystemType("Media");
 								$like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id);
 								$comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id); 
@@ -1221,10 +1258,11 @@ class UserProfileController extends AbstractActionController
 													"media_type" => $media->media_type,
 													"media_content" => $media->media_content,
 													"media_caption" => $media->media_caption,
-													"video_id" => $video_id,
+													"media_files" => $media_files,
 													"group_title" =>$list['group_title'],
 													"group_seo_title" =>$list['group_seo_title'],	
-													"group_id" =>$list['group_id'],													
+													"group_id" =>$list['group_id'],
+													"album_title"=>$media->album_title,
 													"user_given_name" => $list['user_given_name'],
 													"user_id" => $list['user_id'],
 													"user_profile_name" => $list['user_profile_name'],												 
@@ -1235,7 +1273,8 @@ class UserProfileController extends AbstractActionController
 													"liked_users"	=>$arr_likedUsers,	
 													"comment_counts"	=>$comment_details['comment_counts'],
 													"is_commented"	=>$comment_details['is_commented'],	
-													'is_admin'=>$is_admin,													
+													'is_admin'=>$is_admin,		
+													'is_logged_user_admin' =>$is_logged_user_admin,													
 													);
 								$feeds[] = array('content' => $media_details,
 												'type'=>$list['type'],
@@ -1246,7 +1285,7 @@ class UserProfileController extends AbstractActionController
 					} 
 				}else{$error = "User not exist in the system";}
 			}else{$error = "Unable to process";}
-		}else{$error = "Please logged in for continue";} 
+		}else{$error = "Your session expired, please log in again to continue";} 
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;
@@ -1273,11 +1312,16 @@ class UserProfileController extends AbstractActionController
 				$profilename  = $this->getRequest()->getPost('profile');
 				$userinfo = $this->getUserTable()->getUserByProfilename($profilename); 
 				if(!empty($userinfo)&&$userinfo->user_id){				 
-					$feeds_list = $this->getGroupTable()->getMyFeeds($userinfo->user_id,$type,$limit,$offset);				 
+					$feeds_list = $this->getGroupTable()->getMyFeeds($userinfo->user_id,$identity->user_id,$type,$limit,$offset);		
+					//print_r($feeds_list);die();
 					foreach($feeds_list as $list){
 						$is_admin = 0;
 						if($this->getUserGroupTable()->checkOwner($list['group_id'],$list['user_id'])){
 							$is_admin = 1;
+						}
+						$is_logged_user_admin = 0;
+						if($this->getUserGroupTable()->checkOwner($list['group_id'],$identity->user_id)){
+							$is_logged_user_admin = 1;
 						}
 						switch($list['type']){
 							case "New Activity":
@@ -1287,6 +1331,10 @@ class UserProfileController extends AbstractActionController
 							$like_details     = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id); 
 							$comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id); 
 							$str_liked_users  = '';
+							$logged_user_ismember = 0;
+							if($this->getUserGroupTable()->is_member($identity->user_id,$list['group_id'])){
+								$logged_user_ismember = 1;
+							}
 							$arr_likedUsers = array();
 							if(!empty($like_details)){  
 								$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id,2,0);
@@ -1314,11 +1362,12 @@ class UserProfileController extends AbstractActionController
 													"group_activity_location_lat" => $activity->group_activity_location_lat,
 													"group_activity_location_lng" => $activity->group_activity_location_lng,
 													"group_activity_content" => $activity->group_activity_content,
-													"group_activity_start_timestamp" => date("M d,Y H:s a",strtotime($activity->group_activity_start_timestamp)),												 
+													"group_activity_start_timestamp" => date("M d,Y h:i a",strtotime($activity->group_activity_start_timestamp)),												 
 													"user_given_name" => $list['user_given_name'],
 													"group_title" =>$list['group_title'],
 													"group_seo_title" =>$list['group_seo_title'],
 													"group_id" =>$list['group_id'],	
+													"group_type"=>$list['group_type'],	
 													"user_id" => $list['user_id'],
 													"user_profile_name" => $list['user_profile_name'],												 
 													"profile_photo" => $list['profile_photo'],
@@ -1333,7 +1382,9 @@ class UserProfileController extends AbstractActionController
 													"is_going"=>$activity->is_going,
 													"attending_users" =>$attending_users,
 													"allow_join" =>$allow_join,
-													'is_admin'=>$is_admin,	
+													'is_admin'=>$is_admin,
+													'logged_user_ismember'=>$logged_user_ismember,
+													'is_logged_user_admin'=>$is_logged_user_admin,													
 													);
 							$feeds[] = array('content' => $activity_details,
 											'type'=>$list['type'],
@@ -1348,6 +1399,10 @@ class UserProfileController extends AbstractActionController
 								$comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id); 
 								$str_liked_users = '';
 								$arr_likedUsers = array();
+								$logged_user_ismember = 0;
+								if($this->getUserGroupTable()->is_member($identity->user_id,$list['group_id'])){
+									$logged_user_ismember = 1;
+								}
 								if(!empty($like_details)&&isset($like_details['likes_counts'])){
 									$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id,2,0);									
 									if($like_details['is_liked']==1){
@@ -1365,7 +1420,8 @@ class UserProfileController extends AbstractActionController
 													"group_discussion_content" => $discussion->group_discussion_content,
 													"group_title" =>$list['group_title'],
 													"group_seo_title" =>$list['group_seo_title'],
-													"group_id" =>$list['group_id'],												
+													"group_id" =>$list['group_id'],
+													"group_type"=>$list['group_type'],	
 													"user_given_name" => $list['user_given_name'],
 													"user_id" => $list['user_id'],
 													"user_profile_name" => $list['user_profile_name'],												 
@@ -1377,6 +1433,8 @@ class UserProfileController extends AbstractActionController
 													"comment_counts"	=>$comment_details['comment_counts'],
 													"is_commented"	=>$comment_details['is_commented'],
 													'is_admin'=>$is_admin,	
+													'logged_user_ismember'=>$logged_user_ismember,
+													'is_logged_user_admin'=>$is_logged_user_admin,
 													);
 								$feeds[] = array('content' => $discussion_details,
 												'type'=>$list['type'],
@@ -1393,6 +1451,10 @@ class UserProfileController extends AbstractActionController
 								$like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id);
 								$comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id); 
 								$str_liked_users = '';
+								$logged_user_ismember = 0;
+								if($this->getUserGroupTable()->is_member($identity->user_id,$list['group_id'])){
+									$logged_user_ismember = 1;
+								}
 								$arr_likedUsers = array();
 								if(!empty($like_details)&&isset($like_details['likes_counts'])){
 									$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id,2,0);
@@ -1415,7 +1477,8 @@ class UserProfileController extends AbstractActionController
 													"video_id" => $video_id,
 													"group_title" =>$list['group_title'],
 													"group_seo_title" =>$list['group_seo_title'],	
-													"group_id" =>$list['group_id'],													
+													"group_id" =>$list['group_id'],
+													"group_type"=>$list['group_type'],	
 													"user_given_name" => $list['user_given_name'],
 													"user_id" => $list['user_id'],
 													"user_profile_name" => $list['user_profile_name'],												 
@@ -1426,7 +1489,9 @@ class UserProfileController extends AbstractActionController
 													"liked_users"	=>$arr_likedUsers,	
 													"comment_counts"	=>$comment_details['comment_counts'],
 													"is_commented"	=>$comment_details['is_commented'],	
-													'is_admin'=>$is_admin,			
+													'is_admin'=>$is_admin,	
+													'logged_user_ismember'=>$logged_user_ismember,
+													'is_logged_user_admin'=>$is_logged_user_admin,
 													);
 								$feeds[] = array('content' => $media_details,
 												'type'=>$list['type'],
@@ -1437,7 +1502,7 @@ class UserProfileController extends AbstractActionController
 					}		 
 				}else{$error = "User not exist in the system";}
 			}else{$error = "Unable to process";}
-		}else{$error = "Please logged in for continue";} 
+		}else{$error = "Your session expired, please log in again to continue";} 
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;
@@ -1515,6 +1580,10 @@ class UserProfileController extends AbstractActionController
 						if($this->getUserGroupTable()->checkOwner($list['group_id'],$list['user_id'])){
 							$is_admin = 1;
 						}
+						$is_logged_user_admin = 0;
+						if($this->getUserGroupTable()->checkOwner($list['group_id'],$identity->user_id)){
+							$is_logged_user_admin = 1;
+						}
 						switch($list['type']){
 							case "New Activity":
 							$activity_details = array();
@@ -1549,7 +1618,7 @@ class UserProfileController extends AbstractActionController
 													"group_activity_location_lat" => $activity->group_activity_location_lat,
 													"group_activity_location_lng" => $activity->group_activity_location_lng,
 													"group_activity_content" => $activity->group_activity_content,
-													"group_activity_start_timestamp" => date("M d,Y H:s a",strtotime($activity->group_activity_start_timestamp)),												 
+													"group_activity_start_timestamp" => date("M d,Y h:i a",strtotime($activity->group_activity_start_timestamp)),												 
 													"user_given_name" => $list['user_given_name'],
 													"group_title" =>$list['group_title'],
 													"group_seo_title" =>$list['group_seo_title'],
@@ -1569,6 +1638,7 @@ class UserProfileController extends AbstractActionController
 													"attending_users" =>$attending_users,
 													"allow_join" =>$allow_join,
 													'is_admin'=>$is_admin,
+													'is_logged_user_admin'=>$is_logged_user_admin,
 													);
 							$feeds[] = array('content' => $activity_details,
 											'type'=>$list['type'],
@@ -1613,6 +1683,7 @@ class UserProfileController extends AbstractActionController
 													"comment_counts"	=>$comment_details['comment_counts'],
 													"is_commented"	=>$comment_details['is_commented'],
 													'is_admin'=>$is_admin,
+													'is_logged_user_admin'=>$is_logged_user_admin,
 													);
 								$feeds[] = array('content' => $discussion_details,
 												'type'=>$list['type'],
@@ -1662,7 +1733,8 @@ class UserProfileController extends AbstractActionController
 													"liked_users"	=>$arr_likedUsers,	
 													"comment_counts"	=>$comment_details['comment_counts'],
 													"is_commented"	=>$comment_details['is_commented'],	
-													'is_admin'=>$is_admin,													
+													'is_admin'=>$is_admin,
+													'is_logged_user_admin'=>$is_logged_user_admin,
 													);
 								$feeds[] = array('content' => $media_details,
 												'type'=>$list['type'],
@@ -1673,7 +1745,7 @@ class UserProfileController extends AbstractActionController
 					}		 
 				}else{$error = "User not exist in the system";}
 			}else{$error = "Unable to process";}
-		}else{$error = "Please logged in for continue";} 
+		}else{$error = "Your session expired, please log in again to continue";} 
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;
@@ -1713,7 +1785,7 @@ class UserProfileController extends AbstractActionController
 					}					 
 				}else{$error = "Unable to process";}
 			}else{	$error = "User not exist in the system"; }
-		}else{$error = "Your session is already expired";}
+		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
@@ -1722,6 +1794,68 @@ class UserProfileController extends AbstractActionController
 			'return_array' => $return_array,      
 		));		
 		return $result;	
+	}
+	public function uploadhandlerAction(){
+		$error = '';
+		$filename = '';
+		$image_url ='';
+		$auth = new AuthenticationService();
+		if ($auth->hasIdentity()) {	
+			$identity = $auth->getIdentity();	
+			$request   = $this->getRequest();
+			if ($request->isPost()){				 
+				if(isset($_FILES)&&isset($_FILES['mediaImage']['name'])&&$_FILES['mediaImage']['name']!=''){
+					$allowedImages      = array('image/jpg','image/jpeg','image/png','img/gif');
+					$minWidth           = 100;
+					$minHeight          = 100;
+					if(!in_array($_FILES['mediaImage']['type'], $allowedImages)){
+						$error = "This file type is not supported. Please upload any image files.";
+					}
+					$image_dimensions = getimagesize($_FILES['mediaImage']['tmp_name']); 
+					$image_width = $image_dimensions[0]; // Image width
+					$image_height = $image_dimensions[1]; // Image height					
+					if(!in_array($_FILES['mediaImage']['type'], $allowedImages)){
+						$error = "This file type is not supported. Please upload any image files.";
+					}
+					else if(($image_width < $minWidth) || ($image_height < $minHeight)){
+						$error = "Minimum dimension 100x100";
+					}
+					if($error ==''){
+						$config = $this->getServiceLocator()->get('Config');
+						$temp_path = $config['pathInfo']['temppath'];
+						if(!is_dir($temp_path)){							
+							mkdir($temp_path);
+						}
+						$user_temp_path = $temp_path.$identity->user_id."/";	
+						if(!is_dir($user_temp_path)){							
+							mkdir($user_temp_path);
+						}
+						/*$files = glob($user_temp_path); 
+						foreach($files as $file){ 
+							if(is_file($file))
+							@unlink($file);  
+						}*/
+						$temp = explode(".",$_FILES["mediaImage"]["name"]);
+						$newfilename = rand(1,99999) . '.' .end($temp);
+						$filename =  time()."_".$newfilename;
+						if (move_uploaded_file($_FILES["mediaImage"]["tmp_name"], $user_temp_path .$filename)) {
+							$image_url = $config['pathInfo']['temp_absolute_path'].$identity->user_id."/".$filename;
+						}else{
+							$error = "error occurred";
+						}
+					}
+				}else{$error = "Unable to locate the image";}	
+			}else{$error = "Unable to process";}			 
+		}else{$error = "Your session expired, please log in again to continue";}
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error;	
+		$return_array['filename'] = $filename;
+		$return_array['image_url'] = $image_url;
+		$result = new JsonModel(array(
+			'return_array' => $return_array,      
+		));		
+		return $result;
 	}
 	public function UpdateNotifications($user_notification_user_id,$msg,$type,$subject,$from,$sender,$reference_id,$processs){
 		$UserGroupNotificationData = array();						
@@ -1843,6 +1977,13 @@ class UserProfileController extends AbstractActionController
 		$sm = $this->getServiceLocator();
 		return  $this->activityRsvpTable = (!$this->activityRsvpTable)?$sm->get('Activity\Model\ActivityRsvpTable'):$this->activityRsvpTable;
     }
-	
+	public function getGroupTagTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupTagTable = (!$this->groupTagTable)?$sm->get('Tag\Model\GroupTagTable'):$this->groupTagTable;    
+    }
+	public function getGroupMediaContentTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupMediaContentTable = (!$this->groupMediaContentTable)?$sm->get('Groups\Model\GroupMediaContentTable'):$this->groupMediaContentTable;    
+    }
 }
  

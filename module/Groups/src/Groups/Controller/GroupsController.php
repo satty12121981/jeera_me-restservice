@@ -13,6 +13,7 @@ use Groups\Model\UserGroupJoiningRequest;
 use Groups\Model\GroupPhoto;
 use Tag\Model\GroupTag; 
 use Groups\Model\GroupMedia;  
+use Groups\Model\GroupMediaContent;  
 use Notification\Model\UserNotification; 
 use Groups\Model\UserGroupJoiningInvitation; 
 use Groups\Model\GroupJoiningQuestionnaire; 
@@ -42,6 +43,7 @@ class GroupsController extends AbstractActionController
 	protected $groupActivityTable;
 	protected $activityRsvpTable;
 	protected $discussionTable;
+	protected $groupMediaContentTable;
 	public function membergroupsAction(){
 		$error = '';
 		$auth = new AuthenticationService();
@@ -97,6 +99,7 @@ class GroupsController extends AbstractActionController
 	public function creategroupAction(){
 		$error = '';
 		$auth = new AuthenticationService();
+		$seotitle = '';
 		if ($auth->hasIdentity()) {
 			$identity = $auth->getIdentity();
 			$myinfo = $this->getUserTable()->getUser($identity->user_id);
@@ -122,12 +125,14 @@ class GroupsController extends AbstractActionController
 					  default:
 					   $objGroup->intGroupType = 'open';
 					 }
-					$arrgrouptags = explode(',',$this->getRequest()->getPost('addedtags'));
+					
+					$arrgrouptags 		= explode(',',$this->getRequest()->getPost('addedtags'));
 					$arrQuestions       = explode(',',$this->getRequest()->getPost('QuestionDetails'));
                     $arrAddedFriends    = explode(',',$this->getRequest()->getPost('addedFriends'));
 					$que = 1;
                    // echo count($arrQuestions);
                    // print_r($arrQuestions);
+				   $erro_count = 0;
                     if($arrQuestions[0] != ''){
                         foreach($arrQuestions as $question){
                               $arrQuestionDetail  = explode('##',$question);
@@ -136,40 +141,28 @@ class GroupsController extends AbstractActionController
                                   $error = "'Please enter question ".$que."";
                                   break;
                               }else{
-                              if($arrQuestionDetail[0] != 'Textarea'){
-
-                                    if($arrQuestionDetail[2] == '' && $arrQuestionDetail[3] == '' && $arrQuestionDetail[4] != ''){
+								if($arrQuestionDetail[0] != 'Textarea'){
+									$options = array();
+									for($i=2;$i<count($arrQuestionDetail);$i++){
+										$options[] = $arrQuestionDetail[$i];
+									}									 
+                                    if(count($options)<2){
                                         $erro_count++;
                                         $error = "Please enter atleast two options for question ".$que."";
                                         break;
-                                    }
-                                    else if($arrQuestionDetail[2] != '' && $arrQuestionDetail[3] == '' && $arrQuestionDetail[4] == ''){
-                                        $erro_count++;
-                                        $error = "Please enter atleast two options for question ".$que."";
-                                        break;
-                                    }
-                                    else if($arrQuestionDetail[2] == '' && $arrQuestionDetail[3] != '' && $arrQuestionDetail[4] == ''){
-                                        $erro_count++;
-                                        $error = "Please enter atleast two options for question ".$que."";
-                                        break;
-                                    }
-                                    else if($arrQuestionDetail[2] == '' && $arrQuestionDetail[3] == '' && $arrQuestionDetail[4] == ''){
-                                        $erro_count++;
-                                        $error = "Please enter atleast two options for question ".$que."";
-                                        break;
-                                    }
+                                    }                                     
                                 }// else
                               } // if
                               $que++;
                          } // foreach
                     }// if					
-					$erro_count = 0;
+					
 					$erro_count =($objGroup->strGroupName == '')?$erro_count++:$erro_count;
 					$erro_count =($objGroup->strDesp == '')?$erro_count++:$erro_count;
 					$erro_count =(count($arrgrouptags)<=0)?$erro_count++:$erro_count;
 					if(count($arrgrouptags)<=0){
 						$erro_count++;
-						$error = "Please select atleast one intrest";
+						$error = "Please select atleast one interest";
 					}
 					if($objGroup->strDesp == ''){
 						$erro_count++;
@@ -177,17 +170,25 @@ class GroupsController extends AbstractActionController
 					}
 					if($objGroup->strGroupName == ''){
 						$erro_count++;
-						$error = "Group Title is required";
+						$error = "Group title is required";
 					}					
 					$group_info = $this->getGroupTable()->getGroupByName($objGroup->strGroupName);
 					if(!empty($group_info)&& $group_info->group_id!=''){
 						$erro_count++;
-						$error = "Group name already exist";
+						$error = "This group name is already taken";
 					}
 					if($erro_count == 0){
 						$objGroup->group_seo_title = $this->creatSeotitle($objGroup->strGroupName);
+						$seotitle = $objGroup->group_seo_title;
 						$intGroupId = $this->getGroupTable()->saveGroupBasicDetails($objGroup, '');
-						
+						$config = $this->getServiceLocator()->get('Config');
+						$temp_path = $config['pathInfo']['temppath'];
+						$user_temp_path = $temp_path.$identity->user_id."/";	
+						$files = glob($user_temp_path); 
+						foreach($files as $file){ 
+							if(is_file($file))
+							@unlink($file);  
+						}
 						if($intGroupId){
 							$userGroup = new UserGroup();
 							$userGroup->user_group_user_id              = $identity->user_id;
@@ -203,15 +204,16 @@ class GroupsController extends AbstractActionController
 								$options['upload_dir']          = $config['pathInfo']['group_img_path'].$intGroupId."/";
 								$options['upload_url']          = $config['pathInfo']['group_img_path_absolute_path'].$intGroupId."/";
 								$options['param_name']          = 'groupImage';
-								$options['min_width']           = 200;
+								$options['min_width']           = 100;
 								$options['min_height']          = 100;
-
+								
 								// object of file upload plug in which is used for simple upload as well as drag and drop upload functionality
 								$upload_handler = new UploadHandler($options); 
 								if(isset($upload_handler->image_objects['filename'])&&$upload_handler->image_objects['filename']!=''){
 									$groupphoto  = new GroupPhoto();
 									$groupphoto->group_photo_group_id  = $intGroupId;
 									$groupphoto->group_photo_photo = $upload_handler->image_objects['filename'];
+									$groupphoto->group_photo_orginal = $upload_handler->image_objects['filename'];
 									$intGroupPhotoId  = $this->getGroupPhotoTable()->savePhoto($groupphoto);
 								}
 							}
@@ -236,7 +238,7 @@ class GroupsController extends AbstractActionController
 										$base_url = $config['pathInfo']['base_url'];
 										$msg = $identity->user_given_name." invited you to join the group ".$objGroup->strGroupName;
 										$subject = 'Group joining invitation';
-										$from = 'admin@jeera.com';
+										$from = 'admin@jeera.me';
 										$process = 'Invite';
 										$this->UpdateNotifications($group_invt,$msg,3,$subject,$from,$identity->user_id,$intGroupId,$process);
 									}
@@ -262,7 +264,7 @@ class GroupsController extends AbstractActionController
                                     // save question
                                     $intQuestionId                      = $this->getGroupJoiningQuestionnaireTable()->AddQuestion($addedQuestion);
 
-                                    for($o=2; $o<=4; $o++){
+                                    for($o=2; $o<count($arrQuestionDetail); $o++){
                                         if($arrQuestionDetail[$o]!= ''){
                                             //getGroupQuestionnaireOptionsTable
                                             $addedOption    = array(
@@ -274,14 +276,15 @@ class GroupsController extends AbstractActionController
                                     }// for
                                 }// foreach
                            }//if
-						}else{$error = "Some error occured. Please try again";}
+						}else{$error = "Some error occurred. Please try again";}
 					}
 				}else{$error = "Unable to process";}
 			}else{$error = "User not exist in the system";}
 		}else{$error = "Your session expired, please log in again to continue";}
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
-		$return_array['process_info'] = $error;		 
+		$return_array['process_info'] = $error;	
+		$return_array['seotitle'] = $seotitle;			
 		$result = new JsonModel(array(
 		'return_array' => $return_array,      
 		));		
@@ -327,79 +330,119 @@ class GroupsController extends AbstractActionController
 					$group  = $this->getGroupTable()->getPlanetinfo($post['group_id']);
 					$error =(empty($group)||$group->group_id=='')?"Given group not exist in this system":$error;
 					if(!$this->getUserGroupTable()->is_member($identity->user_id,$group->group_id)){
-						 $error = "You don't have the permission to do this";
+						 $error = "Sorry, You need to be a member of the group to interact with the posts";
 					}					
 					$media_type = $post['media_type'];
 					switch($media_type){
 						case 'image':
-							if(isset($_FILES)&&isset($_FILES['mediaImage']['name'])&&$_FILES['mediaImage']['name']!=''){
+							if(isset($post['mediaImage'])&&!empty($post['mediaImage'])){
 								$config = $this->getServiceLocator()->get('Config');
-								$options['script_url']          = $config['pathInfo']['base_url'];
-								$options['upload_dir']          = $config['pathInfo']['group_img_path'].$group->group_id."/media/";
-								$options['upload_url']          = $config['pathInfo']['group_img_path_absolute_path'].$group->group_id."/media/";
-								$options['param_name']          = 'mediaImage';
-								$options['min_width']           = 50;
-								$options['min_height']          = 50;
+								$temp_path = $config['pathInfo']['temppath'];
+								$user_temp_path = $temp_path.$identity->user_id."/";
 								if(!is_dir($config['pathInfo']['group_img_path'].$group->group_id)){							
 									mkdir($config['pathInfo']['group_img_path'].$group->group_id);
 								}
 								if(!is_dir($config['pathInfo']['group_img_path'].$group->group_id."/media/")){							
 									mkdir($config['pathInfo']['group_img_path'].$group->group_id."/media/");
-								} 
-								$upload_handler = new UploadHandler($options); 
-								if(isset($upload_handler->image_objects['filename'])&&$upload_handler->image_objects['filename']!=''){
-									if($error==''){
-										$objGroupMedia = new GroupMedia();
-										$objGroupMedia->media_added_user_id = $identity->user_id;
-										$objGroupMedia->media_added_group_id = $post['group_id'];
-										$objGroupMedia->media_type = 'image';
-										$objGroupMedia->media_content = $upload_handler->image_objects['filename'];
-										$objGroupMedia->media_caption = ($post['imageCaption']!='undefined')?$post['imageCaption']:'';
-										$objGroupMedia->media_status = 'active';
-										$addeditem = $this->getGroupMediaTable()->saveGroupMedia($objGroupMedia);
-										if($addeditem){
-											$joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($group->group_id); 
-											foreach($joinedMembers as $members){ 
-												if($members->user_group_user_id!=$identity->user_id){
-													$config = $this->getServiceLocator()->get('Config');
-													$base_url = $config['pathInfo']['base_url'];
-													$msg = $identity->user_given_name." added a new status under the group ".$group->group_title;
-													$subject = 'New status added';
-													$from = 'admin@jeera.com';
-													$process = 'New Media';
-													$this->UpdateNotifications($members->user_group_user_id,$msg,8,$subject,$from,$identity->user_id,$addeditem,$process);
-												}
+								}
+								if(!is_dir($config['pathInfo']['group_img_path'].$group->group_id."/media/thumbnail/")){							
+									mkdir($config['pathInfo']['group_img_path'].$group->group_id."/media/thumbnail/");
+								}
+								if(!is_dir($config['pathInfo']['group_img_path'].$group->group_id."/media/medium/")){							
+									mkdir($config['pathInfo']['group_img_path'].$group->group_id."/media/medium/");
+								}
+								$uplaod_dir = $config['pathInfo']['group_img_path'].$group->group_id."/media/";
+								$arr_images = explode(',',$post['mediaImage']);
+								$media_file = [];
+								foreach($arr_images as $imagefiels){
+									$str_sub = substr(str_shuffle(str_repeat('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',5)),0,5);
+									$filename = time().$str_sub.$imagefiels;
+									$imagePath = $user_temp_path.$imagefiels; 
+									$resize = new ResizeImage($imagePath);
+									$resize->resizeTo(1000, 800, 'maxWidth');								
+									$resize->saveImage($uplaod_dir.$filename);
+									$resize->resizeTo(380, 214, 'maxWidth');								
+									$resize->saveImage($uplaod_dir.'medium/'.$filename); 
+									$resize->resizeTo(100, 100, 'maxWidth');								
+									$resize->saveImage($uplaod_dir.'thumbnail/'.$filename);
+									$objGroupMediaContent = new GroupMediaContent();
+									$objGroupMediaContent->content =  $filename;
+									$addeditems = $this->getGroupMediaContentTable()->saveGroupMediaContent($objGroupMediaContent);
+									if($addeditems){
+										$media_files[] = $addeditems;
+									}									 
+								}
+								$files = glob($user_temp_path); 
+								foreach($files as $file){ 
+									if(is_file($file))
+									@unlink($file);  
+								}
+								if(count($media_files)>0){
+									$objGroupMedia = new GroupMedia();
+									$objGroupMedia->media_added_user_id = $identity->user_id;
+									$objGroupMedia->media_added_group_id = $post['group_id'];
+									$objGroupMedia->media_type = 'image';
+									$objGroupMedia->media_content = json_encode($media_files);
+									$objGroupMedia->media_caption = ($post['imageCaption']!='undefined')?$post['imageCaption']:'';
+									$objGroupMedia->media_status = 'active';
+									$objGroupMedia->media_album_id = (!empty($post['album']))?$post['album']:0;
+									$addeditem = $this->getGroupMediaTable()->saveGroupMedia($objGroupMedia);	
+									
+									if($addeditem){
+										$joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($group->group_id); 
+										foreach($joinedMembers as $members){ 
+											if($members->user_group_user_id!=$identity->user_id){
+												$config = $this->getServiceLocator()->get('Config');
+												$base_url = $config['pathInfo']['base_url'];
+												$msg = $identity->user_given_name." added a new status under the group ".$group->group_title;
+												$subject = 'New status added';
+												$from = 'admin@jeera.me';
+												$process = 'New Media';
+												$this->UpdateNotifications($members->user_group_user_id,$msg,8,$subject,$from,$identity->user_id,$addeditem,$process);
 											}
-										}else{$error = "Some error occcured. Please try again"; }
-									}
-								}else{ $error = "Some error occured in file uplading"; }
+										}
+									}else{$error = "Some error occcured. Please try again"; }
+								}
 							}else{$error = "Select one image to upload";}
 						break;
 						case 'video':
 							$error =($post['mediaVideo']=='')? "Add video to upload":$error;
 							if($error==''){
-								$objGroupMedia = new GroupMedia();
-								$objGroupMedia->media_added_user_id = $identity->user_id;
-								$objGroupMedia->media_added_group_id = $post['group_id'];
-								$objGroupMedia->media_type = 'video';
-								$objGroupMedia->media_content = $post['mediaVideo'];
-								$objGroupMedia->media_caption = ($post['videoCaption']!='undefined')?$post['videoCaption']:'';
-								$objGroupMedia->media_status = 'active';
-								$addeditem = $this->getGroupMediaTable()->saveGroupMedia($objGroupMedia);
-								if($addeditem){
-									$joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($group->group_id); 
-									foreach($joinedMembers as $members){ 
-										if($members->user_group_user_id!=$identity->user_id){
-											$config = $this->getServiceLocator()->get('Config');
-											$base_url = $config['pathInfo']['base_url'];
-											$msg = $identity->user_given_name." added a new status under the group ".$group->group_title;
-											$subject = 'New status added';
-											$from = 'admin@jeera.com';
-											$process = 'New Media';
-											$this->UpdateNotifications($members->user_group_user_id,$msg,8,$subject,$from,$identity->user_id,$addeditem,$process);
+								$media_file = [];
+								$arr_videos = explode(',',$post['mediaVideo']);
+								foreach($arr_videos as $videosfiels){
+									$objGroupMediaContent = new GroupMediaContent();
+									$objGroupMediaContent->content =  $videosfiels;
+									$addeditems = $this->getGroupMediaContentTable()->saveGroupMediaContent($objGroupMediaContent);
+									if($addeditems){
+										$media_files[] = $addeditems;
+									}								
+								}
+								if(count($media_files)>0){
+									$objGroupMedia = new GroupMedia();
+									$objGroupMedia->media_added_user_id = $identity->user_id;
+									$objGroupMedia->media_added_group_id = $post['group_id'];
+									$objGroupMedia->media_type = 'video';
+									$objGroupMedia->media_content =json_encode($media_files);
+									$objGroupMedia->media_caption = ($post['videoCaption']!='undefined')?$post['videoCaption']:'';
+									$objGroupMedia->media_status = 'active';
+									$objGroupMedia->media_album_id = (!empty($post['album']))?$post['album']:0;
+									$addeditem = $this->getGroupMediaTable()->saveGroupMedia($objGroupMedia);
+									if($addeditem){
+										$joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($group->group_id); 
+										foreach($joinedMembers as $members){ 
+											if($members->user_group_user_id!=$identity->user_id){
+												$config = $this->getServiceLocator()->get('Config');
+												$base_url = $config['pathInfo']['base_url'];
+												$msg = $identity->user_given_name." added a new status under the group ".$group->group_title;
+												$subject = 'New status added';
+												$from = 'admin@jeera.me';
+												$process = 'New Media';
+												$this->UpdateNotifications($members->user_group_user_id,$msg,8,$subject,$from,$identity->user_id,$addeditem,$process);
+											}
 										}
-									}
-								}else{$error = "Some error occcured. Please try again"; }
+									}else{$error = "Some error occcured. Please try again"; }
+								}	
 							}
 						break;
 					}				 
@@ -703,6 +746,11 @@ class GroupsController extends AbstractActionController
 						if(!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){
 							$is_invited = 1;
 						}
+						$arr_friends = array();
+						if($list['friend_count']>0){
+							$type = 'Friends';
+							$arr_friends = $this->getUserGroupTable()->getMembers($list['group_id'],$identity->user_id,$type,0,2);
+						}
 						$arr_group_list[] = array(
 										'group_id' =>$list['group_id'],
 										'group_title' =>$list['group_title'],
@@ -719,6 +767,7 @@ class GroupsController extends AbstractActionController
 										'tags' =>$tags,
 										'is_requested'=>$is_requested,
 										'is_invited'=>$is_invited,
+										'friends' => $arr_friends,
 										);
 					}
 				}
@@ -734,7 +783,7 @@ class GroupsController extends AbstractActionController
 		));		
 		return $result;
 	}
-	public function grouplistAction(){
+	 public function grouplistAction(){
         $error = '';
 		$auth = new AuthenticationService();	
 		$arr_group_list = '';
@@ -777,6 +826,11 @@ class GroupsController extends AbstractActionController
 								if(!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){
 									$is_invited = 1;
 								}
+								$arr_friends = array();
+								if($list['friend_count']>0){
+									$type = 'Friends';
+									$arr_friends = $this->getUserGroupTable()->getMembers($list['group_id'],$identity->user_id,$type,0,2);
+								}
 								$arr_group_list[] = array(
 									'group_id' =>$list['group_id'],
 									'group_title' =>$list['group_title'],
@@ -797,6 +851,7 @@ class GroupsController extends AbstractActionController
 									'is_requested'=>$is_requested,
 									'is_invited'=>$is_invited,
 									'tags' =>$tags,
+									'friends'=>$arr_friends,
 								);
 							}
 						}
@@ -917,7 +972,7 @@ class GroupsController extends AbstractActionController
 						}
 					}
 					if($group_info->group_type == 'open'){
-						$usergroup = $this->getUserGroupTable()->getUserGroup($identity->user_id,$group_id);
+						$usergroup = $this->getUserGroupTable()->getUserGroup($identity->user_id,$group_id);						
 						if(empty($usergroup)){
 							$user_data['user_group_user_id'] = $identity->user_id;
 							$user_data['user_group_group_id'] = $group_id;
@@ -927,7 +982,7 @@ class GroupsController extends AbstractActionController
 							$base_url = $config['pathInfo']['base_url'];
 							$msg = $identity->user_given_name." Joined in the group ".$group_info->group_title;
 							$subject = 'Group joining Request';
-							$from = 'admin@jeera.com';
+							$from = 'admin@jeera.me';
 							$process = 'Joined';
 							$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
 							foreach($admin_users as $admins){
@@ -935,53 +990,59 @@ class GroupsController extends AbstractActionController
 								$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
 								}
 							}
-						}
+						}else{$error = "You are already a member of this group";}
 					}
 					if($group_info->group_type == 'public'){ 
 						$usergroup = $this->getUserGroupTable()->getUserGroup($identity->user_id,$group_id);
+						$usergroup_requested = $this->getUserGroupJoiningRequestTable()->checkActiveRequestExist($group_id,$identity->user_id);
 						if(empty($usergroup)){
-							$user_data['user_group_joining_request_user_id'] = $identity->user_id;
-							$user_data['user_group_joining_request_group_id'] = $group_id;
-							$user_data['user_group_joining_request_status'] = "active"; 
-							$this->getUserGroupJoiningRequestTable()->AddRequestTOGroup($user_data);
-							$config = $this->getServiceLocator()->get('Config');
-							$base_url = $config['pathInfo']['base_url'];
-							$msg = $identity->user_given_name." requested to join in the group ".$group_info->group_title;
-							$subject = 'Group joining Request';
-							$from = 'admin@jeera.com';
-							$process = 'Requested';
-							$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
-							 
-							foreach($admin_users as $admins){ 
-								if($identity->user_id!=$admins->user_group_user_id){
-								$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
-								}
-							} 
-						}
+							if(empty($usergroup_requested)){
+								$user_data['user_group_joining_request_user_id'] = $identity->user_id;
+								$user_data['user_group_joining_request_group_id'] = $group_id;
+								$user_data['user_group_joining_request_status'] = "active"; 
+								$this->getUserGroupJoiningRequestTable()->AddRequestTOGroup($user_data);
+								$config = $this->getServiceLocator()->get('Config');
+								$base_url = $config['pathInfo']['base_url'];
+								$msg = $identity->user_given_name." requested to join in the group ".$group_info->group_title;
+								$subject = 'Group joining Request';
+								$from = 'admin@jeera.me';
+								$process = 'Requested';
+								$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
+								 
+								foreach($admin_users as $admins){ 
+									if($identity->user_id!=$admins->user_group_user_id){
+									$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
+									}
+								} 
+							}else{$error = "You are already requested";}
+						}else{$error = "You are already a member of this group";}
 					}
 					if($group_info->group_type == 'private'){ 
 						$invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($identity->user_id,$group_id);	
 						$usergroup = $this->getUserGroupTable()->getUserGroup($identity->user_id,$group_id);
-						if(empty($usergroup)&&!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){ 
-							$user_data['user_group_user_id'] = $identity->user_id;
-							$user_data['user_group_group_id'] = $group_id;
-							$user_data['user_group_status'] = "available";							 				 
-							if($this->getUserGroupTable()->AddMembersTOGroup($user_data)){
-								$this->getGroupJoiningInvitationTable()->ChangeStatusTOProcessed($invitedHystory->user_group_joining_invitation_id);
-								$config = $this->getServiceLocator()->get('Config');
-								$base_url = $config['pathInfo']['base_url'];
-								$msg = $identity->user_given_name." Joined in the group ".$group_info->group_title;
-								$subject = 'Group joining Request';
-								$from = 'admin@jeera.com';
-								$process = 'Joined';
-								$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
-								foreach($admin_users as $admins){
-									if($identity->user_id!=$admins->user_group_user_id){
-									$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
+						if(empty($usergroup)){ 
+							if(!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){
+								$user_data['user_group_user_id'] = $identity->user_id;
+								$user_data['user_group_group_id'] = $group_id;
+								$user_data['user_group_status'] = "available";							 				 
+								if($this->getUserGroupTable()->AddMembersTOGroup($user_data)){
+									$this->getGroupJoiningInvitationTable()->ChangeStatusTOProcessed($invitedHystory->user_group_joining_invitation_id);
+									$config = $this->getServiceLocator()->get('Config');
+									$base_url = $config['pathInfo']['base_url'];
+									$msg = $identity->user_given_name." Joined in the group ".$group_info->group_title;
+									$subject = 'Group joining Request';
+									$from = 'admin@jeera.me';
+									$process = 'Joined';
+									$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
+									foreach($admin_users as $admins){
+										if($identity->user_id!=$admins->user_group_user_id){
+										$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
+										}
 									}
 								}
-							}							
-						}
+							}else{$error = "You need invitation from group admin to join this group";}
+														
+						}else{$error = "You are already a member of this group";}
 					}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}
@@ -1019,7 +1080,7 @@ class GroupsController extends AbstractActionController
 							$base_url = $config['pathInfo']['base_url'];
 							$msg = $identity->user_given_name." Joined in the group ".$group_info->group_title;
 							$subject = 'Group joining Request';
-							$from = 'admin@jeera.com';
+							$from = 'admin@jeera.me';
 							$process = 'Joined';
 							$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
 							foreach($admin_users as $admins){
@@ -1027,53 +1088,58 @@ class GroupsController extends AbstractActionController
 								$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
 								}
 							}
-						}
+						}else{$error = "You are already a member of this group";}
 					}
 					if($group_info->group_type == 'public'){ 
+						$usergroup_requested = $this->getUserGroupJoiningRequestTable()->checkActiveRequestExist($group_id,$identity->user_id);
 						$usergroup = $this->getUserGroupTable()->getUserGroup($identity->user_id,$group_id);
-						if(empty($usergroup)){ 
-							$user_data['user_group_joining_request_user_id'] = $identity->user_id;
-							$user_data['user_group_joining_request_group_id'] = $group_id;
-							$user_data['user_group_joining_request_status'] = "active";							 
-							$this->getUserGroupJoiningRequestTable()->AddRequestTOGroup($user_data);
-							$config = $this->getServiceLocator()->get('Config');
-							$base_url = $config['pathInfo']['base_url'];
-							$msg = $identity->user_given_name." requested to join in the group ".$group_info->group_title;
-							$subject = 'Group joining Request';
-							$from = 'admin@jeera.com';
-							$process = 'Requested';
-							$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
-							//print_r($admin_users);die();
-							foreach($admin_users as $admins){
-								if($identity->user_id!=$admins->user_group_user_id){
-								$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
-								}
-							}
-						}
-					}
-					if($group_info->group_type == 'private'){
-						$invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($identity->user_id,$group_id);	
-						$usergroup = $this->getUserGroupTable()->getUserGroup($identity->user_id,$group_id);
-						if(empty($usergroup)&&!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){ 
-							$user_data['user_group_user_id'] = $identity->user_id;
-							$user_data['user_group_group_id'] = $group_id;
-							$user_data['user_group_status'] = "available";							 				 
-							if($this->getUserGroupTable()->AddMembersTOGroup($user_data)){
-								$this->getGroupJoiningInvitationTable()->ChangeStatusTOProcessed($invitedHystory->user_group_joining_invitation_id);
+						if(empty($usergroup)){
+							if(empty($usergroup_requested)){
+								$user_data['user_group_joining_request_user_id'] = $identity->user_id;
+								$user_data['user_group_joining_request_group_id'] = $group_id;
+								$user_data['user_group_joining_request_status'] = "active";							 
+								$this->getUserGroupJoiningRequestTable()->AddRequestTOGroup($user_data);
 								$config = $this->getServiceLocator()->get('Config');
 								$base_url = $config['pathInfo']['base_url'];
-								$msg = $identity->user_given_name." Joined in the group ".$group_info->group_title;
+								$msg = $identity->user_given_name." requested to join in the group ".$group_info->group_title;
 								$subject = 'Group joining Request';
-								$from = 'admin@jeera.com';
-								$process = 'Joined';
+								$from = 'admin@jeera.me';
+								$process = 'Requested';
 								$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
+								//print_r($admin_users);die();
 								foreach($admin_users as $admins){
 									if($identity->user_id!=$admins->user_group_user_id){
 									$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
 									}
 								}
-							}
-						}
+							}else{$error = "You are already requested";}
+						}else{$error = "You are already a member of this group";}
+					}
+					if($group_info->group_type == 'private'){
+						$invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($identity->user_id,$group_id);	
+						$usergroup = $this->getUserGroupTable()->getUserGroup($identity->user_id,$group_id);
+						if(empty($usergroup)){ 
+							if(!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){
+								$user_data['user_group_user_id'] = $identity->user_id;
+								$user_data['user_group_group_id'] = $group_id;
+								$user_data['user_group_status'] = "available";							 				 
+								if($this->getUserGroupTable()->AddMembersTOGroup($user_data)){
+									$this->getGroupJoiningInvitationTable()->ChangeStatusTOProcessed($invitedHystory->user_group_joining_invitation_id);
+									$config = $this->getServiceLocator()->get('Config');
+									$base_url = $config['pathInfo']['base_url'];
+									$msg = $identity->user_given_name." Joined in the group ".$group_info->group_title;
+									$subject = 'Group joining Request';
+									$from = 'admin@jeera.me';
+									$process = 'Joined';
+									$admin_users = $this->getUserGroupTable()->getAllAdminUsers($group_id);
+									foreach($admin_users as $admins){
+										if($identity->user_id!=$admins->user_group_user_id){
+										$this->UpdateNotifications($admins->user_group_user_id,$msg,4,$subject,$from,$identity->user_id,$group_id,$process);
+										}
+									}
+								}
+							}else{$error = "You need invitation from group admin to join this group";}						
+						}else{$error = "You are already a member of this group";}
 					}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}
@@ -1184,10 +1250,10 @@ class GroupsController extends AbstractActionController
 							}
 						}
 						$is_invited = 0;
-                            $invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($identity->user_id,$group_info->group_id);
-                            if(!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){
-                                $is_invited = 1;
-                            }
+								$invitedHystory = $this->getGroupJoiningInvitationTable()->checkInvited($identity->user_id,$group_info->group_id);
+								if(!empty($invitedHystory)&&$invitedHystory->user_group_joining_invitation_id!=''){
+									$is_invited = 1;
+								}
 						 $arr_group_info = array(
 							'group_id'=>$group_info->group_id,
 							'group_title'=>$group_info->group_title,
@@ -1204,7 +1270,8 @@ class GroupsController extends AbstractActionController
 							'country_title'=>$group_info->country_title,
 							'country_code'=>$group_info->country_code,
 							'group_photo_photo'=>$group_info->group_photo_photo,
-							'city'=>$group_info->city,
+							'group_photo_orginal'=>$group_info->group_photo_orginal,
+							'city'=>$group_info->city,							 
 							'request_count'=>$request_count,
 						 );
 					  }
@@ -1520,7 +1587,7 @@ class GroupsController extends AbstractActionController
 							$base_url = $config['pathInfo']['base_url'];
 							$msg = $identity->user_given_name." Accept the group joining request to the group ".$group_info->group_title;
 							$subject = 'Group joining Request';
-							$from = 'admin@jeera.com';
+							$from = 'admin@jeera.me';
 							$process = 'Accepted';
 							$this->UpdateNotifications($user_id,$msg,5,$subject,$from,$identity->user_id,$group_id,$process);					 
 						}
@@ -1586,7 +1653,7 @@ class GroupsController extends AbstractActionController
 							$base_url = $config['pathInfo']['base_url'];
 							$msg = $identity->user_given_name."promoted you as an admin to the group ".$group_info->group_title;
 							$subject = 'Group admin Promoted';
-							$from = 'admin@jeera.com';
+							$from = 'admin@jeera.me';
 							$process = 'Promoted';
 							$this->UpdateNotifications($user_id,$msg,9,$subject,$from,$identity->user_id,$group_id,$process);
 								 
@@ -1666,178 +1733,263 @@ class GroupsController extends AbstractActionController
 																	'question'=>$question[$ndex],
 																	'question_status'=>'active',
 																	'added_user_id'=>$identity->user_id,
-																	'questionId'=>$questionId[$ndex],
+																	'questionId'=>(isset($questionId[$ndex]))?$questionId[$ndex]:'',
 																);
 									}
 								break;
 								case 'checkbox':
+									$option = array();
+									if($ndex==0){
+										$option = $option1;
+									}
+									if($ndex==1){
+										$option = $option2;
+									}
+									if($ndex==2){
+										$option = $option3;
+									}
 									if($question[$ndex]==''||$question[$ndex]=='undefined'){
 										$error = "Add questions";
-									}else if($option1[$ndex]==''||$option1[$ndex]=='undefined'||$option2[$ndex]==''||$option2[$ndex]=='undefined'){
+									}else if(count($option)<2){
 										$error = "Add options";
 									}else{
+										
 										$arr_questionnaire[] = array('answer_type'=>'checkbox',
 																	'group_id'=>$group_id,
 																	'question'=>$question[$ndex],
 																	'question_status'=>'active',
 																	'added_user_id'=>$identity->user_id,
 																	'questionId'=>$questionId[$ndex],
-																	'option1'=>$option1[$ndex],
-																	'option2'=>$option2[$ndex],
-																	'option3'=>$option3[$ndex]
+																	'option'=>array_filter($option),
+																	 
 																);
 									}
 								break;
 								case 'radio':
-									if($question[$ndex]==''||$question[$ndex]=='undefined'||$option2[$ndex]==''||$option2[$ndex]=='undefined'){
+									$option = array();
+									if($ndex==0){
+										$option = $option1;
+									}
+									if($ndex==1){
+										$option = $option2;
+									}
+									if($ndex==2){
+										$option = $option3;
+									}
+									if($question[$ndex]==''||$question[$ndex]=='undefined'){
 										$error = "Add questions";
-									}else if($option1[$ndex]==''||$option1[$ndex]=='undefined'){
+									}else if(count($option)<2){
 										$error = "Add options";
-									}else{
+									}else{										
 										$arr_questionnaire[] = array('answer_type'=>'radio',
 																	'group_id'=>$group_id,
 																	'question'=>$question[$ndex],
 																	'question_status'=>'active',
 																	'added_user_id'=>$identity->user_id,
 																	'questionId'=>$questionId[$ndex],
-																	'option1'=>$option1[$ndex],
-																	'option2'=>$option2[$ndex],
-																	'option3'=>$option3[$ndex]
-																);
-										}
+																	'option'=>array_filter($option),									 
+										);
+									}
+								break;
+								case 'Select Question Type':
+									if($questionId[$ndex]!=''){
+										$this->getGroupJoiningQuestionnaireTable()->DeleteQuestions($questionId[$ndex]);
+										$this->getGroupQuestionnaireOptionsTable()->DeleteOptions($questionId[$ndex]);
+									}
 								break;
 							}
 							$ndex++;
 						 }
 						 if($error == ""){
-							foreach($arr_questionnaire as $list){ 
+							foreach($arr_questionnaire as $list){
 								if($list['questionId']!=''&&$list['questionId']!='undefined'&&$list['questionId']>0){
 									$question = $this->getGroupJoiningQuestionnaireTable()->getQuestionFromQuestionId($list['questionId']);
 									if(!empty($question)){
-										if($question->answer_type == $list['answer_type']){
-											$qdata['question'] = $list['question'];
-											$this->getGroupJoiningQuestionnaireTable()->updateQuestion($qdata,$question->questionnaire_id);
-											if($question->answer_type == 'radio' || $question->answer_type == 'checkbox'){
-												$options = $this->getGroupQuestionnaireOptionsTable()->getoptionOfOneQuestion($question->questionnaire_id);
-												$option_cnt = 1;
-												foreach($options as $opt){
-													$data['option'] = $list['option'.$option_cnt];
-													$this->getGroupQuestionnaireOptionsTable()->UpdateOptions($list['option'.$option_cnt],$opt['option_id']);
-													$option_cnt++;
-												}
-											}
-										}else{
-											if($question->answer_type == "Textarea"&&( $list['answer_type'] =='radio' || $list['answer_type'] =='checkbox')){
-												$qdata[question] = $list['question'];
+										switch($question->answer_type){
+											case 'Textarea': 
+												$qdata['question'] = $list['question'];
+												$qdata['answer_type'] = $list['answer_type'];
 												$this->getGroupJoiningQuestionnaireTable()->updateQuestion($qdata,$question->questionnaire_id);
-												if($list['option1']!=''&&$list['option1']!='undefined'){
-												$addedOption    = array(
-														'question_id'   => $question->questionnaire_id,
-														'option'        => $list['option1']
-													);
-													$intQOptionId                      = $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
-												}
-												if($list['option2']!=''&&$list['option2']!='undefined'){
-												$addedOption    = array(
-														'question_id'   => $question->questionnaire_id,
-														'option'        => $list['option2']
-													);
-													$intQOptionId                      = $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
-												}
-												if($list['option3']!=''&&$list['option3']!='undefined'){
-												$addedOption    = array(
-														'question_id'   => $question->questionnaire_id,
-														'option'        => $list['option3']
-													);
-													$intQOptionId                      = $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
-												}
-											}else if($list['answer_type'] == "Textarea"&&( $question->answer_type =='radio' ||  $question->answer_type =='checkbox')){
-												$qdata[question] = $list['question'];
+												if($list['answer_type']!='Textarea'){	
+													foreach( $list['option'] as $options){
+														$addedOption = array();
+														$addedOption    = array(
+															'question_id'   => $question->questionnaire_id,
+															'option'        => $options,
+														);
+														$intQOptionId	= $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
+													}													
+												}												 
+											break;
+											case 'radio':
+												$qdata['question'] = $list['question'];
+												$qdata['answer_type'] = $list['answer_type'];
 												$this->getGroupJoiningQuestionnaireTable()->updateQuestion($qdata,$question->questionnaire_id);
-												 $this->getGroupQuestionnaireOptionsTable()->DeleteOptions($question->questionnaire_id);
-											}else if(($list['answer_type'] == "radio" && $question->answer_type =='checkbox')||($list['answer_type'] == "checkbox" && $question->answer_type =='radio')){
-												$options = $this->getGroupQuestionnaireOptionsTable()->getoptionOfOneQuestion($question->questionnaire_id);
-												$option_cnt = 1;
-												foreach($options as $opt){
-													$data['option'] = $list['option'.$option_cnt];
-													$this->getGroupQuestionnaireOptionsTable()->UpdateOptions($list['option'.$option_cnt],$opt['option_id']);
-													$option_cnt++;
+												if($list['answer_type']=='Textarea'){	
+													$this->getGroupQuestionnaireOptionsTable()->DeleteOptions($question->questionnaire_id);
+												}else{
+													$options = $this->getGroupQuestionnaireOptionsTable()->getoptionOfOneQuestion($question->questionnaire_id);
+													$i=0;
+													foreach( $list['option'] as $opt){
+														if(count($options)>$i){
+															$data['option'] = $opt;
+															$this->getGroupQuestionnaireOptionsTable()->UpdateOptions($opt,$options[$i]['option_id']);
+														}else{
+															$addedOption = array();
+															$addedOption    = array(
+																'question_id'   => $question->questionnaire_id,
+																'option'        => $opt,
+															);
+															$intQOptionId	= $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
+														}
+														$i++;
+													}
+													if(count($options)>$i){
+														for($i;$i<count($options);$i++){
+															$this->getGroupQuestionnaireOptionsTable()->DeleteSingleOptions($options[$i]['option_id']);
+														}
+													}
+												}												
+											break;
+											case 'checkbox':
+												$qdata['question'] = $list['question'];
+												$qdata['answer_type'] = $list['answer_type'];
+												$this->getGroupJoiningQuestionnaireTable()->updateQuestion($qdata,$question->questionnaire_id);
+												if($list['answer_type']=='Textarea'){	
+													$this->getGroupQuestionnaireOptionsTable()->DeleteOptions($question->questionnaire_id);
+												}else{
+													$options = $this->getGroupQuestionnaireOptionsTable()->getoptionOfOneQuestion($question->questionnaire_id);
+													$i=0; 
+													foreach( $list['option'] as $opt){  
+														if(count($options)>$i){ 
+															$data['option'] = $opt;
+															$this->getGroupQuestionnaireOptionsTable()->UpdateOptions($opt,$options[$i]['option_id']);
+														}else{ 
+															$addedOption = array();
+															$addedOption    = array(
+																'question_id'   => $question->questionnaire_id,
+																'option'        => $opt,
+															);
+															$intQOptionId	= $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
+														}
+														$i++;
+													}													 
+													if(count($options)>$i){
+														for($i;$i<count($options);$i++){
+															$this->getGroupQuestionnaireOptionsTable()->DeleteSingleOptions($options[$i]['option_id']);
+														}
+													}
 												}
-											}
+											break;
 										}
-										
 									}else{
-										$addedQuestion      = array(
-                                            'group_id'            => $list['group_id'],
-                                            'question'            => $list['question'],
-                                            'question_status'     => 'active',
-                                            'added_ip'            => $_SERVER["SERVER_ADDR"],
-                                            'added_user_id'       => $identity->user_id,
-                                            'answer_type'         => $list['answer_type'],
-                                       );
-										// save question
-										$intQuestionId                      = $this->getGroupJoiningQuestionnaireTable()->AddQuestion($addedQuestion);
-										if($list['answer_type']=='radio'||$list['answer_type']=='checkbox'){
-											if($list['option1']!=''&&$list['option1']!='undefined'){
-											$addedOption    = array(
-													'question_id'   => $intQuestionId,
-													'option'        => $list['option1']
+										switch($list['answer_type']){
+											case 'Textarea': 
+												$addedQuestion      = array(
+													'group_id'            => $list['group_id'],
+													'question'            => $list['question'],
+													'question_status'     => 'active',
+													'added_ip'            => $_SERVER["SERVER_ADDR"],
+													'added_user_id'       => $identity->user_id,
+													'answer_type'         => $list['answer_type'],
+											   );
+											   $intQuestionId = $this->getGroupJoiningQuestionnaireTable()->AddQuestion($addedQuestion);
+											break;
+											case 'radio':
+												$addedQuestion      = array(
+													'group_id'            => $list['group_id'],
+													'question'            => $list['question'],
+													'question_status'     => 'active',
+													'added_ip'            => $_SERVER["SERVER_ADDR"],
+													'added_user_id'       => $identity->user_id,
+													'answer_type'         => $list['answer_type'],
 												);
-												$intQOptionId                      = $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
-											}
-											if($list['option2']!=''&&$list['option2']!='undefined'){
-											$addedOption    = array(
-													'question_id'   => $intQuestionId,
-													'option'        => $list['option2']
+												$intQuestionId = $this->getGroupJoiningQuestionnaireTable()->AddQuestion($addedQuestion);
+												foreach( $list['option'] as $opt){													 
+													$addedOption = array();
+													$addedOption    = array(
+														'question_id'   => $question->questionnaire_id,
+														'option'        => $opt,
+													);
+													$intQOptionId	= $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
+												}												
+											break;
+											case 'checkbox':
+												$addedQuestion      = array(
+													'group_id'            => $list['group_id'],
+													'question'            => $list['question'],
+													'question_status'     => 'active',
+													'added_ip'            => $_SERVER["SERVER_ADDR"],
+													'added_user_id'       => $identity->user_id,
+													'answer_type'         => $list['answer_type'],
 												);
-												$intQOptionId                      = $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
-											}
-											if($list['option3']!=''&&$list['option3']!='undefined'){
-											$addedOption    = array(
-													'question_id'   => $intQuestionId,
-													'option'        => $list['option3']
-												);
-												$intQOptionId                      = $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
-											}
+												$intQuestionId = $this->getGroupJoiningQuestionnaireTable()->AddQuestion($addedQuestion);
+												foreach( $list['option'] as $opt){													 
+													$addedOption = array();
+													$addedOption    = array(
+														'question_id'   => $question->questionnaire_id,
+														'option'        => $opt,
+													);
+													$intQOptionId	= $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
+												}
+											break;
 										}
 									}
 								}else{
-									$addedQuestion      = array(
-                                            'group_id'            => $list['group_id'],
-                                            'question'            => $list['question'],
-                                            'question_status'     => 'active',
-                                            'added_ip'            => $_SERVER["SERVER_ADDR"],
-                                            'added_user_id'       => $identity->user_id,
-                                            'answer_type'         => $list['answer_type'],
-                                       );
-										// save question
-										$intQuestionId                      = $this->getGroupJoiningQuestionnaireTable()->AddQuestion($addedQuestion);
-										if($list['answer_type']=='radio'||$list['answer_type']=='checkbox'){
-											if($list['option1']!=''&&$list['option1']!='undefined'){
-											$addedOption    = array(
-													'question_id'   => $intQuestionId,
-													'option'        => $list['option1']
+									switch($list['answer_type']){
+										case 'Textarea': 
+											$addedQuestion      = array(
+												'group_id'            => $list['group_id'],
+												'question'            => $list['question'],
+												'question_status'     => 'active',
+												'added_ip'            => $_SERVER["SERVER_ADDR"],
+												'added_user_id'       => $identity->user_id,
+												'answer_type'         => $list['answer_type'],
+										   );
+										   $intQuestionId = $this->getGroupJoiningQuestionnaireTable()->AddQuestion($addedQuestion);
+										break;
+										case 'radio':
+											$addedQuestion      = array(
+												'group_id'            => $list['group_id'],
+												'question'            => $list['question'],
+												'question_status'     => 'active',
+												'added_ip'            => $_SERVER["SERVER_ADDR"],
+												'added_user_id'       => $identity->user_id,
+												'answer_type'         => $list['answer_type'],
+											);
+											$intQuestionId = $this->getGroupJoiningQuestionnaireTable()->AddQuestion($addedQuestion);
+											foreach( $list['option'] as $opt){													 
+												$addedOption = array();
+												$addedOption    = array(
+													'question_id'   => $question->questionnaire_id,
+													'option'        => $opt,
 												);
-												$intQOptionId                      = $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
-											}
-											if($list['option2']!=''&&$list['option2']!='undefined'){
-											$addedOption    = array(
-													'question_id'   => $intQuestionId,
-													'option'        => $list['option2']
+												$intQOptionId	= $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
+											}												
+										break;
+										case 'checkbox':
+											$addedQuestion      = array(
+												'group_id'            => $list['group_id'],
+												'question'            => $list['question'],
+												'question_status'     => 'active',
+												'added_ip'            => $_SERVER["SERVER_ADDR"],
+												'added_user_id'       => $identity->user_id,
+												'answer_type'         => $list['answer_type'],
+											);
+											$intQuestionId = $this->getGroupJoiningQuestionnaireTable()->AddQuestion($addedQuestion);
+											foreach( $list['option'] as $opt){													 
+												$addedOption = array();
+												$addedOption    = array(
+													'question_id'   => $question->questionnaire_id,
+													'option'        => $opt,
 												);
-												$intQOptionId                      = $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
+												$intQOptionId	= $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
 											}
-											if($list['option3']!=''&&$list['option3']!='undefined'){
-											$addedOption    = array(
-													'question_id'   => $intQuestionId,
-													'option'        => $list['option3']
-												);
-												$intQOptionId                      = $this->getGroupQuestionnaireOptionsTable()->AddOptions($addedOption);
-											}
-										}
+										break;
 									}
 								}
-						 }
+							}
+						}
 					}else{$error = "Unable to process";}
 				}else{$error = "Unable to process";}
 			}else{$error = "Unable to process";}	
@@ -1860,17 +2012,26 @@ class GroupsController extends AbstractActionController
 			if ($request->isPost()){
 				$post = $request->getPost(); 
 				if(!empty($post)){						 
-					$img = $_POST['imageData'];  
+					$img =$post['imageData'];  
 					if($img!=''){
 						$group_id = $post['group_id'];
 						$group  = $this->getGroupTable()->getPlanetinfo($post['group_id']);
 						if(!empty($group)){
+							
 							$img = str_replace('data:image/png;base64,', '', $img);
 							$img = str_replace(' ', '+', $img);
 							$data = base64_decode($img);
 							$config = $this->getServiceLocator()->get('Config');
+							$temp_path = $config['pathInfo']['temppath'];
+							$user_temp_path = $temp_path.$identity->user_id."/";	
+							$files = glob($user_temp_path); 
+							foreach($files as $file){ 
+								if(is_file($file))
+								@unlink($file);  
+							}
 							$imagePath_dir = $config['pathInfo']['ROOTPATH'].'/public/datagd/group/'.$group->group_id.'/';
 							$mediumimagePath_dir = $config['pathInfo']['ROOTPATH'].'/public/datagd/group/'.$group->group_id.'/medium';
+							$avtarimagePath_dir = $config['pathInfo']['ROOTPATH'].'/public/datagd/group/'.$group->group_id.'/avtar/';
 							$filename = 'group_'.$group->group_id.''.time().'.png';	
 							$imagePath = $config['pathInfo']['ROOTPATH'].'/public/datagd/group/'.$group->group_id.'/'.$filename;
 							$mediumimagePath = $config['pathInfo']['ROOTPATH'].'/public/datagd/group/'.$group->group_id.'/medium/'.$filename;
@@ -1879,25 +2040,44 @@ class GroupsController extends AbstractActionController
 							} 
 							if(!is_dir($mediumimagePath_dir)){							
 								mkdir($mediumimagePath_dir);
-							}							
+							}	
+							if(!is_dir($avtarimagePath_dir)){							
+								mkdir($avtarimagePath_dir);
+							}
+							$avtarimage_name = '';
 							if(file_put_contents($imagePath, $data)){
+								if($post['group_banner_new']==1&&isset($_FILES['orginalImage'])&&$_FILES['orginalImage']['name']!=''){
+									$avtarimage_name = time().$_FILES['orginalImage']['name'];
+									@move_uploaded_file($_FILES["orginalImage"]["tmp_name"], $avtarimagePath_dir .$avtarimage_name);
+								}
 								$resize = new ResizeImage($imagePath);
 								$resize->resizeTo(380, 214, 'maxWidth');								
 								$resize->saveImage($mediumimagePath);
+								
 								$group_photo =  $this->getGroupPhotoTable()->getGalexyPhoto($group->group_id);
 								$groupphoto  = new GroupPhoto();
 								$previous_image = '';
 								if(!empty($group_photo)&&$group_photo->group_photo_id!=''){									
 									$groupphoto->group_photo_id = $group_photo->group_photo_id;
-									$previous_image = $groupphoto->group_photo_photo;
+									$previous_image = $group_photo->group_photo_photo;
+									$previous_avatar = $group_photo->group_photo_orginal;
 								}
 								$groupphoto->group_photo_group_id  = $group->group_id;
 								$groupphoto->group_photo_photo = $filename;
+								
+								if($avtarimage_name != ''){
+									$groupphoto->group_photo_orginal = $avtarimage_name;
+								}else{
+									$groupphoto->group_photo_orginal = $group_photo->group_photo_orginal;
+								}							
 								$intGroupPhotoId  = $this->getGroupPhotoTable()->savePhoto($groupphoto);
 								if($intGroupPhotoId){
 									if($previous_image!=''){	
 										@unlink($config['pathInfo']['ROOTPATH'].'/public/datagd/groups/'.$group->group_id.'/'.$groupphoto->group_photo_photo);
 										@unlink($config['pathInfo']['ROOTPATH'].'/public/datagd/groups/'.$group->group_id.'/medium/'.$groupphoto->group_photo_photo);
+									}
+									if($avtarimage_name != ''){
+										@unlink($config['pathInfo']['ROOTPATH'].'/public/datagd/groups/'.$group->group_id.'/avatar/'.$previous_avatar);
 									}
 								}else{$error = "Some error occured.Please try again";}	
 							}							 
@@ -1944,6 +2124,7 @@ class GroupsController extends AbstractActionController
 									@unlink($config['pathInfo']['ROOTPATH'].'/public/datagd/groups/'.$group->group_id.'/'.$groupphoto->group_photo_photo);
 									@unlink($config['pathInfo']['ROOTPATH'].'/public/datagd/groups/'.$group->group_id.'/medium/'.$groupphoto->group_photo_photo);
 									@unlink($config['pathInfo']['ROOTPATH'].'/public/datagd/groups/'.$group->group_id.'/thumbnail/'.$groupphoto->group_photo_photo);
+									@unlink($config['pathInfo']['ROOTPATH'].'/public/datagd/groups/'.$group->group_id.'/avtar/'.$groupphoto->group_photo_orginal);
 								}
 							}						 
 						}else{$error = "You don\'t have the permission to do it";}						
@@ -1983,6 +2164,10 @@ class GroupsController extends AbstractActionController
 					$is_admin = 0;
 					if($this->getUserGroupTable()->checkOwner($group_media->group_id,$group_media->user_id)){
 						$is_admin = 1;
+					}
+					$is_logged_user_admin = 0;
+					if($this->getUserGroupTable()->checkOwner($group_media->group_id,$identity->user_id)){
+						$is_logged_user_admin = 1;
 					}
 					if(!empty($group_media)){
 						if($group_media->media_added_group_id == $groupinfo->group_id){
@@ -2031,6 +2216,7 @@ class GroupsController extends AbstractActionController
 											'prev_id' =>(isset($prev_item->group_media_id))?$prev_item->group_media_id:'',
 											'is_admin'=>$is_admin,
 											'time'=>$this->timeAgo($group_media->media_added_date),
+											'is_logged_user_admin'=>$is_logged_user_admin,
 											);
 								
 							$viewModel->setVariable( 'arr_group_media' , $arr_group_media);
@@ -2089,7 +2275,7 @@ class GroupsController extends AbstractActionController
 								if($friends == 'All'){
 									$all_members = $this->getUserGroupTable()->getFriendsNotMemberOfGroup($group_id,$identity->user_id,'');
 									foreach($all_members as $items){
-										$arrMembers[] = $items->user_id;
+										$arrMembers[] = $items['user_id'];
 									}
 								}else{								 
 									foreach($friends as $items){
@@ -2111,14 +2297,14 @@ class GroupsController extends AbstractActionController
 											$base_url = $config['pathInfo']['base_url'];
 											$msg = $identity->user_given_name." invited you to join the group ".$group->group_title;
 											$subject = 'Group joining invitation';
-											$from = 'admin@jeera.com';
+											$from = 'admin@jeera.me';
 											$process = 'Invite';
 											$this->UpdateNotifications($group_invt,$msg,3,$subject,$from,$identity->user_id,$group_id,$process);
 										}
 									}
 								}
 							}else{
-								$error = "You don't have the permission to do this";
+								$error = "Sorry, You need to be a member of the group to interact with the posts";
 							}
 						}else{
 							if($this->getUserGroupTable()->is_member($identity->user_id,$group_id)){
@@ -2148,13 +2334,13 @@ class GroupsController extends AbstractActionController
 											$base_url = $config['pathInfo']['base_url'];
 											$msg = $identity->user_given_name." invited you to join the group ".$group->group_title;
 											$subject = 'Group joining invitation';
-											$from = 'admin@jeera.com';
+											$from = 'admin@jeera.me';
 											$process = 'Invite';
 											$this->UpdateNotifications($group_invt,$msg,3,$subject,$from,$identity->user_id,$group_id,$process);
 										}
 									}
 								}
-							}else{$error = "You don't have the permission to do this";}
+							}else{$error = "Sorry, You need to be a member of the group to interact with the posts";}
 						}						 
 					}else{$error = "Group not available";}				 
 				}else{$error = "Unable to process";}
@@ -2163,7 +2349,7 @@ class GroupsController extends AbstractActionController
 		$return_array= array();		 
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error; 	
-		$return_array['members'] = $arrMembers; 	
+		 
 		$result = new JsonModel(array(
 		'return_array' => $return_array,      
 		));		
@@ -2191,7 +2377,7 @@ class GroupsController extends AbstractActionController
 								$feed_details['group_activity_group_id'] = $activity_details->group_activity_group_id;
 								$feed_details['group_activity_start_timestamp'] = $activity_details->group_activity_start_timestamp;
 								$feed_details['group_activity_start_date'] = date("d-m-Y",strtotime($activity_details->group_activity_start_timestamp));
-								$feed_details['group_activity_start_time'] = date("H:i A",strtotime($activity_details->group_activity_start_timestamp));
+								$feed_details['group_activity_start_time'] = date("h:i A",strtotime($activity_details->group_activity_start_timestamp));
 								$feed_details['group_activity_title'] = $activity_details->group_activity_title;
 								$feed_details['group_activity_location'] = $activity_details->group_activity_location;
 								$feed_details['group_activity_location_lat'] = $activity_details->group_activity_location_lat;
@@ -2238,7 +2424,7 @@ class GroupsController extends AbstractActionController
 							if($Mediadata->media_added_user_id == $identity->user_id ||$this->getUserGroupTable()->checkOwner($Mediadata->media_added_group_id,$identity->user_id)){	
 								$media_dataaarray['media_caption'] = $content;								 
 								$this->getGroupMediaTable()->updateMedia($media_dataaarray,$content_id);
-							}else{$error = "Sorry ! You don't have the permission to do this";}									 
+							}else{$error = "Sorry, You need to be a member of the group to interact with the posts";}									 
 						}else{$error = "This status is not existing in the system";}
 					}else{$error = "Forms are incomplete. Some values are missing";}	 			 
 				}else{$error = "Unable to process";}
@@ -2274,7 +2460,7 @@ class GroupsController extends AbstractActionController
 								$this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$content_id);
 								$this->getGroupMediaTable()->deleteMedia($content_id);
 								$this->getUserNotificationTable()->deleteSystemNotifications(8,$content_id);
-							}else{$error = "Sorry ! You don't have the permission to do this";}									 
+							}else{$error = "Sorry, You need to be a member of the group to interact with the posts";}									 
 						}else{$error = "This status is not existing in the system";}
 					}else{$error = "Forms are incomplete. Some values are missing";}	 			 
 				}else{$error = "Unable to process";}
@@ -2361,7 +2547,7 @@ class GroupsController extends AbstractActionController
 													"group_activity_location_lat" => $activity->group_activity_location_lat,
 													"group_activity_location_lng" => $activity->group_activity_location_lng,
 													"group_activity_content" => $activity->group_activity_content,
-													"group_activity_start_timestamp" => date("M d,Y H:s a",strtotime($activity->group_activity_start_timestamp)),												 
+													"group_activity_start_timestamp" => date("M d,Y h:i a",strtotime($activity->group_activity_start_timestamp)),												 
 													"user_given_name" => $list['user_given_name'],
 													"group_title" =>$list['group_title'],
 													"group_seo_title" =>$list['group_seo_title'],
@@ -2500,7 +2686,39 @@ class GroupsController extends AbstractActionController
 		));		
 		return $result;
 	}
-	public function get_youtube_id_from_url($url){
+	public function friendslistAction(){
+		$error = '';	
+		$friends = array();
+		$auth = new AuthenticationService();
+		if ($auth->hasIdentity()) {
+			$identity = $auth->getIdentity();			  
+			$request   = $this->getRequest();
+			if ($request->isPost()){
+				$post = $request->getPost(); 
+				if(!empty($post)){				 
+					$group_id = $post['group_id'];					 
+					$page = (isset($post['page'])&&$post['page']!=null&&$post['page']!=''&&$post['page']!='undefined')?$post['page']:1;
+					$limit =10;
+					$page =($page>0)?$page-1:0;
+					$offset = $page*$limit;
+					$group_info = $this->getGroupTable()->getPlanetinfo($group_id);				
+					if(!empty($group_info)&&$group_info->group_id!=''){						 
+						$type = 'Friends';
+						$friends = $this->getUserGroupTable()->getMembers($group_id,$identity->user_id,$type,$offset,$limit); 
+					}else{$error = "Unable to locate the group";}	 			 
+				}else{$error = "Unable to process";}
+			}else{$error = "Unable to process";} 
+		}else{$error = "Your session expired, please log in again to continue";}
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error; 	
+		$return_array['friends'] = $friends; 			 			
+		$result = new JsonModel(array(
+		'return_array' => $return_array,      
+		));		
+		return $result;
+	}
+	public function  get_youtube_id_from_url($url){
 		if (stristr($url,'youtu.be/'))
 			{preg_match('/(https:|http:|)(\/\/www\.|\/\/|)(.*?)\/(.{11})/i', $url, $final_ID); return isset($final_ID[4])?$final_ID[4]:''; }
 		else 
@@ -2626,5 +2844,8 @@ class GroupsController extends AbstractActionController
 		$sm = $this->getServiceLocator();
 		return  $this->activityRsvpTable = (!$this->activityRsvpTable)?$sm->get('Activity\Model\ActivityRsvpTable'):$this->activityRsvpTable;
     }
-	
+	public function getGroupMediaContentTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupMediaContentTable = (!$this->groupMediaContentTable)?$sm->get('Groups\Model\GroupMediaContentTable'):$this->groupMediaContentTable;    
+    }
 }
