@@ -1,0 +1,6 @@
+<select id="group_city_id" name="group_city_id">
+	<option value="">City</option>
+	<?php foreach($cities as $row){ ?>
+		<option value="<?php echo $row['city_id']; ?>"><?php echo $row['name']; ?></option>
+	<?php } ?>
+</select>
