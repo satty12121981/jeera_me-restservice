@@ -20,7 +20,8 @@ class GroupMediaContentTable extends AbstractTableGateway
 	public function saveGroupMediaContent(GroupMediaContent $objGroupMediaContent, $media_content_id='') {
 		 
         $data = array(           
-            'content'  => $objGroupMediaContent->content,			 
+            'content'  => $objGroupMediaContent->content,
+			'media_type' => $objGroupMediaContent->media_type,
 		);
         if($media_content_id != ''){
 			$this->update($data, array('media_content_id' => $media_content_id));
@@ -35,12 +36,48 @@ class GroupMediaContentTable extends AbstractTableGateway
 			$select = new Select;
 			$select->from('y2m_group_media_content')
 					->where->in('media_content_id',$media_content);
-			$statement = $this->adapter->createStatement();		
+			$statement = $this->adapter->createStatement();
 			$select->prepareStatement($this->adapter, $statement);
 			$resultSet = new ResultSet();		
 			$resultSet->initialize($statement->execute());	  
 			return $resultSet->toArray();
 		}
 		return false;
+	}
+	public function getMediafile($media_content){
+		if(!empty($media_content)){
+			$select = new Select;
+			$select->from('y2m_group_media_content')
+					->where(array('media_content_id'=>$media_content));
+			$statement = $this->adapter->createStatement();		
+			$select->prepareStatement($this->adapter, $statement);
+			$resultSet = new ResultSet();		
+			$resultSet->initialize($statement->execute());	  
+			return $resultSet->current();
+		}
+		return false;
+	}
+	public function getAlbumIcon($album_id){
+		$select = new Select;
+		$icon_info = array();
+		$select->from('y2m_group_media')			
+			->where(array("media_album_id"=>$album_id));		 
+		$statement = $this->adapter->createStatement();		
+		$select->prepareStatement($this->adapter, $statement);
+		$resultSet = new ResultSet();		
+		$resultSet->initialize($statement->execute());	  
+		$row =  $resultSet->current();
+		if(!empty($row)&&$row->media_content!=''){
+			$media_select = new Select;
+			$media_select->from('y2m_group_media_content')			
+				->where->in('media_content_id',json_decode($row->media_content));	 
+			$statement = $this->adapter->createStatement();		
+			$media_select->prepareStatement($this->adapter, $statement);
+			$resultSet = new ResultSet();		
+			$resultSet->initialize($statement->execute());	  
+			$icon_info =  $resultSet->current();
+			 
+		}
+		return $icon_info;
 	}
 }

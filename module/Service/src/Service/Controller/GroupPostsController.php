@@ -10,6 +10,7 @@ use Application\Controller\Plugin\UploadHandler;
 use Application\Controller\Plugin\ResizeImage;
 use Groups\Model\GroupPhoto;
 use Groups\Model\GroupMedia;
+use Groups\Model\GroupMediaContent;  
 use Discussion\Model\Discussion;
 use Activity\Model\Activity;
 use Activity\Model\ActivityInvite;
@@ -33,6 +34,8 @@ class GroupPostsController extends AbstractActionController
     protected $userNotificationTable;
     protected $groupActivityInviteTable;
     protected $groupPhotoTable;
+	protected $groupMediaContentTable;
+    protected $groupAlbumTable;
 
 	public function __construct(){
         $this->flagSuccess = "Success";
@@ -225,29 +228,38 @@ class GroupPostsController extends AbstractActionController
                     case "New Media":
                         $media_details = array();
                         $media = $this->getGroupMediaTable()->getMediaForFeed($list['event_id']);
-                        $video_id  = '';
-                        if($media->media_type == 'video')
-                            $video_id  = $this->get_youtube_id_from_url($media->media_content);
+                        $media_contents = $this->getGroupMediaContentTable()->getMediaContents(json_decode($media->media_content));
+                        $media_files = [];
+                        if (count($media_contents)){
+                            foreach($media_contents as $mfile){
+                                if($mfile['media_type'] == 'youtube'){
+                                    $media_files[] = array(
+                                        'id'=>$mfile['media_content_id'],
+                                        'files'=>$mfile['content'],
+                                        'video_id'=>$this->get_youtube_id_from_url($mfile['content']),
+                                        'media_type'=>$mfile['media_type'],
+                                    );
+                                }else{
+                                    $media_files[] = array(
+                                        'id'=>$mfile['media_content_id'],
+                                        'files'=>$mfile['content'],
+                                        'media_type'=>$mfile['media_type'],
+                                    );
+                                }
+                            }
+                        }
                         $SystemTypeData = $this->groupTable->fetchSystemType("Media");
                         $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
                         $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
                         $str_liked_users = '';
                         $arrLikedUsers = array();
                         $arrLikedUsers = $this->formatLikedUsers($like_details,$SystemTypeData->system_type_id,$list['event_id'],$userinfo->user_id);
-                        if (!empty($media->media_content)){
-                            if($media->media_type == 'video'){
-                                $media->media_content =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
-                            }else{
-                                $media->media_content = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$list['group_id'].'/media/medium/'.$media->media_content;
-                            }
-                        }
-
                         $media_details[] = array(
                             "group_media_id" => $media->group_media_id,
-                            "media_type" => $media->media_type,
                             "media_content" => $media->media_content,
                             "media_caption" => $media->media_caption,
-                            "video_id" => $video_id,
+                            "media_files" => $media_files,
+                            "album_title"=>$media->album_title,
                             "group_image_link" =>$group_cover_photo,
                             "group_title" =>$list['group_title'],
                             "group_seo_title" =>$list['group_seo_title'],
@@ -282,7 +294,8 @@ class GroupPostsController extends AbstractActionController
 		if ($request->isPost()){
             $config = $this->getServiceLocator()->get('Config');
             $post = $request->getPost();
-            $file = $request->getFiles();
+            $files = $request->getFiles();
+			$base_url = $config['pathInfo']['base_url'];
             $accToken = (isset($post['accesstoken'])&&$post['accesstoken']!=null&&$post['accesstoken']!=''&&$post['accesstoken']!='undefined')?strip_tags(trim($post['accesstoken'])):'';
             if (empty($accToken)) {
                 $dataArr[0]['flag'] = "Failure";
@@ -406,70 +419,173 @@ class GroupPostsController extends AbstractActionController
                     } else $dataArr[0]['flag'] = $this->flagFailure;
                 break;
                 case 'image':
-                    if(isset($file)&&isset($file['mediaimage']['name'])&&$file['mediaimage']['name']!=''){
-                        $config = $this->getServiceLocator()->get('Config');
-                        $options['script_url']          = $config['pathInfo']['base_url'];
-                        $options['upload_dir']          = $config['pathInfo']['group_img_path'].$group->group_id."/media/";
-                        $options['upload_url']          = $config['pathInfo']['group_img_path_absolute_path'].$group->group_id."/media/";
-                        $options['param_name']          = 'mediaimage';
-                        $options['min_width']           = 50;
-                        $options['min_height']          = 50;
-                        if(!is_dir($config['pathInfo']['group_img_path'].$group->group_id)){
-                            mkdir($config['pathInfo']['group_img_path_absolute_path'].$group->group_id);
+                    $error =($post['imagecaption']==null || $post['imagecaption']=='' || $post['imagecaption']=='undefined')? "Image Caption required":$error;
+                    if (isset($post['albumid']) && !empty($post['albumid'])){
+                        $is_admin = 0;
+                        if ($this->getUserGroupTable()->checkOwner($group->group_id, $userinfo->user_id)) {
+                            $is_admin = 1;
                         }
-                        if(!is_dir($config['pathInfo']['group_img_path'].$group->group_id."/media/")){
-                            mkdir($config['pathInfo']['group_img_path_absolute_path'].$group->group_id."/media/");
+                        $albumdetails = $this->getGroupAlbumTable()->getAlbumDetailsForGroupOrAlbumOwner($userinfo->user_id, $group->group_id, $is_admin);
+                        if (empty($albumdetails)){
+                            $dataArr[0]['flag'] = $this->flagFailure;
+                            $dataArr[0]['message'] = "This user is not the group owner or the album owner";
+                            echo json_encode($dataArr);
+                            exit;
                         }
-                        $upload_handler = new UploadHandler($options);
-                        if(isset($upload_handler->image_objects['filename'])&&$upload_handler->image_objects['filename']!=''){
-                            if($error==''){
+                    }
+                    if($error=='') {
+                        $file_ary = array();
+                        if (isset($files) && count($files['mediaimage']) > 0) {
+                            $file_count = count($files['mediaimage']);
+                            $file_keys = array_keys($files['mediaimage']);
+                            $config = $this->getServiceLocator()->get('Config');
+                            $uplaod_dir = $config['pathInfo']['group_img_path'] . $group->group_id . "/media/";
+                            $media_file = [];
+                            $temp_path = $config['pathInfo']['temppath'];
+                            $user_temp_path = $temp_path . $userinfo->user_id . "/";
+                            // Create directory if it does not exist
+                            if (!is_dir($user_temp_path)) {
+                                mkdir($user_temp_path);
+                            }
+                            for ($i = 0; $i < $file_count; $i++) {
+                                if (!file_exists($user_temp_path . $files['mediaimage'][$i]['name']) && $files['mediaimage'][$i]['size'] > 0) {
+                                    move_uploaded_file($files['mediaimage'][$i]['tmp_name'], $user_temp_path . $files['mediaimage'][$i]['name']);
+                                }
+                                $arr_images[$i] = $files['mediaimage'][$i];
+                            }
+                            if (!is_dir($config['pathInfo']['group_img_path'] . $group->group_id)) {
+                                mkdir($config['pathInfo']['group_img_path'] . $group->group_id);
+                            }
+                            if (!is_dir($config['pathInfo']['group_img_path'] . $group->group_id . "/media/")) {
+                                mkdir($config['pathInfo']['group_img_path'] . $group->group_id . "/media/");
+                            }
+                            if (!is_dir($config['pathInfo']['group_img_path'] . $group->group_id . "/media/thumbnail/")) {
+                                mkdir($config['pathInfo']['group_img_path'] . $group->group_id . "/media/thumbnail/");
+                            }
+                            if (!is_dir($config['pathInfo']['group_img_path'] . $group->group_id . "/media/medium/")) {
+                                mkdir($config['pathInfo']['group_img_path'] . $group->group_id . "/media/medium/");
+                            }
+                            if (isset($arr_images) && count($arr_images) > 0) {
+                                foreach ($arr_images as $key => $imagefiels) {
+                                    $str_sub = substr(str_shuffle(str_repeat('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', 5)), 0, 5);
+                                    $filename = time() . $str_sub . $imagefiels['name'];
+                                    $imagePath = $user_temp_path . $imagefiels['name'];
+                                    $resize = new ResizeImage($imagePath);
+                                    $resize->resizeTo(1000, 800, 'maxWidth');
+                                    $resize->saveImage($uplaod_dir . $filename);
+                                    $resize->resizeTo(380, 214, 'maxWidth');
+                                    $resize->saveImage($uplaod_dir . 'medium/' . $filename);
+                                    $resize->resizeTo(100, 100, 'maxWidth');
+                                    $resize->saveImage($uplaod_dir . 'thumbnail/' . $filename);
+                                    $objGroupMediaContent = new GroupMediaContent();
+                                    $objGroupMediaContent->media_type = 'image';
+                                    $objGroupMediaContent->content = $filename;
+                                    $addeditems = $this->getGroupMediaContentTable()->saveGroupMediaContent($objGroupMediaContent);
+                                    if ($addeditems) {
+                                        $media_files[] = $addeditems;
+                                    }
+                                }
+                                $files = glob($user_temp_path);
+                                foreach ($files as $file) {
+                                    if (is_file($file))
+                                        @unlink($file);
+                                }
+                            }
+                            if (count($media_files) > 0) {
                                 $objGroupMedia = new GroupMedia();
                                 $objGroupMedia->media_added_user_id = $userinfo->user_id;
                                 $objGroupMedia->media_added_group_id = $post['groupid'];
-                                $objGroupMedia->media_type = 'image';
-                                $objGroupMedia->media_content = $upload_handler->image_objects['filename'];
-                                $objGroupMedia->media_caption = ($post['imagecaption']!='undefined')?strip_tags(trim($post['imagecaption'])):'';
+
+                                $objGroupMedia->media_content = json_encode($media_files);
+                                $objGroupMedia->media_caption = ($post['imagecaption'] != 'undefined') ? $post['imagecaption'] : '';
                                 $objGroupMedia->media_status = 'active';
+                                $objGroupMedia->media_album_id = (!empty($post['albumid']))?$post['albumid']:0;
                                 $addeditem = $this->getGroupMediaTable()->saveGroupMedia($objGroupMedia);
-                                if($addeditem){
-                                    $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($group->group_id);
-                                    $msg = $userinfo->user_given_name." added a new image under the group ".$group->group_title;
+                                if ($addeditem) {
+                                    $joinedMembers = $this->getUserGroupTable()->getAllGroupMembers($group->group_id);
+                                    $msg = $userinfo->user_given_name . " added a new image under the group " . $group->group_title;
                                     $subject = 'New image added';
-									$process = 'New Media';
-                                    $this->grouppostNotifications($joinedMembers, $subject, $msg, $userinfo,$addeditem,8,$process);
-                                    $dataArr[0]['flag'] = $this->flagSuccess; $error = "media posted successfully";
-                                }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "Some error occcured. Please try again"; }
+                                    $from = 'admin@jeera.me';
+                                    $process = 'New Media';
+                                    $base_url = $config['pathInfo']['base_url'];
+                                    foreach ($joinedMembers as $members) {
+                                        if ($members->user_group_user_id != $userinfo->user_id) {
+                                            $this->UpdateNotifications($members->user_group_user_id, $msg, 8, $subject, $from, $userinfo->user_id, $addeditem, $process);
+                                        }
+                                    }
+                                    $dataArr[0]['flag'] = $this->flagSuccess;
+                                    $error = "media posted successfully";
+                                } else {
+                                    $dataArr[0]['flag'] = $this->flagFailure;
+                                    $error = "Some error occurred. Please try again";
+                                }
+                            } else {
+                                $dataArr[0]['flag'] = $this->flagFailure;
+                                $error = "Some error occurred, during file upload. Please try again";
                             }
-                        }else{
+                        } else {
                             $dataArr[0]['flag'] = $this->flagFailure;
-                            $error = "Some error occured, during file upload. Please try again";
+                            $error = "Select a image to upload and continue";
                         }
                     }else{
                         $dataArr[0]['flag'] = $this->flagFailure;
-                        $error = "Select a image to upload and continue";
                     }
                     break;
                 case 'video':
+                    $error =($post['videocaption']==null || $post['videocaption']=='' || $post['videocaption']=='undefined')? "Video Caption required":$error;
+                    $this->checkError($error);
                     $error =($post['mediavideo']=='')? "Add video to upload":$error;
+                    if (isset($post['albumid']) && !empty($post['albumid'])){
+                        $is_admin = 0;
+                        if ($this->getUserGroupTable()->checkOwner($group->group_id, $userinfo->user_id)) {
+                            $is_admin = 1;
+                        }
+                        $albumdetails = $this->getGroupAlbumTable()->getAlbumDetailsForGroupOrAlbumOwner($userinfo->user_id, $group->group_id, $is_admin);
+                        if (empty($albumdetails)){
+                            $dataArr[0]['flag'] = $this->flagFailure;
+                            $dataArr[0]['message'] = "This user is not the group owner or the album owner";
+                            echo json_encode($dataArr);
+                            exit;
+                        }
+                    }
                     if($error==''){
-                        $objGroupMedia = new GroupMedia();
-                        $objGroupMedia->media_added_user_id = $userinfo->user_id;
-                        $objGroupMedia->media_added_group_id = $post['groupid'];
-                        $objGroupMedia->media_type = 'video';
-                        $objGroupMedia->media_content = $post['mediavideo'];
-                        $objGroupMedia->media_caption = ($post['videocaption']!='undefined')?strip_tags(trim($post['videocaption'])):'';
-                        $objGroupMedia->media_status = 'active';
-                        $addeditem = $this->getGroupMediaTable()->saveGroupMedia($objGroupMedia);
-                        if($addeditem){
-                            $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($group->group_id);
-                            $msg = $userinfo->user_given_name." added a new video under the group ".$group->group_title;
-                            $subject = 'New video added';
-							$process = 'New Media';
-                            $this->grouppostNotifications($joinedMembers, $subject, $msg, $userinfo, $addeditem,8,$process);
-                            $dataArr[0]['flag'] = $this->flagSuccess; $error = "media posted successfully";
-                        }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "Some error occcured. Please try again"; }
+                        $media_file = [];
+                        $arr_videos = explode(',',$post['mediavideo']);
+                        foreach($arr_videos as $videosfiels){
+                            $objGroupMediaContent = new GroupMediaContent();
+                            $objGroupMediaContent->content =  $videosfiels;
+                            $objGroupMediaContent->media_type = 'youtube';
+                            $addeditems = $this->getGroupMediaContentTable()->saveGroupMediaContent($objGroupMediaContent);
+                            if($addeditems){
+                                $media_files[] = $addeditems;
+                            }
+                        }
+                        if(count($media_files)>0){
+                            $objGroupMedia = new GroupMedia();
+                            $objGroupMedia->media_added_user_id = $userinfo->user_id;
+                            $objGroupMedia->media_added_group_id = $post['groupid'];
+                            $objGroupMedia->media_content =json_encode($media_files);
+                            $objGroupMedia->media_caption = ($post['videocaption']!='undefined')?$post['videocaption']:'';
+                            $objGroupMedia->media_status = 'active';
+                            $objGroupMedia->media_album_id = (!empty($post['albumid']))?$post['albumid']:0;
+                            $addeditem = $this->getGroupMediaTable()->saveGroupMedia($objGroupMedia);
+                            if($addeditem){
+                                $subject = 'New video added';
+                                $from = 'admin@jeera.me';
+                                $process = 'New Media';
+                                $msg = $userinfo->user_given_name." added a new video under the group ".$group->group_title;
+                                $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($group->group_id);
+                                foreach($joinedMembers as $members){
+                                    if($members->user_group_user_id!=$userinfo->user_id){
+                                        $this->UpdateNotifications($members->user_group_user_id,$msg,8,$subject,$from,$userinfo->user_id,$addeditem,$process);
+                                    }
+                                }
+                                $dataArr[0]['flag'] = $this->flagSuccess;
+                                $error = "media posted successfully";
+                            }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "Some error occcured. Please try again"; }
+                        }
                     }else{
-                        $dataArr[0]['flag'] = $this->flagFailure; $error = "Please input media video url and continue";
+                        $dataArr[0]['flag'] = $this->flagFailure;
                     }
                     break;
             }
@@ -904,5 +1020,13 @@ class GroupPostsController extends AbstractActionController
     public function getGroupPhotoTable(){
         $sm = $this->getServiceLocator();
         return  $this->groupPhotoTable = (!$this->groupPhotoTable)?$sm->get('Groups\Model\GroupPhotoTable'):$this->groupPhotoTable;
+    }
+    public function getGroupAlbumTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->groupAlbumTable = (!$this->groupAlbumTable)?$sm->get('Album\Model\GroupAlbumTable'):$this->groupAlbumTable;
+    }
+	public function getGroupMediaContentTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupMediaContentTable = (!$this->groupMediaContentTable)?$sm->get('Groups\Model\GroupMediaContentTable'):$this->groupMediaContentTable;    
     }
 }

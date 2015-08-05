@@ -725,4 +725,68 @@ class ActivityTable extends AbstractTableGateway
 		$resultSet->initialize($statement->execute()); 
 		return $resultSet->toArray();
 	}
+	public function getActivityByEventGroupID($group_id,$activity_id){
+		$select = new Select;
+		$select->from('y2m_group_activity')
+				->join('y2m_group', 'y2m_group.group_id = y2m_group_activity.group_activity_group_id', array('group_id','group_title','group_seo_title'))
+				->where(array('y2m_group_activity.group_activity_id'=>$activity_id))
+				->where(array('y2m_group_activity.group_activity_group_id'=>$group_id,"group_activity_status"=>0));
+
+		$statement = $this->adapter->createStatement();
+		$select->prepareStatement($this->adapter, $statement);
+		//echo $select->getSqlString();die();
+		$resultSet = new ResultSet();
+		$resultSet->initialize($statement->execute());
+		return $resultSet->current();
+	}
+	public function getActivityDetailById($activity_id){
+		$activity_id  = (int) $activity_id;
+
+		$select = new Select;
+		$select->from('y2m_group_activity')
+			->join('y2m_user', 'y2m_user.user_id = y2m_group_activity.group_activity_owner_user_id', array('user_id','user_given_name'))
+			->join('y2m_group', 'y2m_group.group_id = y2m_group_activity.group_activity_group_id', array('group_id','group_title','group_seo_title'))
+			->where(array('y2m_group_activity.group_activity_id' => "$activity_id"));
+
+		$statement = $this->adapter->createStatement();
+		$select->prepareStatement($this->adapter, $statement);
+
+		$resultSet = new ResultSet();
+		$resultSet->initialize($statement->execute());
+		$row = $resultSet->current();
+		return $row;
+	}
+	public function getAllEventsRelatedToUser($user_id,$group_id,$is_admin){
+		$select = new Select;
+		$select->from('y2m_group_activity')
+			->where(array('y2m_group_activity.group_activity_status' => "active"));
+		if($is_admin){
+			$select->where(array("group_activity_group_id"=>$group_id));
+		}else{
+			$select->where(array('y2m_group_activity.group_activity_owner_user_id' => $user_id,"group_activity_group_id"=>$group_id));
+		}
+		$statement = $this->adapter->createStatement();
+		$select->prepareStatement($this->adapter, $statement);
+		//echo $select->getSqlString();
+		$resultSet = new ResultSet();
+		$resultSet->initialize($statement->execute());
+		return $resultSet->toArray();
+	}
+
+	public function getEventDetailsForGroupOrActivityOwner($activity_id,$user_id,$group_id,$is_admin){
+		$select = new Select;
+		$select->from('y2m_group_activity')
+			->where(array('y2m_group_activity.group_activity_status' => "active"));
+		if($is_admin){
+			$select->where(array("group_activity_group_id"=>$group_id,'y2m_group_activity.group_activity_id' => $activity_id));
+		}else{
+			$select->where(array('y2m_group_activity.group_activity_id' => $activity_id,'y2m_group_activity.group_activity_owner_user_id' => $user_id,"group_activity_group_id"=>$group_id));
+		}
+		$statement = $this->adapter->createStatement();
+		$select->prepareStatement($this->adapter, $statement);
+		//echo $select->getSqlString();
+		$resultSet = new ResultSet();
+		$resultSet->initialize($statement->execute());
+		return $resultSet->toArray();
+	}
 }

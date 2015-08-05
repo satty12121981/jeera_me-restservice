@@ -707,9 +707,25 @@ class IndexController extends AbstractActionController
                         case "New Media":
                             $media_details = array();
                             $media = $this->getGroupMediaTable()->getMediaForFeed($list['event_id']);
-                            $video_id  = '';
-                            if($media->media_type == 'video')
-                                $video_id  = @$this->get_youtube_id_from_url($media->media_content);
+							$media_contents = $this->getGroupMediaContentTable()->getMediaContents(json_decode($media->media_content));
+							$media_files = [];
+							foreach($media_contents as $mfile){
+								if($mfile['media_type'] == 'youtube'){
+									$media_files[] = array(
+										'id'=>$mfile['media_content_id'],
+										'files'=>$mfile['content'],
+										'video_id'=>$this->get_youtube_id_from_url($mfile['content']),
+										'media_type'=>$mfile['media_type'],
+									);
+								}else{
+									$media_files[] = array(
+										'id'=>$mfile['media_content_id'],
+										'files'=>$mfile['content'],
+										'media_type'=>$mfile['media_type'],
+									);
+								}
+							}
+
                             $SystemTypeData = $this->getGroupsTable()->fetchSystemType("Media");
                             $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$user_id);
                             $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$user_id);
@@ -717,19 +733,12 @@ class IndexController extends AbstractActionController
                             if(!empty($like_details)&&isset($like_details['likes_counts'])){
                                 $liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$list['event_id'],$user_id,2,0);
                             }
-                            if (!empty($media->media_content)){
-                                if($media->media_type == 'video'){
-                                    $media->media_content =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
-                                }else{
-                                    $media->media_content = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$list['group_id'].'/media/medium/'.$media->media_content;
-                                }
-                            }
                             $media_details[] = array(
                                 "group_media_id" => $media->group_media_id,
-                                "media_type" => $media->media_type,
-                                "media_content" => $media->media_content,
-                                "media_caption" => $media->media_caption,
-                                "video_id" => $video_id,
+								"media_content" => $media->media_content,
+								"media_caption" => $media->media_caption,
+								"media_files" => $media_files,
+								"album_title"=>$media->album_title,
                                 "group_title" =>$list['group_title'],
                                 "group_seo_title" =>$list['group_seo_title'],
                                 "group_id" =>$list['group_id'],

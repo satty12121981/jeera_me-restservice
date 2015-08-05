@@ -12,6 +12,7 @@ use Groups\Model\GroupPhotoTable;
 use Groups\Model\UserGroupTable;
 use Groups\Model\GroupMediaTable;
 use Groups\Model\UserGroupJoiningInvitationTable;
+use Groups\Model\GroupMediaContentTable;
 class Module
 {
     public function getAutoloaderConfig()
@@ -97,9 +98,14 @@ class Module
                     $table = new GroupMediaTable($dbAdapter);
 					return $table;
                 },
-				 'Groups\Model\UserGroupJoiningInvitationTable' =>  function($sm) {
+				'Groups\Model\UserGroupJoiningInvitationTable' =>  function($sm) {
                     $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
                     $table = new UserGroupJoiningInvitationTable($dbAdapter);
+                    return $table;
+                },
+				'Groups\Model\GroupMediaContentTable' =>  function($sm) {
+                    $dbAdapter = $sm->get('Zend\Db\Adapter\Adapter');
+                    $table = new GroupMediaContentTable($dbAdapter);
                     return $table;
                 },
             ),

@@ -44,6 +44,8 @@ class GroupsController extends AbstractActionController
 	protected $activityRsvpTable;
 	protected $discussionTable;
 	protected $groupMediaContentTable;
+	protected $groupEventAlbumTable;
+	protected $groupAlbumTable;
 	public function membergroupsAction(){
 		$error = '';
 		$auth = new AuthenticationService();
@@ -367,6 +369,7 @@ class GroupsController extends AbstractActionController
 									$resize->saveImage($uplaod_dir.'thumbnail/'.$filename);
 									$objGroupMediaContent = new GroupMediaContent();
 									$objGroupMediaContent->content =  $filename;
+									$objGroupMediaContent->media_type = 'image';
 									$addeditems = $this->getGroupMediaContentTable()->saveGroupMediaContent($objGroupMediaContent);
 									if($addeditems){
 										$media_files[] = $addeditems;
@@ -381,7 +384,6 @@ class GroupsController extends AbstractActionController
 									$objGroupMedia = new GroupMedia();
 									$objGroupMedia->media_added_user_id = $identity->user_id;
 									$objGroupMedia->media_added_group_id = $post['group_id'];
-									$objGroupMedia->media_type = 'image';
 									$objGroupMedia->media_content = json_encode($media_files);
 									$objGroupMedia->media_caption = ($post['imageCaption']!='undefined')?$post['imageCaption']:'';
 									$objGroupMedia->media_status = 'active';
@@ -413,6 +415,7 @@ class GroupsController extends AbstractActionController
 								foreach($arr_videos as $videosfiels){
 									$objGroupMediaContent = new GroupMediaContent();
 									$objGroupMediaContent->content =  $videosfiels;
+									$objGroupMediaContent->media_type = 'video';
 									$addeditems = $this->getGroupMediaContentTable()->saveGroupMediaContent($objGroupMediaContent);
 									if($addeditems){
 										$media_files[] = $addeditems;
@@ -422,7 +425,7 @@ class GroupsController extends AbstractActionController
 									$objGroupMedia = new GroupMedia();
 									$objGroupMedia->media_added_user_id = $identity->user_id;
 									$objGroupMedia->media_added_group_id = $post['group_id'];
-									$objGroupMedia->media_type = 'video';
+									
 									$objGroupMedia->media_content =json_encode($media_files);
 									$objGroupMedia->media_caption = ($post['videoCaption']!='undefined')?$post['videoCaption']:'';
 									$objGroupMedia->media_status = 'active';
@@ -505,26 +508,27 @@ class GroupsController extends AbstractActionController
 			$identity = $auth->getIdentity();
 			$request   = $this->getRequest();
 			if ($request->isPost()){ 
-				$post = $request->getPost();
-				$media_id = $post['media_id'];
-				if($media_id){
-					$group_media = $this->getGroupMediaTable()->getOneMedia($media_id);
+				$post = $request->getPost();				 
+				$item_id =$post['item_id']; 
+				if($item_id){
+					$group_media = $this->getGroupMediaTable()->getMediaFromContent($item_id);
+					$group_oneMedia = $this->getGroupMediaTable()->getOneMedia($group_media->group_media_id);
 					$is_admin = 0;
-					if($this->getUserGroupTable()->checkOwner($group_media->group_id,$group_media->user_id)){
+					if($this->getUserGroupTable()->checkOwner($group_media->media_added_group_id,$group_media->media_added_user_id)){
 						$is_admin = 1;
 					}
 					$logged_user_ismember = 0;
-					if($this->getUserGroupTable()->is_member($identity->user_id,$group_media->group_id)){
+					if($this->getUserGroupTable()->is_member($identity->user_id,$group_media->media_added_group_id)){
 						$logged_user_ismember = 1;
 					}
 					$arr_group_media = array();
 					if(!empty($group_media)&&$group_media->group_media_id!=''){
-						$SystemTypeData = $this->getGroupTable()->fetchSystemType("Media");
-						$like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$media_id,$identity->user_id);
+						$SystemTypeData = $this->getGroupTable()->fetchSystemType("Image");
+						$like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$item_id,$identity->user_id);
 						$like_count = $like_details->likes_counts;		
 						$arr_likedUsers = array();						
 						if(!empty($like_details)){  
-							$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$media_id,$identity->user_id,2,0);
+							$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$item_id,$identity->user_id,2,0);
 							$arr_likedUsers = array();
 							if($like_details['is_liked']==1){
 								$arr_likedUsers[] = 'you';
@@ -533,40 +537,64 @@ class GroupsController extends AbstractActionController
 								foreach($liked_users as $likeuser){
 									$arr_likedUsers[] = $likeuser['user_given_name'];
 								}
+							}							 
+						}
+						$commet_users = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$item_id,$identity->user_id);
+						$media_file = $this->getGroupMediaContentTable()->getMediafile($item_id);
+						$event_name = '';
+						$event_id = '';
+						$allMediafiles = array();
+						if($group_media->media_album_id!=''){
+							$event_details  = $this->getGroupEventAlbumTable()->getAlbumEvents($group_media->media_album_id);
+							if(!empty($event_details)){
+								$event_name = $event_details->group_activity_title;
+								$event_id = $event_details->group_activity_id;
 							}
-							 
-						}	
-						$commet_users = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$media_id,$identity->user_id);
-						$next_item = $this->getGroupMediaTable()->getNextMedia($group_media->group_id,$media_id);
-						$prev_item = $this->getGroupMediaTable()->getPreviousMedia($group_media->group_id,$media_id);
+							$allAlbum_files = $this->getGroupMediaTable()->getAllAlbumFiles($group_media->media_album_id);
+							foreach($allAlbum_files as $files){
+								$media_ids = json_decode($files['media_content']);
+								$allMediafiles = array_merge($allMediafiles,$media_ids );
+							}
+						}else{
+							$all_files = $this->getGroupMediaTable()->getGroupFiles($group_media->media_added_group_id);
+							foreach($all_files as $files){
+								$media_ids = json_decode($files['media_content']);
+								$allMediafiles = array_merge($allMediafiles,$media_ids );
+							}
+						}
 						$arr_group_media = array(
-										'media_type' => $group_media->media_type,
+										'media_type' =>$media_file->media_type,
 										'group_media_id' => $group_media->group_media_id,
-										'media_content' => $group_media->media_content,
+										'media_content' => json_decode($group_media->media_content),
 										'media_caption' => $group_media->media_caption,
 										'added_time' =>$this->timeAgo($group_media->media_added_date),
-										'group_id' => $group_media->group_id,
-										'group_title' => $group_media->group_title,
-										'group_seo_title' => $group_media->group_seo_title,
-										'user_id' => $group_media->user_id,
-										'user_given_name' => $group_media->user_given_name,
-										'user_first_name' => $group_media->user_first_name,
-										'user_last_name' => $group_media->user_last_name,
-										'user_profile_name' => $group_media->user_profile_name,
-										'user_fbid' => $group_media->user_fbid,
-										'profile_photo' => $group_media->profile_photo,
+										'group_id' => $group_oneMedia->group_id,
+										'group_title' => $group_oneMedia->group_title,
+										'group_seo_title' => $group_oneMedia->group_seo_title,
+										'user_id' => $group_oneMedia->user_id,
+										'user_given_name' => $group_oneMedia->user_given_name,
+										'user_first_name' => $group_oneMedia->user_first_name,
+										'user_last_name' => $group_oneMedia->user_last_name,
+										'user_profile_name' => $group_oneMedia->user_profile_name,
+										'user_fbid' => $group_oneMedia->user_fbid,
+										'profile_photo' => $group_oneMedia->profile_photo,
 										'likedUsers' => $arr_likedUsers,
 										'likes_counts' =>$like_details['likes_counts'],
 										'is_liked' =>$like_details['is_liked'],
 										'comment_count' =>$commet_users['comment_counts'],
 										'is_commented' =>$commet_users['is_commented'],
-										'next_id' =>(isset($next_item->group_media_id))?$next_item->group_media_id:'',
-										'prev_id' =>(isset($prev_item->group_media_id))?$prev_item->group_media_id:'',
 										'is_admin'=>$is_admin,
 										'logged_user_ismember' =>$logged_user_ismember,
+										'album_name'=>$group_oneMedia->album_title,
+										'album_id'=>$group_oneMedia->album_id,
+										'media_file_id'=>$media_file->media_content_id,
+										'media_file'=>$media_file->content,
+										'event_name'=>$event_name,
+										'event_id'=>$event_id,
+										'allMediafiles'=>$allMediafiles,
 										);
 						$commentSystemTYpe =$this->getGroupTable()->fetchSystemType('Comment'); 
-						$comments_details = $this->getCommentTable()->getAllCommentsWithLike($SystemTypeData->system_type_id,$commentSystemTYpe->system_type_id,$media_id,$identity->user_id,10,0);
+						$comments_details = $this->getCommentTable()->getAllCommentsWithLike($SystemTypeData->system_type_id,$commentSystemTYpe->system_type_id,$item_id,$identity->user_id,10,0);
 						if(!empty($comments_details)){
 							foreach($comments_details as $list){
 								 
@@ -643,6 +671,249 @@ class GroupsController extends AbstractActionController
 		$return_array['process_status'] = (empty($error))?'success':'failed';
 		$return_array['process_info'] = $error;	
 		$return_array['group_media'] = $arr_group_media;
+		$return_array['comments'] = $comments;		
+		$result = new JsonModel(array(
+		'return_array' => $return_array,      
+		));		
+		return $result;
+	}
+	public function getAlbumMediaAction(){
+		$error = '';
+		$auth = new AuthenticationService();
+		$arr_group_media = array();
+		$allActiveMembers = array();
+		$comments = array();
+		if ($auth->hasIdentity()) {
+			$identity = $auth->getIdentity();
+			$request   = $this->getRequest();
+			if ($request->isPost()){ 
+				$post = $request->getPost();				 
+				$album_id =$post['album_id']; 
+				$group_id = $post['group_id']; 
+				$page = (isset($post['page'])&&$post['page']!=null&&$post['page']!=''&&$post['page']!='undefined')?$post['page']:1;
+				
+				$arr_group_list = '';
+				$limit =5;
+				$page =($page>0)?$page-1:0;
+				$offset = $page*$limit;
+				if($album_id){
+					if($album_id=='unsorted'){
+						$group_info = $this->getGroupTable()->getPlanetinfo($group_id);	
+						$unsorted_media = $this->getGroupMediaTable()->getAllUnsortedMedia($group_id);	
+						if(!empty($unsorted_media)){
+							$media_content = array();
+							foreach($unsorted_media as $unsorted){
+								$unsortedmedia_ids = json_decode($unsorted['media_content']);
+								$media_content = array_merge($media_content,$unsortedmedia_ids );
+							}
+							$logged_user_ismember = 0;
+							if($this->getUserGroupTable()->is_member($identity->user_id,$group_id)){
+								$logged_user_ismember = 1;
+							}
+							if(!empty($media_content)){
+								$media_files = $this->getGroupMediaContentTable()->getMediaContents($media_content);
+								$arr_media_files = array();
+								foreach($media_files as $files){
+									if($files['media_type'] == 'youtube'){
+										$arr_media_files[] = array(
+												'id'=>$files['media_content_id'],
+												'files'=>$files['content'],
+												'video_id'=>$this->get_youtube_id_from_url($files['content']),
+												'media_type'=>$files['media_type'],
+												);
+									}else{
+										$arr_media_files[] = array(
+														'id'=>$files['media_content_id'],
+														'files'=>$files['content'],
+														'media_type'=>$files['media_type'],
+														);
+									}
+								}
+								 
+								$arr_group_media = array(
+													'album_id'=>'unsorted',
+													'album_title'=>'Post Images/Unsorted',				 
+													'media_files'=>$arr_media_files,
+													'logged_user_ismember'=>$logged_user_ismember,
+													 
+													'group_title'=>$group_info->group_title,
+													'group_seo_title'=>$group_info->group_seo_title,
+													'group_id'=>$group_info->group_id,
+													);
+								
+							}
+						}
+					}else{				
+						$album_details = $this->getGroupAlbumTable()->getAlbum($album_id);
+						if(!empty($album_details)){
+							$media_content = [];
+							$media_details = $this->getGroupMediaTable()->getAllAlbumMedia($album_id,$offset,$limit);
+							$group_info = $this->getGroupTable()->getPlanetinfo($group_id);	 
+							if(!empty($media_details)){
+								foreach($media_details as $details){
+									$media_ids = json_decode($details['media_content']);
+									$media_content = array_merge($media_content,$media_ids );
+								}
+								
+								if(!empty($media_content)){
+									$media_files = $this->getGroupMediaContentTable()->getMediaContents($media_content);
+									$arr_media_files = array();
+									foreach($media_files as $files){
+										if($files['media_type'] == 'youtube'){
+											$arr_media_files[] = array(
+													'id'=>$files['media_content_id'],
+													'files'=>$files['content'],
+													'video_id'=>$this->get_youtube_id_from_url($files['content']),
+													'media_type'=>$files['media_type'],
+													);
+										}else{
+											$arr_media_files[] = array(
+															'id'=>$files['media_content_id'],
+															'files'=>$files['content'],
+															'media_type'=>$files['media_type'],
+															);
+										}
+									}
+									$arr_files = array();
+									$is_admin = 0;
+									if($this->getUserGroupTable()->checkOwner($group_id,$album_details->creator_id)){
+										$is_admin = 1;
+									}
+									$logged_user_ismember = 0;
+									if($this->getUserGroupTable()->is_member($identity->user_id,$group_id)){
+										$logged_user_ismember = 1;
+									}
+									$albumCreator = $this->getUserTable()->getProfileDetails($album_details->creator_id);
+									$SystemTypeData = $this->getGroupTable()->fetchSystemType("Album");
+									$like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$album_id,$identity->user_id);
+									$like_count = $like_details->likes_counts;		
+									$arr_likedUsers = array();						
+									if(!empty($like_details)){  
+										$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$album_id,$identity->user_id,2,0);
+										$arr_likedUsers = array();
+										if($like_details['is_liked']==1){
+											$arr_likedUsers[] = 'you';
+										}
+										if($like_details['likes_counts']>0&&!empty($liked_users)){
+											foreach($liked_users as $likeuser){
+												$arr_likedUsers[] = $likeuser['user_given_name'];
+											}
+										}							 
+									}
+									$commet_users = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$album_id,$identity->user_id);								 
+									$event_name = '';
+									$event_id = '';								 
+									$event_details  = $this->getGroupEventAlbumTable()->getAlbumEvents($album_id);
+									if(!empty($event_details)){
+										$event_name = $event_details->group_activity_title;
+										$event_id = $event_details->group_activity_id;
+									}
+									 
+									$arr_group_media = array(
+														'album_name'=>$album_details->album_title,
+														'album_id'=>$album_details->album_id,
+														'album_description'=>$album_details->album_description,
+														'media_files'=>$arr_media_files,
+														'logged_user_ismember'=>$logged_user_ismember,
+														'is_admin'=>$is_admin,
+														'user_id' => $albumCreator->user_id,
+														'user_given_name' => $albumCreator->user_given_name,
+														'user_first_name' => $albumCreator->user_first_name,
+														'user_last_name' => $albumCreator->user_last_name,
+														'user_profile_name' => $albumCreator->user_profile_name,
+														'user_fbid' => $albumCreator->user_fbid,
+														'profile_photo' => $albumCreator->profile_photo,
+														'likedUsers' => $arr_likedUsers,
+														'likes_counts' =>$like_details['likes_counts'],
+														'is_liked' =>$like_details['is_liked'],
+														'comment_count' =>$commet_users['comment_counts'],
+														'is_commented' =>$commet_users['is_commented'],
+														'event_name'=>$event_name,
+														'event_id'=>$event_id,
+														'group_title'=>$group_info->group_title,
+														'group_seo_title'=>$group_info->group_seo_title,
+														'group_id'=>$group_info->group_id,
+														);
+									$commentSystemTYpe =$this->getGroupTable()->fetchSystemType('Comment'); 
+									$comments_details = $this->getCommentTable()->getAllCommentsWithLike($SystemTypeData->system_type_id,$commentSystemTYpe->system_type_id,$album_id,$identity->user_id,10,0);
+									if(!empty($comments_details)){
+										foreach($comments_details as $list){								 
+											$arr_likedUsers = array();
+											$like_details = $this->getLikeTable()->fetchLikesCountByReference($commentSystemTYpe->system_type_id,$list->comment_id,$identity->user_id);
+											if(!empty($like_details)){  
+												$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($commentSystemTYpe->system_type_id,$list->comment_id,$identity->user_id,2,0);
+												$arr_likedUsers = array();
+												if($like_details['is_liked']==1){
+													$arr_likedUsers[] = 'you';
+												}
+												if($like_details['likes_counts']>0&&!empty($liked_users)){
+													foreach($liked_users as $likeuser){
+														$arr_likedUsers[] = $likeuser['user_given_name'];
+													}
+												}								 
+											}
+											$allowedit = 0;
+											if($list->user_id == $identity->user_id){
+												$allowedit = 1;
+											}
+											switch($list->system_type_title){
+												case 'Activity':
+													$activity_deatils =  $this->getActivityTable()->getActivity($list->comment_refer_id);
+													if($activity_deatils->group_activity_owner_user_id == $identity->user_id){
+														$allowedit = 1;
+													}
+													if($this->getUserGroupTable()->checkOwner($activity_deatils->group_activity_group_id,$identity->user_id)){
+														$allowedit = 1;
+													}
+												break;
+												case 'Discussion':
+													$discussion_deatils =  $this->getDiscussionTable()->getDiscussion($list->comment_refer_id);
+													if($discussion_deatils->group_discussion_owner_user_id == $identity->user_id){
+														$allowedit = 1;
+													}
+													if($this->getUserGroupTable()->checkOwner($discussion_deatils->group_discussion_group_id,$identity->user_id)){
+														$allowedit = 1;
+													}
+												break;
+												case 'Media':
+													$media_deatils =  $this->getGroupMediaTable()->getMedia($list->comment_refer_id);
+													if($media_deatils->media_added_user_id == $identity->user_id){
+														$allowedit = 1;
+													}
+													if($this->getUserGroupTable()->checkOwner($media_deatils->media_added_group_id,$identity->user_id)){
+														$allowedit = 1;
+													}
+												break;							 
+											}
+											$comments[] = array(
+														'likes_count'=>$like_details['likes_counts'],
+														'islike'=>$list->islike,
+														'comment_content'=>$list->comment_content,
+														'comment_id'=>$list->comment_id,
+														'comment_time'=>$this->timeAgo($list->comment_added_timestamp),
+														'user_given_name'=>$list->user_given_name,
+														'user_id'=>$list->user_id,
+														'user_register_type'=>$list->user_register_type,
+														'user_fbid'=>$list->user_fbid,
+														'profile_photo'=>$list->profile_photo,
+														'likedUsers'=>$arr_likedUsers,
+														'user_profile_name'=>$list->user_profile_name,
+														'allowedit' =>$allowedit,
+													);
+										}
+									}
+								 
+								}
+							}
+						}else{$error = "Album not exist";}	
+					}
+				}else{$error = "Unable to process";}
+			}else{$error = "Unable to process";}
+		}else{$error = "Your session expired, please log in again to continue";}
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error;	
+		$return_array['group_album'] = $arr_group_media;
 		$return_array['comments'] = $comments;		
 		$result = new JsonModel(array(
 		'return_array' => $return_array,      
@@ -1166,7 +1437,7 @@ class GroupsController extends AbstractActionController
 			if ($request->isPost()){ 
 				$post = $request->getPost();
 				$group_id = $post['group_id'];
-				$page                  = $this->getRequest()->getPost('page');
+				$page = $this->getRequest()->getPost('page');
                 $limit =10;
 				$page =($page>0)?$page-1:0;
 				$offset = $page*$limit;				 
@@ -1174,23 +1445,31 @@ class GroupsController extends AbstractActionController
 					$group_info = $this->getGroupTable()->getPlanetinfo($group_id);	
 					if(!empty($group_info)&&$group_info->group_id!=''){	
 						 $groupmedia = $this->getGroupMediaTable()->getAllMedia($group_id,$limit,$offset);
+						 $media_content = array();
 						 if(!empty($groupmedia)){
-							 foreach($groupmedia as $media){
-								$video_id ='';
-								if($media['media_type']=='video'){
-									$video_id = $this->getYoutubeIdFromUrl($media['media_content']);
+							 foreach($groupmedia as $details){
+								$media_ids = json_decode($details['media_content']);
+								$media_content = array_merge($media_content,$media_ids );
+							}							
+							if(!empty($media_content)){
+								$media_files = $this->getGroupMediaContentTable()->getMediaContents($media_content);							
+								foreach($media_files as $media){
+									$video_id ='';
+									if($media['media_type']=='youtube'){
+										$video_id = $this->getYoutubeIdFromUrl($media['content']);
+									}
+									$arr_group_media[] = array(
+										 
+										'media_type'=>$media['media_type'],										 
+										'id' => $media['media_content_id'],
+										'files' => $media['content'],
+										'video_id'=>$video_id,
+										'group_title'=>$group_info->group_title,
+										'group_seo_title'=>$group_info->group_seo_title,
+										'group_id'=>$group_info->group_id,
+									);
 								}
-								$arr_group_media[] = array(
-									'group_media_id'=>$media['group_media_id'],
-									'media_type'=>$media['media_type'],
-									'media_added_group_id'=>$media['media_added_group_id'],
-									'media_content'=>$media['media_content'],
-									'media_caption'=>$media['media_caption'],
-									'media_added_date'=>$media['media_added_date'],
-									'media_status'=>$media['media_status'],
-									'video_id'=>$video_id,
-								);
-							 }
+							}
 						 }						 
 					}else{$error = "Group is not existing";}			
 				}else{$error = "Unable to process";}
@@ -1201,6 +1480,180 @@ class GroupsController extends AbstractActionController
 		$return_array['process_info'] = $error;	
 		$return_array['group_media'] = $arr_group_media;
 		$return_array['comments'] = $comments;		
+		$result = new JsonModel(array(
+		'return_array' => $return_array,      
+		));		
+		return $result;
+	}
+	public function getAllGroupAlbumsAction(){
+		$error = '';
+		$auth = new AuthenticationService();
+		$album_content = array();
+		$allActiveMembers = array();
+		$comments = array();
+		if ($auth->hasIdentity()) {
+			$identity = $auth->getIdentity();
+			$request   = $this->getRequest();
+			if ($request->isPost()){ 
+				$post = $request->getPost();
+				$group_id = $post['group_id'];
+				$page = $this->getRequest()->getPost('page');
+                $limit =10;
+				$page =($page>0)?$page-1:0;
+				$offset = $page*$limit;		
+				$config = $this->getServiceLocator()->get('Config');
+				if($group_id){
+					$group_info = $this->getGroupTable()->getPlanetinfo($group_id);	
+					if(!empty($group_info)&&$group_info->group_id!=''){	
+						 $groupalbums = $this->getGroupAlbumTable()->getAllGroupAlbums($group_id,$limit,$offset);					 
+						 $album_content = array();
+						 $album_icon_url='';
+						 $unsorted_media = $this->getGroupMediaTable()->getAllUnsortedMedia($group_id);	
+						 if(!empty($unsorted_media)){
+							$media_content = array();
+							foreach($unsorted_media as $unsorted){
+								$unsortedmedia_ids = json_decode($unsorted['media_content']);
+								$media_content = array_merge($media_content,$unsortedmedia_ids );
+							}
+							$album_icon = $this->getGroupMediaContentTable()->getMediafile($media_content[0]);
+								if(!empty($album_icon)){
+									if($album_icon->media_type=='image'){
+										 $album_icon_url=$config['pathInfo']['group_img_path_absolute_path'].$group_id.'/media/medium/'.$album_icon->content;
+									}
+									if($album_icon->media_type=='youtube'){
+										$video_id = $this->getYoutubeIdFromUrl($album_icon->content);
+										$album_icon_url='http://img.youtube.com/vi/'.$video_id.'/0.jpg';
+									}
+								}else{
+									$album_icon_url=$config['pathInfo']['base_url']."/public/images/album-thumb.png";
+								}
+							$album_content[] = array(
+													'album_id'=>'unsorted',
+													'album_title'=>'Post Images/Unsorted',
+													'album_icon_url'=>$album_icon_url,
+													'albumImage_count'=>count($media_content),
+													'group_id'=>$group_id,
+													'event_id'=>0,
+													'created_date'=>'',
+													);
+						 }
+						 if(!empty($groupalbums)){
+							foreach($groupalbums as $details){
+								$media_details = $this->getGroupMediaTable()->getAllAlbumFiles($details['album_id']);
+								$albumImage_count = 0; 
+								$media_content = array();
+								if(!empty($media_details)){
+									foreach($media_details as $contents){
+										$media_ids = json_decode($contents['media_content']);
+										$media_content = array_merge($media_content,$media_ids );
+									}
+								}
+								$albumImage_count = count($media_content); 
+								$album_icon = $this->getGroupMediaContentTable()->getAlbumIcon($details['album_id']);
+								if(!empty($album_icon)){
+									if($album_icon->media_type=='image'){
+										 $album_icon_url=$config['pathInfo']['group_img_path_absolute_path'].$group_id.'/media/medium/'.$album_icon->content;
+									}
+									if($album_icon->media_type=='youtube'){
+										$video_id = $this->getYoutubeIdFromUrl($album_icon->content);
+										$album_icon_url='http://img.youtube.com/vi/'.$video_id.'/0.jpg';
+									}
+								}else{
+									$album_icon_url=$config['pathInfo']['base_url']."/public/images/album-thumb.png";
+								}
+								$album_content[] = array(
+													'album_id'=>$details['album_id'],
+													'album_title'=>$details['album_title'],
+													'album_icon_url'=>$album_icon_url,
+													'albumImage_count'=>$albumImage_count,
+													'group_id'=>$group_id,
+													'event_id'=>$details['event_id'],
+													'created_date'=>date("M t,Y",strtotime($details['created_date'])),
+													);
+							}						 
+						 }						 
+					}else{$error = "Group is not existing";}			
+				}else{$error = "Unable to process";}
+			}else{$error = "Unable to process";}
+		}else{$error = "Your session expired, please log in again to continue";}
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error;	
+		$return_array['album_content'] = $album_content;
+		 		
+		$result = new JsonModel(array(
+		'return_array' => $return_array,      
+		));		
+		return $result;
+	}
+	public function getAllEventAlbumsAction(){
+		$error = '';
+		$auth = new AuthenticationService();
+		$album_content = array();
+		$allActiveMembers = array();
+		$comments = array();
+		if ($auth->hasIdentity()) {
+			$identity = $auth->getIdentity();
+			$request   = $this->getRequest();
+			if ($request->isPost()){ 
+				$post = $request->getPost();
+				$group_id = $post['group_id'];
+				$page = $this->getRequest()->getPost('page');
+                $limit =10;
+				$page =($page>0)?$page-1:0;
+				$offset = $page*$limit;		
+				$config = $this->getServiceLocator()->get('Config');
+				if($group_id){
+					$group_info = $this->getGroupTable()->getPlanetinfo($group_id);	
+					if(!empty($group_info)&&$group_info->group_id!=''){	
+						 $groupalbums = $this->getGroupAlbumTable()->getAllEventAlbums($group_id,$limit,$offset);					 
+						 $album_content = array();
+						 $album_icon_url='';
+						 if(!empty($groupalbums)){
+							foreach($groupalbums as $details){
+								$media_details = $this->getGroupMediaTable()->getAllAlbumFiles($details['album_id']);
+								$albumImage_count = 0; 
+								$media_content = array();
+								if(!empty($media_details)){
+									foreach($media_details as $contents){
+										$media_ids = json_decode($contents['media_content']);
+										$media_content = array_merge($media_content,$media_ids );
+									}
+								}
+								$albumImage_count = count($media_content); 
+								$album_icon = $this->getGroupMediaContentTable()->getAlbumIcon($details['album_id']);
+								if(!empty($album_icon)){
+									if($album_icon->media_type=='image'){
+										 $album_icon_url=$config['pathInfo']['group_img_path_absolute_path'].$group_id.'/media/medium/'.$album_icon->content;
+									}
+									if($album_icon->media_type=='youtube'){
+										$video_id = $this->getYoutubeIdFromUrl($album_icon->content);
+										$album_icon_url='http://img.youtube.com/vi/'.$video_id.'/0.jpg';
+									}
+								}else{
+									$album_icon_url=$config['pathInfo']['base_url']."/public/images/album-thumb.png";
+								}
+								$album_content[] = array(
+													'album_id'=>$details['album_id'],
+													'album_title'=>$details['album_title'],
+													'album_icon_url'=>$album_icon_url,
+													'albumImage_count'=>$albumImage_count,
+													'group_id'=>$group_id,
+													'event_id'=>$details['event_id'],
+													'group_activity_title'=>$details['group_activity_title'],
+													'created_date'=>date("M t,Y",strtotime($details['created_date'])),
+													);
+							}						 
+						 }						 
+					}else{$error = "Group is not existing";}			
+				}else{$error = "Unable to process";}
+			}else{$error = "Unable to process";}
+		}else{$error = "Your session expired, please log in again to continue";}
+		$return_array= array();		 
+		$return_array['process_status'] = (empty($error))?'success':'failed';
+		$return_array['process_info'] = $error;	
+		$return_array['album_content'] = $album_content;
+		 		
 		$result = new JsonModel(array(
 		'return_array' => $return_array,      
 		));		
@@ -2622,10 +3075,25 @@ class GroupsController extends AbstractActionController
 							break;
 							case "New Media":
 								$media_details = array();
-								$media = $this->getGroupMediaTable()->getMediaForFeed($list['event_id']);
-								$video_id  = '';
-								if($media->media_type == 'video')
-								$video_id  = $this->get_youtube_id_from_url($media->media_content);
+								$media = $this->getGroupMediaTable()->getMediaForFeed($list['event_id']); 
+								$media_contents = $this->getGroupMediaContentTable()->getMediaContents(json_decode($media->media_content));
+								$media_files = [];
+								foreach($media_contents as $mfile){
+									if($mfile['media_type'] == 'youtube'){
+										$media_files[] = array(
+												'id'=>$mfile['media_content_id'],
+												'files'=>$mfile['content'],
+												'video_id'=>$this->get_youtube_id_from_url($mfile['content']),
+												'media_type'=>$mfile['media_type'],
+												);
+									}else{
+										$media_files[] = array(
+														'id'=>$mfile['media_content_id'],
+														'files'=>$mfile['content'],
+														'media_type'=>$mfile['media_type'],
+														);
+									}
+								}
 								$SystemTypeData = $this->groupTable->fetchSystemType("Media");
 								$like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id);
 								$comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$identity->user_id); 
@@ -2645,11 +3113,10 @@ class GroupsController extends AbstractActionController
 									 
 								}
 								$media_details = array(
-													"group_media_id" => $media->group_media_id,
-													"media_type" => $media->media_type,
+													"group_media_id" => $media->group_media_id, 
 													"media_content" => $media->media_content,
 													"media_caption" => $media->media_caption,
-													"video_id" => $video_id,
+													"media_files" => $media_files,
 													"group_title" =>$list['group_title'],
 													"group_seo_title" =>$list['group_seo_title'],	
 													"group_id" =>$list['group_id'],													
@@ -2847,5 +3314,13 @@ class GroupsController extends AbstractActionController
 	public function getGroupMediaContentTable(){
 		$sm = $this->getServiceLocator();
 		return  $this->groupMediaContentTable = (!$this->groupMediaContentTable)?$sm->get('Groups\Model\GroupMediaContentTable'):$this->groupMediaContentTable;    
+    }
+	public function getGroupAlbumTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupAlbumTable = (!$this->groupAlbumTable)?$sm->get('Album\Model\GroupAlbumTable'):$this->groupAlbumTable;    
+    }
+	public function getGroupEventAlbumTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupEventAlbumTable = (!$this->groupEventAlbumTable)?$sm->get('Album\Model\GroupEventAlbumTable'):$this->groupEventAlbumTable;    
     }
 }

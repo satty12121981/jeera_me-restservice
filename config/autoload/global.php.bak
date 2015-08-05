@@ -36,7 +36,7 @@ return array(
 		'AlbumUploadPath'  => $_SERVER['DOCUMENT_ROOT']."jeera_me-restservice/public/album/",
 		'TagCategoryPath'  => "datagd/tag_category/",
 		'base_url' =>'http://'.@$_SERVER['SERVER_NAME'].'/jeera_me-restservice',
-		'fbredirect' =>"http://y2m.ae/development/jeerav1.2/user/fbredirect",
+		'fbredirect' =>"http://y2m.ae/development/jeera_me/user/fbredirect",
         'absolute_img_path' => "http://".$_SERVER['SERVER_NAME']."/jeera_me-restservice/public/",
 		'AdminUserPath' => $_SERVER['DOCUMENT_ROOT']."jeera_me-restservice/public/adminuser/",
 		'admin_user'        => $_SERVER['DOCUMENT_ROOT']."jeera_me-restservice/public/adminuser/",

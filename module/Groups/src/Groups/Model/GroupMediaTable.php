@@ -23,8 +23,7 @@ class GroupMediaTable extends AbstractTableGateway
 		else {   $ip = $_SERVER['REMOTE_ADDR'];}
          $data = array(
             'media_added_user_id'   => $objGroupMedia->media_added_user_id,
-            'media_added_group_id'  => $objGroupMedia->media_added_group_id,
-			'media_type'            => $objGroupMedia->media_type,
+            'media_added_group_id'  => $objGroupMedia->media_added_group_id,			 
 			'media_content'         => $objGroupMedia->media_content,
 			'media_caption'         => $objGroupMedia->media_caption,
 			'media_added_ip'        => $ip,
@@ -67,6 +66,7 @@ class GroupMediaTable extends AbstractTableGateway
 			   ->join("y2m_group","y2m_group.group_id = y2m_group_media.media_added_group_id",array("group_title","group_seo_title","group_id"))
 			   ->join("y2m_user","y2m_user.user_id = y2m_group_media.media_added_user_id",array("user_id","user_given_name","user_first_name","user_last_name","user_profile_name","user_fbid"))
 			   ->join('y2m_user_profile_photo','y2m_user.user_profile_photo_id = y2m_user_profile_photo.profile_photo_id',array('profile_photo'),'left')
+			   ->join('y2m_group_album','y2m_group_media.media_album_id = y2m_group_album.album_id',array('album_title',"album_id"),'left')
 			   ->where(array("group_media_id"=>$media_id,"media_status"=>"active"));
 		$statement = $this->adapter->createStatement();
 		
@@ -120,4 +120,68 @@ class GroupMediaTable extends AbstractTableGateway
 	public function deleteMedia($group_media_id){
         return $this->delete(array('group_media_id' => $group_media_id));
     }
+	public function getMediaFromContent($media_content_id){
+		$select = new Select;
+		$select->from('y2m_group_media')
+			->where(array('media_content like  \'%"'.$media_content_id.'"%\''));		 
+		$statement = $this->adapter->createStatement();		
+		$select->prepareStatement($this->adapter, $statement);
+		$resultSet = new ResultSet();		
+		$resultSet->initialize($statement->execute());	  
+		return $resultSet->current();
+	}
+	public function getAllAlbumMedia($album_id,$offset,$limit){
+		$select = new Select;
+		$select->from('y2m_group_media')			
+			->where(array("media_album_id"=>$album_id));
+		$select->limit($limit);
+		$select->offset($offset);
+		$statement = $this->adapter->createStatement();		
+		$select->prepareStatement($this->adapter, $statement);
+		//echo $select->getSqlString();
+		$resultSet = new ResultSet();		
+		$resultSet->initialize($statement->execute());	  
+		return $resultSet->toArray();
+	}
+	public function getAllAlbumFiles($album_id){
+		$select = new Select;
+		$select->from('y2m_group_media')			
+			->where(array("media_album_id"=>$album_id));		 
+		$statement = $this->adapter->createStatement();		
+		$select->prepareStatement($this->adapter, $statement);
+		$resultSet = new ResultSet();		
+		$resultSet->initialize($statement->execute());	  
+		return $resultSet->toArray();
+	}
+	public function getGroupFiles($group_id){
+		$select = new Select;
+		$select->from('y2m_group_media')			
+			->where(array("media_added_group_id"=>$group_id));		 
+		$statement = $this->adapter->createStatement();		
+		$select->prepareStatement($this->adapter, $statement);
+		$resultSet = new ResultSet();		
+		$resultSet->initialize($statement->execute());	  
+		return $resultSet->toArray();
+	}
+	public function getOneAlbumMedia($album_id){
+		$select = new Select;
+		$select->from('y2m_group_media')			
+			->where(array("media_album_id"=>$album_id));		 
+		$statement = $this->adapter->createStatement();		
+		$select->prepareStatement($this->adapter, $statement);
+		$resultSet = new ResultSet();		
+		$resultSet->initialize($statement->execute());	  
+		return $resultSet->current();
+	}
+	public function getAllUnsortedMedia($group_id){
+		$select = new Select;
+		$select->from('y2m_group_media')			
+			->where(array("media_added_group_id"=>$group_id,"media_album_id"=>0));		 
+		$statement = $this->adapter->createStatement();		
+		$select->prepareStatement($this->adapter, $statement);
+		$resultSet = new ResultSet();		
+		$resultSet->initialize($statement->execute());	  
+		return $resultSet->toArray();
+	}
+	
 }

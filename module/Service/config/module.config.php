@@ -111,6 +111,7 @@ return array(
 		'Service\Controller\Comment' => 'Service\Controller\CommentController',
 		'Service\Controller\Notification' => 'Service\Controller\NotificationController',
 		'Service\Controller\Spam' => 'Service\Controller\SpamController',
+        'Service\Controller\Album' => 'Service\Controller\AlbumController',
         ),
     ),
 
