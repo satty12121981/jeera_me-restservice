@@ -711,16 +711,19 @@ class IndexController extends AbstractActionController
 							$media_files = [];
 							foreach($media_contents as $mfile){
 								if($mfile['media_type'] == 'youtube'){
+									$video_id = $this->get_youtube_id_from_url($mfile['content']);
+									$mediaurl =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
 									$media_files[] = array(
 										'id'=>$mfile['media_content_id'],
-										'files'=>$mfile['content'],
+										'files'=>$mediaurl,
 										'video_id'=>$this->get_youtube_id_from_url($mfile['content']),
 										'media_type'=>$mfile['media_type'],
 									);
 								}else{
+									$mediaurl = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$group_id.'/media/medium/'.$mfile['content'];
 									$media_files[] = array(
 										'id'=>$mfile['media_content_id'],
-										'files'=>$mfile['content'],
+										'files'=>$mediaurl,
 										'media_type'=>$mfile['media_type'],
 									);
 								}

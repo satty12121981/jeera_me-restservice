@@ -105,6 +105,7 @@ class AlbumController extends AbstractActionController
 		$arr_media_files = array();
 		$allActiveMembers = array();
 		$request   = $this->getRequest();
+		$config = $this->getServiceLocator()->get('Config');
 		if ($request->isPost()){
 			$post = $request->getPost();
 			$accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
@@ -171,16 +172,19 @@ class AlbumController extends AbstractActionController
 								$arr_media_files = array();
 								foreach ($media_files as $files) {
 									if ($files['media_type'] == 'youtube') {
+										$video_id = $this->get_youtube_id_from_url($files['content']);
+										$mediaurl =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
 										$arr_media_files[] = array(
 											'id' => $files['media_content_id'],
-											'files' => $files['content'],
+											'files' => $mediaurl,
 											'video_id' => $this->get_youtube_id_from_url($files['content']),
 											'media_type' => $files['media_type'],
 										);
 									} else {
+										$mediaurl = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$group_id.'/media/medium/'.$files['content'];
 										$arr_media_files[] = array(
 											'id' => $files['media_content_id'],
-											'files' => $files['content'],
+											'files' => $mediaurl,
 											'media_type' => $files['media_type'],
 										);
 									}
@@ -191,7 +195,6 @@ class AlbumController extends AbstractActionController
 									'album_title' => 'Post Images/Unsorted',
 									'media_files' => $arr_media_files,
 									'logged_user_ismember' => $logged_user_ismember,
-
 									'group_title' => $group_info->group_title,
 									'group_seo_title' => $group_info->group_seo_title,
 									'group_id' => $group_info->group_id,
@@ -215,16 +218,19 @@ class AlbumController extends AbstractActionController
 									$arr_media_files = array();
 									foreach ($media_files as $files) {
 										if ($files['media_type'] == 'youtube') {
+											$video_id = $this->get_youtube_id_from_url($files['content']);
+											$mediaurl =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
 											$arr_media_files[] = array(
 												'id' => $files['media_content_id'],
-												'files' => $files['content'],
+												'files' => $mediaurl,
 												'video_id' => $this->get_youtube_id_from_url($files['content']),
 												'media_type' => $files['media_type'],
 											);
 										} else {
+											$mediaurl = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$group_id.'/media/medium/'.$files['content'];
 											$arr_media_files[] = array(
 												'id' => $files['media_content_id'],
-												'files' => $files['content'],
+												'files' => $mediaurl,
 												'media_type' => $files['media_type'],
 											);
 										}

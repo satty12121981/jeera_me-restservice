@@ -233,16 +233,19 @@ class GroupPostsController extends AbstractActionController
                         if (count($media_contents)){
                             foreach($media_contents as $mfile){
                                 if($mfile['media_type'] == 'youtube'){
+                                    $video_id = $this->get_youtube_id_from_url($mfile['content']);
+                                    $mediaurl =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
                                     $media_files[] = array(
                                         'id'=>$mfile['media_content_id'],
-                                        'files'=>$mfile['content'],
+                                        'files'=>$mediaurl,
                                         'video_id'=>$this->get_youtube_id_from_url($mfile['content']),
                                         'media_type'=>$mfile['media_type'],
                                     );
                                 }else{
+                                    $mediaurl = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$group_id.'/media/medium/'.$mfile['content'];
                                     $media_files[] = array(
                                         'id'=>$mfile['media_content_id'],
-                                        'files'=>$mfile['content'],
+                                        'files'=>$mediaurl,
                                         'media_type'=>$mfile['media_type'],
                                     );
                                 }
@@ -420,12 +423,12 @@ class GroupPostsController extends AbstractActionController
                 break;
                 case 'image':
                     $error =($post['imagecaption']==null || $post['imagecaption']=='' || $post['imagecaption']=='undefined')? "Image Caption required":$error;
+                    $is_admin = 0;
                     if (isset($post['albumid']) && !empty($post['albumid'])){
-                        $is_admin = 0;
                         if ($this->getUserGroupTable()->checkOwner($group->group_id, $userinfo->user_id)) {
                             $is_admin = 1;
                         }
-                        $albumdetails = $this->getGroupAlbumTable()->getAlbumDetailsForGroupOrAlbumOwner($userinfo->user_id, $group->group_id, $is_admin);
+                        $albumdetails = $this->getGroupAlbumTable()->getAlbumDetailsForGroupOrAlbumOwner($post['albumid'], $userinfo->user_id, $group->group_id, $is_admin);
                         if (empty($albumdetails)){
                             $dataArr[0]['flag'] = $this->flagFailure;
                             $dataArr[0]['message'] = "This user is not the group owner or the album owner";
@@ -535,12 +538,12 @@ class GroupPostsController extends AbstractActionController
                     $error =($post['videocaption']==null || $post['videocaption']=='' || $post['videocaption']=='undefined')? "Video Caption required":$error;
                     $this->checkError($error);
                     $error =($post['mediavideo']=='')? "Add video to upload":$error;
+                    $is_admin = 0;
                     if (isset($post['albumid']) && !empty($post['albumid'])){
-                        $is_admin = 0;
                         if ($this->getUserGroupTable()->checkOwner($group->group_id, $userinfo->user_id)) {
                             $is_admin = 1;
                         }
-                        $albumdetails = $this->getGroupAlbumTable()->getAlbumDetailsForGroupOrAlbumOwner($userinfo->user_id, $group->group_id, $is_admin);
+                        $albumdetails = $this->getGroupAlbumTable()->getAlbumDetailsForGroupOrAlbumOwner($post['albumid'], $userinfo->user_id, $group->group_id, $is_admin);
                         if (empty($albumdetails)){
                             $dataArr[0]['flag'] = $this->flagFailure;
                             $dataArr[0]['message'] = "This user is not the group owner or the album owner";
