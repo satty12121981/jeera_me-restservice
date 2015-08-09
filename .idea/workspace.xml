@@ -2,17 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0b736442-2289-4c94-904e-bdd89460f66f" name="Default" comment="Adding New comment service to add edit delete getlist of comments&#10;">
-      <change type="DELETED" beforePath="C:\wamp\www\jeera_me-restservice\public\datagd\group\145\media\1438688830qKTnZ11822581_1643299835887647_3147503598477277249_n.jpg" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\jeera_me-restservice\public\datagd\group\145\media\1438688831urKb611822793_1642537189297245_6070680526488158508_n.jpg" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\jeera_me-restservice\public\datagd\group\145\media\medium\1438688830qKTnZ11822581_1643299835887647_3147503598477277249_n.jpg" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\jeera_me-restservice\public\datagd\group\145\media\medium\1438688831urKb611822793_1642537189297245_6070680526488158508_n.jpg" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\jeera_me-restservice\public\datagd\group\145\media\thumbnail\1438688830qKTnZ11822581_1643299835887647_3147503598477277249_n.jpg" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\jeera_me-restservice\public\datagd\group\145\media\thumbnail\1438688831urKb611822793_1642537189297245_6070680526488158508_n.jpg" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/AlbumController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/AlbumController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Album/src/Album/Model/GroupAlbumTable.php" afterPath="$PROJECT_DIR$/module/Album/src/Album/Model/GroupAlbumTable.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupMediaContentTable.php" afterPath="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupMediaContentTable.php" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/CommentController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/CommentController.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" />
     </list>
     <ignored path="jeera_me-restservice.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -33,44 +25,7 @@
     <favorites_list name="jeera_me-restservice" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
-      <file leaf-file-name="AlbumController.php" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/AlbumController.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-1.5163511">
-              <caret line="255" column="17" selection-start-line="255" selection-start-column="17" selection-end-line="255" selection-end-column="17" />
-              <folding>
-                <element signature="e#36#85#0#PHP" expanded="true" />
-                <element signature="e#485#586#0#PHP" expanded="false" />
-                <element signature="e#588#4733#0#PHP" expanded="false" />
-                <element signature="e#14931#15538#0#PHP" expanded="false" />
-                <element signature="e#15540#15921#0#PHP" expanded="false" />
-                <element signature="e#15923#16109#0#PHP" expanded="false" />
-                <element signature="e#16111#16281#0#PHP" expanded="false" />
-                <element signature="e#16283#16480#0#PHP" expanded="false" />
-                <element signature="e#16482#16667#0#PHP" expanded="false" />
-                <element signature="e#16669#16863#0#PHP" expanded="false" />
-                <element signature="e#16865#17073#0#PHP" expanded="false" />
-                <element signature="e#17075#17308#0#PHP" expanded="false" />
-                <element signature="e#17514#17751#0#PHP" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="GroupAlbumTable.php" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/module/Album/src/Album/Model/GroupAlbumTable.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-6.6538463">
-              <caret line="130" column="29" selection-start-line="130" selection-start-column="29" selection-end-line="130" selection-end-column="29" />
-              <folding>
-                <element signature="e#29#75#0#PHP" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="Git.Settings">
     <option name="PREVIOUS_COMMIT_AUTHORS">
@@ -92,11 +47,9 @@
         <option value="$PROJECT_DIR$/module/Comment/src/Comment/Controller/CommentController.php" />
         <option value="$PROJECT_DIR$/module/User/src/User/Controller/UserProfileController.php" />
         <option value="$PROJECT_DIR$/module/Comment/src/Comment/Model/CommentTable.php" />
-        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/CommentController.php" />
         <option value="$PROJECT_DIR$/module/Application/src/Application/Controller/Plugin/ServiceUploadHandler.php" />
         <option value="$PROJECT_DIR$/config/autoload/global.php" />
         <option value="$PROJECT_DIR$/module/Like/src/Like/Model/LikeTable.php" />
-        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/ActivityController.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Form/Form.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/TestController.php" />
@@ -135,9 +88,11 @@
         <option value="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupMediaTable.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/IndexController.php" />
         <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/AlbumController.php" />
-        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
         <option value="$PROJECT_DIR$/module/Album/src/Album/Model/GroupAlbumTable.php" />
         <option value="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupMediaContentTable.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" />
+        <option value="$PROJECT_DIR$/module/Service/src/Service/Controller/CommentController.php" />
       </list>
     </option>
   </component>
@@ -155,7 +110,7 @@
   <component name="ProjectFrameBounds">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
-    <option name="width" value="1382" />
+    <option name="width" value="1370" />
     <option name="height" value="744" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
@@ -261,7 +216,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Groups" />
+              <option name="myItemId" value="Service" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -279,7 +234,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Groups" />
+              <option name="myItemId" value="Service" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -287,37 +242,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Groups" />
+              <option name="myItemId" value="Service" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="Model" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="jeera_me-restservice" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="module" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Groups" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Groups" />
+              <option name="myItemId" value="Controller" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -376,11 +305,12 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="7" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1370" height="744" extended-state="0" />
+    <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24524158" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24741507" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.06646972" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32755905" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -394,7 +324,6 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.0658858" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.48031497" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -422,13 +351,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/module/Notification/src/Notification/Controller/UserNotificationController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-1.3993115">
-          <caret line="140" column="43" selection-start-line="140" selection-start-column="43" selection-end-line="140" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/Notification/src/Notification/Controller/NotificationController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-6.695353">
@@ -620,22 +542,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/CommentController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-9.070568">
-          <caret line="24" column="1" selection-start-line="24" selection-start-column="1" selection-end-line="24" selection-end-column="1" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3666093">
-          <caret line="152" column="28" selection-start-line="152" selection-start-column="28" selection-end-line="152" selection-end-column="54" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/Service/config/module.config.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="3.130809">
@@ -754,27 +660,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.61050725">
-          <caret line="832" column="93" selection-start-line="832" selection-start-column="80" selection-end-line="832" selection-end-column="93" />
-          <folding>
-            <element signature="e#37#86#0#PHP" expanded="true" />
-            <element signature="e#1239#17706#0#PHP" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/module/Album/src/Album/Model/GroupAlbumTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-6.6538463">
-          <caret line="130" column="29" selection-start-line="130" selection-start-column="29" selection-end-line="130" selection-end-column="29" />
-          <folding>
-            <element signature="e#29#75#0#PHP" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/IndexController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="1.8433735">
@@ -804,7 +689,7 @@
         <state vertical-scroll-proportion="0.88296044">
           <caret line="84" column="5" selection-start-line="84" selection-start-column="5" selection-end-line="84" selection-end-column="5" />
           <folding>
-            <element signature="e#32#56#0#PHP" expanded="true" />
+            <element signature="e#32#56#0#PHP" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -828,6 +713,53 @@
             <element signature="e#17075#17308#0#PHP" expanded="false" />
             <element signature="e#17514#17751#0#PHP" expanded="false" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Album/src/Album/Model/GroupAlbumTable.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.29776248">
+          <caret line="130" column="29" selection-start-line="130" selection-start-column="29" selection-end-line="130" selection-end-column="29" />
+          <folding>
+            <element signature="e#29#75#0#PHP" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/Desktop/LikeController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.20481928">
+          <caret line="319" column="34" selection-start-line="206" selection-start-column="28" selection-end-line="319" selection-end-column="34" />
+          <folding>
+            <element signature="e#144#193#0#PHP" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.46299484">
+          <caret line="817" column="17" selection-start-line="817" selection-start-column="17" selection-end-line="817" selection-end-column="17" />
+          <folding>
+            <element signature="e#37#86#0#PHP" expanded="true" />
+            <element signature="e#1239#17706#0#PHP" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="12.66093">
+          <caret line="487" column="72" selection-start-line="487" selection-start-column="72" selection-end-line="487" selection-end-column="72" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/CommentController.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-2.6041307">
+          <caret line="276" column="111" selection-start-line="276" selection-start-column="111" selection-end-line="276" selection-end-column="111" />
+          <folding />
         </state>
       </provider>
     </entry>

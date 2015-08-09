@@ -167,7 +167,7 @@ class CommentController extends AbstractActionController
                                 $process_mentioned = 'comment_hashed';
                                 $process_hash_id = 6;
                                 $this->postcommentmentioneduserNotifications($userinfo,$hashedUser,$msg_mentioned,$process_hash_id,$subject_mentioned,$from,$refer_id,$process_mentioned);
-                                $msg = $userinfo->user_given_name . " Commented one status in the group " . $group->group_title;
+                                $msg = $userinfo->user_given_name . " Commented on status in the group " . $group->group_title;
                                 $subject = 'Comment status';
                                 $process = 'comment';
                                 $process_join_id = 6;
@@ -184,12 +184,12 @@ class CommentController extends AbstractActionController
                                 $comment_count = $comment_details['comment_counts'];
                                 $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($media_data->media_added_group_id);
                                 $group  = $this->getGroupTable()->getPlanetinfo($media_data->media_added_group_id);
-                                $msg_mentioned = $userinfo->user_given_name." mentioned you in a comment on status in the group ".$group->group_title;
+                                $msg_mentioned = $userinfo->user_given_name." mentioned you in a comment on media in the group ".$group->group_title;
                                 $subject_mentioned = 'Comment status';
                                 $process_mentioned = 'comment_hashed';
                                 $process_hash_id = 6;
                                 $this->postcommentmentioneduserNotifications($userinfo,$hashedUser,$msg_mentioned,$process_hash_id,$subject_mentioned,$from,$refer_id,$process_mentioned);
-                                $msg = $userinfo->user_given_name." Commented one media in the group ".$group->group_title;
+                                $msg = $userinfo->user_given_name." Commented on media in the group ".$group->group_title;
                                 $subject = 'Comment Media';
                                 $process = 'comment';
                                 $process_join_id = 8;
@@ -206,18 +206,97 @@ class CommentController extends AbstractActionController
                                 $comment_count = $comment_details['comment_counts'];
                                 $joinedMembers =$this->getUserGroupTable()->getAllGroupMembers($activity_data->group_activity_group_id);
                                 $group  = $this->getGroupTable()->getPlanetinfo($activity_data->group_activity_group_id);
-                                $msg_mentioned = $userinfo->user_given_name." mentioned you in a comment on status in the group ".$group->group_title;
+                                $msg_mentioned = $userinfo->user_given_name." mentioned you in a comment on event in the group ".$group->group_title;
                                 $subject_mentioned = 'Comment status';
                                 $process_mentioned = 'comment_hashed';
                                 $process_hash_id = 6;
                                 $this->postcommentmentioneduserNotifications($userinfo,$hashedUser,$msg_mentioned,$process_hash_id,$subject_mentioned,$from,$refer_id,$process_mentioned);
-                                $msg = $userinfo->user_given_name." commented one activity in the group ".$group->group_title;
+                                $msg = $userinfo->user_given_name." commented on activity in the group ".$group->group_title;
                                 $subject = 'commented Activity';
                                 $process = 'comment';
                                 $process_join_id = 7;
                                 $this->postcommentuserNotifications($userinfo,$joinedMembers,$hashedUser,$msg,$process_join_id,$subject,$from,$refer_id,$process);
                             }
                         }else{$error = "Content Not exist";}
+                    break;
+                case 'Image':
+                    if($refer_id!=''){
+                        $media_data = $this->getGroupMediaTable()->getMediaFromContent($refer_id);
+                        if(!empty($media_data)){
+                            if($this->getUserGroupTable()->is_member($userinfo->user_id,$media_data->media_added_group_id)){
+                                $comment_id = $this->addComment($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id,$comment);
+                                if($comment_id){
+                                    $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                                    $comment_count = $comment_details['comment_counts'];
+                                    $group  = $this->getGroupTable()->getPlanetinfo($media_data->media_added_group_id);
+                                    $config = $this->getServiceLocator()->get('Config');
+                                    $base_url = $config['pathInfo']['base_url'];
+                                    $subject = 'Comment Media';
+                                    $from = 'admin@jeera.me';
+                                    $process = 'comment_hashed';
+                                    if(!empty($hashedUser)){
+                                        $msg = $userinfo->user_given_name." mentioned you in a comment on media in the group ".$group->group_title;
+                                        foreach($hashedUser as $users){
+                                            if($users!=$userinfo->user_id){
+                                                $this->UpdateNotifications($users,$msg,8,$subject,$from,$userinfo->user_id,$refer_id,$process);
+                                            }
+                                        }
+                                    }
+                                    if(!empty($hashedUser)){
+                                        if($media_data->media_added_user_id!=$userinfo->user_id&&!in_array($media_data->media_added_user_id,$hashedUser)){
+                                            $msg = $userinfo->user_given_name." commented on media in the group ".$group->group_title;
+                                            $this->UpdateNotifications($media_data->media_added_user_id,$msg,8,$subject,$from,$userinfo->user_id,$refer_id,$process);
+                                        }
+                                    }else{
+                                        if($media_data->media_added_user_id!=$userinfo->user_id){
+                                            $msg = $userinfo->user_given_name." commented on media in the group ".$group->group_title;
+                                            $this->UpdateNotifications($media_data->media_added_user_id,$msg,8,$subject,$from,$userinfo->user_id,$refer_id,$process);
+                                        }
+                                    }
+                                }
+                            }else{$error = "Sorry, You need to be a member of the group to interact with the posts";}
+                        }else{$error = "Content Not exist";}
+                    }else{$error = "Content Not exist";}
+                    break;
+                case 'Album':
+                    if($refer_id!=''){
+                        $album_data = $this->getGroupAlbumTable()->getAlbum($refer_id);
+                        if(!empty($album_data)){
+                            if($this->getUserGroupTable()->is_member($userinfo->user_id,$album_data->group_id)){
+                                $comment_id = $this->addComment($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id,$comment);
+                                if($comment_id){
+                                    $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                                    $comment_count = $comment_details['comment_counts'];
+                                    $group  = $this->getGroupTable()->getPlanetinfo($album_data->group_id);
+                                    $config = $this->getServiceLocator()->get('Config');
+                                    $base_url = $config['pathInfo']['base_url'];
+                                    $subject = 'Comment Media';
+                                    $from = 'admin@jeera.me';
+                                    $process = 'comment_hashed';
+                                    if(!empty($hashedUser)){
+                                        $msg = $userinfo->user_given_name." mentioned you in a comment on media in the group ".$group->group_title;
+                                        foreach($hashedUser as $users){
+                                            if($users!=$userinfo->user_id){
+                                                $this->UpdateNotifications($users,$msg,8,$subject,$from,$userinfo->user_id,$refer_id,$process);
+                                            }
+                                        }
+                                    }
+
+                                    if(!empty($hashedUser)){
+                                        $msg = $userinfo->user_given_name." commented on media in the group ".$group->group_title;
+                                        if($album_data->creator_id!=$userinfo->user_id&&!in_array($album_data->creator_id,$hashedUser)){
+                                            $this->UpdateNotifications($album_data->creator_id,$msg,8,$subject,$from,$userinfo->user_id,$refer_id,$process);
+                                        }
+                                    }else{
+                                        $msg = $userinfo->user_given_name." commented on media in the group ".$group->group_title;
+                                        if($album_data->creator_id!=$userinfo->user_id){
+                                            $this->UpdateNotifications($album_data->creator_id,$msg,8,$subject,$from,$userinfo->user_id,$refer_id,$process);
+                                        }
+                                    }
+                                }
+                            }else{$error = "Sorry, You need to be a member of the group to interact with the posts";}
+                        }else{$error = "Content Not exist";}
+                    }else{$error = "Content Not exist";}
                     break;
             }
         }

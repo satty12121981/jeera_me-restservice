@@ -839,6 +839,7 @@ class GroupPostsController extends AbstractActionController
                                     $this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$content_id);
                                     $this->getGroupMediaTable()->deleteMedia($content_id);
                                     $this->getUserNotificationTable()->deleteSystemNotifications(8,$content_id);
+                                    $dataArr[0]['flag'] = $this->flagSuccess; $error = "Media and media content deleted successfully";
                                 }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry, You need to be a member of the group to interact with the posts";}
                             }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "This status is not existing in the system";}
                         } else {

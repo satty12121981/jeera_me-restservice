@@ -36,6 +36,7 @@ class LikeController extends AbstractActionController
 	protected $groupMediaTable;
     protected $userFriendTable;
     protected $userTagTable;
+    protected $groupAlbumTable;
 	public function __construct(){
         $this->flagSuccess = "Success";
         $this->flagFailure = "Failure";
@@ -112,6 +113,74 @@ class LikeController extends AbstractActionController
                         }else{$error = "Content Not exist";}
                     }else{$error = "Content Not exist";}
                 break;
+                case 'Image':
+                    if($refer_id!=''){
+                        $media_data = $this->getGroupMediaTable()->getMediaFromContent($refer_id);
+                        if(!empty($media_data)){
+                            if($this->getUserGroupTable()->is_member($userinfo->user_id,$media_data->media_added_group_id)){
+                                if($this->addLike($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id)){
+                                    $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                                    $like_count = $like_details->likes_counts;
+                                    $group  = $this->getGroupTable()->getPlanetinfo($media_data->media_added_group_id);
+                                    if(!empty($like_details)){
+                                        $liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,2,0);
+                                        if($like_details['is_liked']==1){
+                                            $arr_likedUsers[] = 'you';
+                                        }
+                                        if($like_details['likes_counts']>0&&!empty($liked_users)){
+                                            foreach($liked_users as $likeuser){
+                                                $arr_likedUsers[] = $likeuser['user_given_name'];
+                                            }
+                                        }
+                                    }
+                                    if($media_data->media_added_user_id!=$userinfo->user_id){
+                                        $config = $this->getServiceLocator()->get('Config');
+                                        $base_url = $config['pathInfo']['base_url'];
+                                        $msg = $userinfo->user_given_name." Like one media in the group ".$group->group_title;
+                                        $subject = 'Like Media';
+                                        $from = 'admin@jeera.me';
+                                        $process = "like";
+                                        $this->UpdateNotifications($media_data->media_added_user_id,$msg,8,$subject,$from,$userinfo->user_id,$refer_id,$process);
+                                    }
+                                }
+                            }else{$error = "Sorry, You need to be a member of the group to interact with the posts";}
+                        }else{$error = "Content Not exist";}
+                    }else{$error = "Content Not exist";}
+                    break;
+                case 'Album':
+                    if($refer_id!=''){
+                        $album_data = $this->getGroupAlbumTable()->getAlbum($refer_id);
+                        if(!empty($album_data)){
+                            if($this->getUserGroupTable()->is_member($userinfo->user_id,$album_data->group_id)){
+                                if($this->addLike($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id)){
+                                    $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                                    $like_count = $like_details->likes_counts;
+                                    $group  = $this->getGroupTable()->getPlanetinfo($album_data->group_id);
+                                    if(!empty($like_details)){
+                                        $liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,2,0);
+                                        if($like_details['is_liked']==1){
+                                            $arr_likedUsers[] = 'you';
+                                        }
+                                        if($like_details['likes_counts']>0&&!empty($liked_users)){
+                                            foreach($liked_users as $likeuser){
+                                                $arr_likedUsers[] = $likeuser['user_given_name'];
+                                            }
+                                        }
+                                    }
+                                    if($album_data->creator_id!=$userinfo->user_id){
+                                        $config = $this->getServiceLocator()->get('Config');
+                                        $base_url = $config['pathInfo']['base_url'];
+                                        $msg = $userinfo->user_given_name." Like one media in the group ".$group->group_title;
+                                        $subject = 'Like Media';
+                                        $from = 'admin@jeera.me';
+                                        $process = "like";
+                                        $this->UpdateNotifications($album_data->creator_id,$msg,8,$subject,$from,$userinfo->user_id,$refer_id,$process);
+                                    }
+                                }
+                            }else{$error = "Sorry, You need to be a member of the group to interact with the posts";}
+                        }else{$error = "Content Not exist";}
+                    }else{$error = "Content Not exist";}
+                    break;
                 case 'Activity':
                     if($refer_id!=''){
                         $activity_data = $this->getActivityTable()->getActivity($refer_id);
@@ -245,6 +314,7 @@ class LikeController extends AbstractActionController
         $arrLikeMembers  = array();
 		$auth = new AuthenticationService();
         $request   = $this->getRequest();
+        $message = "";
         if ($request->isPost()) {
             $post = $request->getPost();
             $accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
@@ -297,6 +367,46 @@ class LikeController extends AbstractActionController
                         }else{$error = "Content Not exist";}
                     }else{$error = "Content Not exist";}
                 break;
+                case 'Image':
+                    if($refer_id!=''){
+                        $media_data = $this->getGroupMediaTable()->getMediaFromContent($refer_id);
+                        if(!empty($media_data)){
+                            $likeData = $this->getLikeTable()->LikeExistsCheck($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                            if($this->getUserGroupTable()->is_member($userinfo->user_id,$media_data->media_added_group_id)){
+                                if ( !empty( $likeData->like_id ) ) {
+                                    if( $this->getLikeTable()->deleteLikeByReference($SystemTypeData->system_type_id,$likeData->like_by_user_id,$refer_id)){
+                                        $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                                        $like_count = $like_details->likes_counts;
+                                        if(!empty($like_details)){
+                                            $liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,2,0);
+                                        }
+                                        $message = "Content UnLiked By User";
+                                    }
+                                }else {$error = "Content Not Liked By User to unlike";}
+                            }else{$error = "Sorry, You need to be a member of the group to interact with the posts";}
+                        }else{$error = "Content Not exist";}
+                    }else{$error = "Content Not exist";}
+                    break;
+                case 'Album':
+                    if($refer_id!=''){
+                        $album_data = $this->getGroupAlbumTable()->getAlbum($refer_id);
+                        if(!empty($album_data)){
+                            $likeData = $this->getLikeTable()->LikeExistsCheck($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                            if($this->getUserGroupTable()->is_member($userinfo->user_id,$album_data->group_id)){
+                                if ( !empty( $likeData->like_id ) ) {
+                                    if( $this->getLikeTable()->deleteLikeByReference($SystemTypeData->system_type_id,$likeData->like_by_user_id,$refer_id)){
+                                        $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
+                                        $like_count = $like_details->likes_counts;
+                                        if(!empty($like_details)){
+                                            $liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,2,0);
+                                        }
+                                        $message = "Content UnLiked By User";
+                                    }
+                                }else {$error = "Content Not Liked By User to unlike";}
+                            }else{$error = "Sorry, You need to be a member of the group to interact with the posts";}
+                        }else{$error = "Content Not exist";}
+                    }else{$error = "Content Not exist";}
+                    break;
                 case 'Activity':
                     if($refer_id!=''){
                         $activity_data = $this->getActivityTable()->getActivity($refer_id);
@@ -595,4 +705,8 @@ class LikeController extends AbstractActionController
 		$sm = $this->getServiceLocator();
 		return $this->commentTable = (!$this->commentTable)?$sm->get('Comment\Model\CommentTable'):$this->commentTable;
 	}
+    public function getGroupAlbumTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->groupAlbumTable = (!$this->groupAlbumTable)?$sm->get('Album\Model\GroupAlbumTable'):$this->groupAlbumTable;
+    }
 }
