@@ -58,6 +58,16 @@ class AlbumController extends AbstractActionController
 			$offset = $offset*$limit;
 			$group  = $this->getGroupTable()->getPlanetinfo($group_id);
 			if(!empty($group)){
+				if ($group->group_type == "private"){
+					$userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($group_id,$userinfo->user_id);
+					$error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group to fech albums of group.":$error;
+					if (!empty($error)){
+						$dataArr[0]['flag'] = $this->flagFailure;
+						$dataArr[0]['message'] = $error;
+						echo json_encode($dataArr);
+						exit;
+					}
+				}
 				$albums = $this->getGroupAlbumTable()->getAllActiveGroupAlbumsForAPI($group_id,$limit,$offset);
 				if (count($albums)){
 					foreach($albums as $album){

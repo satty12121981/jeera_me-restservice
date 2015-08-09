@@ -118,7 +118,7 @@ class GroupAlbumTable extends AbstractTableGateway
         if($is_admin){
             $select->where(array("group_id"=>$group_id));
         }else{
-            $select->where(array('y2m_group_album.creator_id' => $user_id,"y2m_group_album.group_id"=>$group_id));
+            $select->where(array('y2m_group_album.creator_id' => $user_id,"y2m_group_album.group_id"=>$group_id,'y2m_group_album.album_status' => "active"));
         }
         $statement = $this->adapter->createStatement();
         $select->prepareStatement($this->adapter, $statement);
@@ -138,6 +138,37 @@ class GroupAlbumTable extends AbstractTableGateway
         }
         $statement = $this->adapter->createStatement();
         $select->prepareStatement($this->adapter, $statement);
+        // echo $select->getSqlString();
+        $resultSet = new ResultSet();
+        $resultSet->initialize($statement->execute());
+        return $resultSet->toArray();
+    }
+
+    public function getEventAlbumForGroupAlbum($album_id,$group_id){
+        $select = new Select;
+        $select->from('y2m_group_album')
+            ->join('y2m_group_event_album', 'y2m_group_event_album.album_id = y2m_group_album.album_id', array('event_id'))
+            ->where(array('y2m_group_album.album_id' => $album_id,"y2m_group_album.group_id" => $group_id, "y2m_group_album.album_status" => 'active'));
+        $statement = $this->adapter->createStatement();
+        $select->prepareStatement($this->adapter, $statement);
+       // echo $select->getSqlString();
+        $resultSet = new ResultSet();
+        $resultSet->initialize($statement->execute());
+        return $resultSet->toArray();
+    }
+    public function getEventAlbumRsvpCheckForUserGroupAlbum($album_id,$event_id,$user_id,$group_id,$is_admin){
+        $select = new Select;
+        if($is_admin) {
+            $select->from('y2m_group_album')
+                ->where(array("y2m_group_album.group_id" => $group_id, "y2m_group_album.album_status" => 'active'));
+        }else{
+            $select->from('y2m_group_event_album')
+                ->join('y2m_group_activity_rsvp','y2m_group_activity_rsvp.group_activity_rsvp_activity_id = y2m_group_event_album.event_id',array('group_activity_rsvp_id'))
+                ->where(array('y2m_group_event_album.album_id' => $album_id,'y2m_group_activity_rsvp.group_activity_rsvp_activity_id' => $event_id,'y2m_group_activity_rsvp.group_activity_rsvp_user_id' => $user_id,"y2m_group_activity_rsvp.group_activity_rsvp_group_id" => $group_id));
+        }
+        $statement = $this->adapter->createStatement();
+        $select->prepareStatement($this->adapter, $statement);
+        //echo $select->getSqlString();
         $resultSet = new ResultSet();
         $resultSet->initialize($statement->execute());
         return $resultSet->toArray();

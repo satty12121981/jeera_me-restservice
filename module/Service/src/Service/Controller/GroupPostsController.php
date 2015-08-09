@@ -319,17 +319,18 @@ class GroupPostsController extends AbstractActionController
                 echo json_encode($dataArr);
                 exit;
             }
-            $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($group->group_id,$userinfo->user_id);
-            $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group to post.":$error;
-            if (!empty($error)){
-                $dataArr[0]['flag'] = $this->flagFailure;
-                $dataArr[0]['message'] = $error;
-                echo json_encode($dataArr);
-                exit;
-            }
+
             $media_type = $post['mediatype'];
             switch($media_type){
                 case 'status':
+                    $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($group->group_id,$userinfo->user_id);
+                    $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group to post.":$error;
+                    if (!empty($error)){
+                        $dataArr[0]['flag'] = $this->flagFailure;
+                        $dataArr[0]['message'] = $error;
+                        echo json_encode($dataArr);
+                        exit;
+                    }
                     $error =($post['statustext']==null || $post['statustext']=='' || $post['statustext']=='undefined')? "Please post a status text to submit":$error;
                     if($error==''){
                         $objDiscusion = new Discussion();
@@ -352,6 +353,14 @@ class GroupPostsController extends AbstractActionController
                     }
                 break;
                 case 'event':
+                    $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($group->group_id,$userinfo->user_id);
+                    $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group to post.":$error;
+                    if (!empty($error)){
+                        $dataArr[0]['flag'] = $this->flagFailure;
+                        $dataArr[0]['message'] = $error;
+                        echo json_encode($dataArr);
+                        exit;
+                    }
                     $error =($post['title']==''||$post['title']=='undefined')? "Event title required":$error;
                     $error =($post['date']==''||$post['date']=='undefined')? "Event date required":$error;
                     $error =($post['location']==''||$post['location']=='undefined')? "Event location required":$error;
@@ -428,19 +437,40 @@ class GroupPostsController extends AbstractActionController
                         if ($this->getUserGroupTable()->checkOwner($group->group_id, $userinfo->user_id)) {
                             $is_admin = 1;
                         }
-                        $albumdetails = $this->getGroupAlbumTable()->getAlbumDetailsForGroupOrAlbumOwner($post['albumid'], $userinfo->user_id, $group->group_id, $is_admin);
-                        if (empty($albumdetails)){
+                        $eventalbumdetails = $this->getGroupAlbumTable()->getEventAlbumForGroupAlbum($post['albumid'],$group->group_id);
+                        if (!empty($eventalbumdetails)){
+                            $eventalbumRsvpdetails = $this->getGroupAlbumTable()->getEventAlbumRsvpCheckForUserGroupAlbum($post['albumid'],$eventalbumdetails[0]['event_id'],$userinfo->user_id,$group->group_id,$is_admin);
+                            if (empty($eventalbumRsvpdetails)) {
+                                $dataArr[0]['flag'] = $this->flagFailure;
+                                $dataArr[0]['message'] = "This user is not the event album group owner or the group owner or rsvp does not exists";
+                                echo json_encode($dataArr);
+                                exit;
+                            }
+                        }else{
+                            $albumdetails = $this->getGroupAlbumTable()->getAlbumDetailsForGroupOrAlbumOwner($post['albumid'], $userinfo->user_id, $group->group_id, $is_admin);
+                            if (empty($albumdetails)){
+                                $dataArr[0]['flag'] = $this->flagFailure;
+                                $dataArr[0]['message'] = "This user is not the group owner or the album owner of the group";
+                                echo json_encode($dataArr);
+                                exit;
+                            }
+                        }
+
+                    }else{
+                        $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($group->group_id,$userinfo->user_id);
+                        $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group to post.":$error;
+                        if (!empty($error)){
                             $dataArr[0]['flag'] = $this->flagFailure;
-                            $dataArr[0]['message'] = "This user is not the group owner or the album owner";
+                            $dataArr[0]['message'] = $error;
                             echo json_encode($dataArr);
                             exit;
                         }
                     }
                     if($error=='') {
                         $file_ary = array();
-                        if (isset($files) && count($files['mediaimage']) > 0) {
-                            $file_count = count($files['mediaimage']);
+                        if (isset($files) && isset($files['mediaimage'][0])) {
                             $file_keys = array_keys($files['mediaimage']);
+                            $file_count = count($files['mediaimage']);
                             $config = $this->getServiceLocator()->get('Config');
                             $uplaod_dir = $config['pathInfo']['group_img_path'] . $group->group_id . "/media/";
                             $media_file = [];
@@ -450,11 +480,14 @@ class GroupPostsController extends AbstractActionController
                             if (!is_dir($user_temp_path)) {
                                 mkdir($user_temp_path);
                             }
+
                             for ($i = 0; $i < $file_count; $i++) {
-                                if (!file_exists($user_temp_path . $files['mediaimage'][$i]['name']) && $files['mediaimage'][$i]['size'] > 0) {
-                                    move_uploaded_file($files['mediaimage'][$i]['tmp_name'], $user_temp_path . $files['mediaimage'][$i]['name']);
+                                if ($files['mediaimage'][$i]){
+                                    if (!file_exists($user_temp_path . $files['mediaimage'][$i]['name']) && $files['mediaimage'][$i]['size'] > 0) {
+                                        move_uploaded_file($files['mediaimage'][$i]['tmp_name'], $user_temp_path . $files['mediaimage'][$i]['name']);
+                                    }
+                                    $arr_images[$i] = $files['mediaimage'][$i];
                                 }
-                                $arr_images[$i] = $files['mediaimage'][$i];
                             }
                             if (!is_dir($config['pathInfo']['group_img_path'] . $group->group_id)) {
                                 mkdir($config['pathInfo']['group_img_path'] . $group->group_id);
@@ -528,7 +561,7 @@ class GroupPostsController extends AbstractActionController
                             }
                         } else {
                             $dataArr[0]['flag'] = $this->flagFailure;
-                            $error = "Select a image to upload and continue";
+                            $error = "Select a image to upload and continue or please suffix input with []";
                         }
                     }else{
                         $dataArr[0]['flag'] = $this->flagFailure;
@@ -543,10 +576,31 @@ class GroupPostsController extends AbstractActionController
                         if ($this->getUserGroupTable()->checkOwner($group->group_id, $userinfo->user_id)) {
                             $is_admin = 1;
                         }
-                        $albumdetails = $this->getGroupAlbumTable()->getAlbumDetailsForGroupOrAlbumOwner($post['albumid'], $userinfo->user_id, $group->group_id, $is_admin);
-                        if (empty($albumdetails)){
+                        $eventalbumdetails = $this->getGroupAlbumTable()->getEventAlbumForGroupAlbum($post['albumid'],$group->group_id);
+                        if (!empty($eventalbumdetails)){
+                            $eventalbumRsvpdetails = $this->getGroupAlbumTable()->getEventAlbumRsvpCheckForUserGroupAlbum($post['albumid'],$eventalbumdetails[0]['event_id'],$userinfo->user_id,$group->group_id,$is_admin);
+                            if (empty($eventalbumRsvpdetails)) {
+                                $dataArr[0]['flag'] = $this->flagFailure;
+                                $dataArr[0]['message'] = "This user is not the event album group owner or the group owner or rsvp does not exists";
+                                echo json_encode($dataArr);
+                                exit;
+                            }
+                        }else{
+                            $albumdetails = $this->getGroupAlbumTable()->getAlbumDetailsForGroupOrAlbumOwner($post['albumid'], $userinfo->user_id, $group->group_id, $is_admin);
+                            if (empty($albumdetails)){
+                                $dataArr[0]['flag'] = $this->flagFailure;
+                                $dataArr[0]['message'] = "This user is not the group owner or the album owner of the group";
+                                echo json_encode($dataArr);
+                                exit;
+                            }
+                        }
+
+                    }else{
+                        $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($group->group_id,$userinfo->user_id);
+                        $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group to post.":$error;
+                        if (!empty($error)){
                             $dataArr[0]['flag'] = $this->flagFailure;
-                            $dataArr[0]['message'] = "This user is not the group owner or the album owner";
+                            $dataArr[0]['message'] = $error;
                             echo json_encode($dataArr);
                             exit;
                         }
@@ -758,20 +812,35 @@ class GroupPostsController extends AbstractActionController
                 $media_type = $post['mediatype'];
                 switch($media_type) {
                     case 'media':
-                        if ($content_id != '') {
-                            $Mediadata = $this->getGroupMediaTable()->getMedia($content_id);
+                        if($content_id!=''){
                             $Mediadata = $this->getGroupMediaTable()->getMedia($content_id);
                             if(!empty($Mediadata)){
                                 if($Mediadata->media_added_user_id == $userinfo->user_id ||$this->getUserGroupTable()->checkOwner($Mediadata->media_added_group_id,$userinfo->user_id)){
+                                    $media_contents = $this->getGroupMediaContentTable()->getMediaContents(json_decode($Mediadata->media_content));
+                                    if(!empty($media_contents)){
+                                        foreach($media_contents as $files){
+                                            $MediaSystemTypeData = $this->getGroupTable()->fetchSystemType('Image');
+                                            $this->getLikeTable()->deleteEventLike($MediaSystemTypeData->system_type_id,$files['media_content_id']);
+                                            $this->getLikeTable()->deleteEventCommentLike($MediaSystemTypeData->system_type_id,$files['media_content_id']);
+                                            $this->getCommentTable()->deleteEventComments($MediaSystemTypeData->system_type_id,$files['media_content_id']);
+                                            if($files['media_type']=='image'){
+                                                $config = $this->getServiceLocator()->get('Config');
+                                                $group_image_path = $config['pathInfo']['group_img_path'];
+                                                @unlink($group_image_path.$Mediadata->media_added_group_id."/media/".$files['content']);
+                                                @unlink($group_image_path.$Mediadata->media_added_group_id."/media/thumbnail/".$files['content']);
+                                                @unlink($group_image_path.$Mediadata->media_added_group_id."/media/medium/".$files['content']);
+                                            }
+                                            $this->getGroupMediaContentTable()->deleteContent($files['media_content_id']);
+                                        }
+                                    }
                                     $SystemTypeData = $this->getGroupTable()->fetchSystemType('Media');
                                     $this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$content_id);
                                     $this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$content_id);
                                     $this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$content_id);
                                     $this->getGroupMediaTable()->deleteMedia($content_id);
                                     $this->getUserNotificationTable()->deleteSystemNotifications(8,$content_id);
-                                    $dataArr[0]['flag'] = $this->flagSuccess; $error = "Media Deleted successfully";
-                                }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry ! You don't have the permission to do this";}
-                            }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "This status is not existing in the system";}
+                                }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry, You need to be a member of the group to interact with the posts";}
+                            }else{ $dataArr[0]['flag'] = $this->flagFailure; $error = "This status is not existing in the system";}
                         } else {
                             $dataArr[0]['flag'] = $this->flagFailure;
                             $error = "Inputs are incomplete. Some values are missing";

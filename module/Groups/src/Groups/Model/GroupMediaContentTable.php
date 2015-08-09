@@ -80,4 +80,7 @@ class GroupMediaContentTable extends AbstractTableGateway
 		}
 		return $icon_info;
 	}
+	public function deleteContent($content_id){
+		return $this->delete(array('media_content_id' => $content_id));
+	}
 }
