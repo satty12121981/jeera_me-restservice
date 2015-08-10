@@ -183,5 +183,4 @@ class GroupMediaTable extends AbstractTableGateway
 		$resultSet->initialize($statement->execute());	  
 		return $resultSet->toArray();
 	}
-	
 }

@@ -160,7 +160,7 @@ class GroupAlbumTable extends AbstractTableGateway
         $select = new Select;
         if($is_admin) {
             $select->from('y2m_group_album')
-                ->where(array("y2m_group_album.group_id" => $group_id, "y2m_group_album.album_status" => 'active'));
+                ->where(array("y2m_group_album.group_id" => $group_id, "y2m_group_album.album_id" => $album_id, "y2m_group_album.album_status" => 'active'));
         }else{
             $select->from('y2m_group_event_album')
                 ->join('y2m_group_activity_rsvp','y2m_group_activity_rsvp.group_activity_rsvp_activity_id = y2m_group_event_album.event_id',array('group_activity_rsvp_id'))

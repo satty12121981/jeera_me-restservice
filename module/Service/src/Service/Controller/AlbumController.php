@@ -15,6 +15,9 @@ class AlbumController extends AbstractActionController
 	protected $groupMediaTable;
 	protected $groupMediaContentTable;
 	protected $userGroupTable;
+	protected $likeTable;
+	protected $commentTable;
+	protected $userNotificationTable;
 	public function __construct(){
 		$this->flagSuccess = "Success";
 		$this->flagFailure = "Failure";
@@ -173,10 +176,6 @@ class AlbumController extends AbstractActionController
 								$unsortedmedia_ids = json_decode($unsorted['media_content']);
 								$media_content = array_merge($media_content, $unsortedmedia_ids);
 							}
-							$logged_user_ismember = 0;
-							if ($this->getUserGroupTable()->is_member($userinfo->user_id, $group_id)) {
-								$logged_user_ismember = 1;
-							}
 							if (!empty($media_content)) {
 								$media_files = $this->getGroupMediaContentTable()->getMediaContents($media_content);
 								$arr_media_files = array();
@@ -199,17 +198,6 @@ class AlbumController extends AbstractActionController
 										);
 									}
 								}
-
-								$arr_group_media = array(
-									'album_id' => 'unsorted',
-									'album_title' => 'Post Images/Unsorted',
-									'media_files' => $arr_media_files,
-									'logged_user_ismember' => $logged_user_ismember,
-									'group_title' => $group_info->group_title,
-									'group_seo_title' => $group_info->group_seo_title,
-									'group_id' => $group_info->group_id,
-								);
-
 							}
 						}
 					} else {
@@ -282,6 +270,10 @@ class AlbumController extends AbstractActionController
 			$title = $post['title'];
 			$description = $post['description'];
 			$event_id = $post['eventid'];
+			if ($event_id && !is_numeric($event_id)){
+				$error = "Please input a valid eventid";
+				$this->checkError($error);
+			}
 			$group  = $this->getGroupTable()->getPlanetinfo($group_id);
 			if(!empty($group)){
 				if($title!=''){
@@ -301,7 +293,7 @@ class AlbumController extends AbstractActionController
 						$eventDetails = $this->getActivityTable()->getEventDetailsForGroupOrActivityOwner($event_id, $userinfo->user_id, $group_id, $is_admin);
 						if (empty($eventDetails)){
 							$dataArr[0]['flag'] = $this->flagFailure;
-							$dataArr[0]['message'] = "The logged in user is not a group owner or event creator to create event album or event does not exists for the group";
+							$dataArr[0]['message'] = "The logged in user is not a group owner (or) event creator to create event album (or) event does not exists for the group";
 							echo json_encode($dataArr);
 							exit;
 						}
@@ -333,6 +325,85 @@ class AlbumController extends AbstractActionController
 		$dataArr[0]['message'] = (empty($error))?$message:$error;
 		echo json_encode($dataArr);
 		exit;
+	}
+	public function deleteAlbumAction(){
+		$error = '';
+		$auth = new AuthenticationService();
+		$is_media_deleted = 0;
+		$media_id = 0;
+		$arr_deletedMedia = array();
+		if ($auth->hasIdentity()) {
+			$identity = $auth->getIdentity();
+			$request   = $this->getRequest();
+			if ($request->isPost()){
+				$post = $request->getPost();
+				if(!empty($post)){
+					$system_type = $post['system_type'];
+					$content_id = $post['content_id'];
+					if($content_id!=''){
+						$albumdata = $this->getGroupAlbumTable()->getAlbum($content_id);
+						if(!empty($albumdata)){
+							$Mediadata =$this->getGroupMediaTable()->getMediaFromContent($content_id);
+							$media_id = $Mediadata->group_media_id;
+							$is_event_owner = 0;
+							$event_album_details = $this->getGroupEventAlbumTable()->getAlbumEvents($content_id);
+							if(!empty($event_album_details)){
+
+								if($event_album_details->group_activity_owner_user_id == $identity->user_id){
+									$is_event_owner = 1;
+								}
+							}
+							if($albumdata->creator_id == $identity->user_id || $this->getUserGroupTable()->checkOwner($albumdata->group_id,$identity->user_id) || $is_event_owner==1){
+								$Mediadata =$this->getGroupMediaTable()->getAllAlbumFiles($content_id);
+								if(!empty($Mediadata)){
+									foreach($Mediadata as $mediafiles){
+										$arr_media_contents = json_decode($mediafiles['media_content']);
+										foreach($arr_media_contents as $items){
+											$media_content = $this->getGroupMediaContentTable()->getMediafile($items);
+											$MediaSystemTypeData = $this->getGroupTable()->fetchSystemType('Image');
+											$this->getLikeTable()->deleteEventLike($MediaSystemTypeData->system_type_id,$items);
+											$this->getLikeTable()->deleteEventCommentLike($MediaSystemTypeData->system_type_id,$items);
+											$this->getCommentTable()->deleteEventComments($MediaSystemTypeData->system_type_id,$items);
+											if($media_content->media_type=='image'){
+												$config = $this->getServiceLocator()->get('Config');
+												$group_image_path = $config['pathInfo']['group_img_path'];
+												@unlink($group_image_path.$Mediadata->media_added_group_id."/media/".$MediaContentdata->content);
+												@unlink($group_image_path.$Mediadata->media_added_group_id."/media/thumbnail/".$MediaContentdata->content);
+												@unlink($group_image_path.$Mediadata->media_added_group_id."/media/medium/".$MediaContentdata->content);
+											}
+											$media_content_id = $media_content->media_content_id;
+											$this->getGroupMediaContentTable()->deleteContent($media_content->media_content_id);
+										}
+										$SystemTypeData = $this->getGroupTable()->fetchSystemType('Media');
+										$this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$mediafiles['group_media_id']);
+										$this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$mediafiles['group_media_id']);
+										$this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$mediafiles['group_media_id']);
+										$this->getGroupMediaTable()->deleteMedia($mediafiles['group_media_id']);
+										$this->getUserNotificationTable()->deleteSystemNotifications(8,$mediafiles['group_media_id']);
+										$arr_deletedMedia[] = $mediafiles['group_media_id'];
+									}
+								}
+								$SystemTypeData = $this->getGroupTable()->fetchSystemType('Album');
+								$this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$content_id);
+								$this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$content_id);
+								$this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$content_id);
+								$this->getGroupEventAlbumTable()->deleteEventAlbum($content_id);
+								$this->getGroupAlbumTable()->deleteAlbum($content_id);
+								$this->getUserNotificationTable()->deleteSystemNotifications(8,$content_id);
+							}else{$error = "Sorry, You don't have the permission to do this operations";}
+						}else{$error = "This album is not existing in the system";}
+					}else{$error = "Forms are incomplete. Some values are missing";}
+				}else{$error = "Unable to process";}
+			}else{$error = "Unable to process";}
+		}else{$error = "Your session expired, please log in again to continue";}
+		$return_array= array();
+		$return_array['process_status'] = (empty($error))?'success':'failure';
+		$return_array['process_info'] = $error;
+		$return_array['media_id'] = $arr_deletedMedia;
+		$result = new JsonModel(array(
+			'return_array' => $return_array,
+		));
+		return $result;
 	}
 	public function manipulateProfilePic($user_path_id, $profile_path_photo = null, $fb_path_id = null){
 		$config = $this->getServiceLocator()->get('Config');
@@ -370,7 +441,7 @@ class AlbumController extends AbstractActionController
 	}
 	public function getGroupTable(){
 		$sm = $this->getServiceLocator();
-		return  $this->groupTable = (!$this->groupTable)?$sm->get('Groups\Model\GroupsTable'):$this->groupTable;    
+		return  $this->groupTable = (!$this->groupTable)?$sm->get('Groups\Model\GroupsTable'):$this->groupTable;
     }
 	public function getActivityTable(){
 		$sm = $this->getServiceLocator();
@@ -378,11 +449,11 @@ class AlbumController extends AbstractActionController
 	}
 	public function getGroupAlbumTable(){
 		$sm = $this->getServiceLocator();
-		return  $this->groupAlbumTable = (!$this->groupAlbumTable)?$sm->get('Album\Model\GroupAlbumTable'):$this->groupAlbumTable;    
+		return  $this->groupAlbumTable = (!$this->groupAlbumTable)?$sm->get('Album\Model\GroupAlbumTable'):$this->groupAlbumTable;
     }
 	public function getGroupEventAlbumTable(){
 		$sm = $this->getServiceLocator();
-		return  $this->groupEventAlbumTable = (!$this->groupEventAlbumTable)?$sm->get('Album\Model\GroupEventAlbumTable'):$this->groupEventAlbumTable;    
+		return  $this->groupEventAlbumTable = (!$this->groupEventAlbumTable)?$sm->get('Album\Model\GroupEventAlbumTable'):$this->groupEventAlbumTable;
     }
 	public function getGroupMediaTable(){
 		$sm = $this->getServiceLocator();
@@ -391,5 +462,17 @@ class AlbumController extends AbstractActionController
 	public function getGroupMediaContentTable(){
 		$sm = $this->getServiceLocator();
 		return  $this->groupMediaContentTable = (!$this->groupMediaContentTable)?$sm->get('Groups\Model\GroupMediaContentTable'):$this->groupMediaContentTable;
+	}
+	public function getLikeTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->likeTable = (!$this->likeTable)?$sm->get('Like\Model\LikeTable'):$this->likeTable;
+	}
+	public function getCommentTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->commentTable = (!$this->commentTable)?$sm->get('Comment\Model\CommentTable'):$this->commentTable;
+	}
+	public function getUserNotificationTable(){
+		$sm = $this->getServiceLocator();
+		return $this->userNotificationTable= (!$this->userNotificationTable)?$sm->get('Notification\Model\UserNotificationTable'):$this->userNotificationTable;
 	}
 }

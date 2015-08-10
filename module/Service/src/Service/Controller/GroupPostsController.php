@@ -442,7 +442,7 @@ class GroupPostsController extends AbstractActionController
                             $eventalbumRsvpdetails = $this->getGroupAlbumTable()->getEventAlbumRsvpCheckForUserGroupAlbum($post['albumid'],$eventalbumdetails[0]['event_id'],$userinfo->user_id,$group->group_id,$is_admin);
                             if (empty($eventalbumRsvpdetails)) {
                                 $dataArr[0]['flag'] = $this->flagFailure;
-                                $dataArr[0]['message'] = "This user is not the event album group owner or the group owner or rsvp does not exists";
+                                $dataArr[0]['message'] = "This user is not the event album group owner (or) the group owner (or) rsvp does not exists";
                                 echo json_encode($dataArr);
                                 exit;
                             }
@@ -450,7 +450,7 @@ class GroupPostsController extends AbstractActionController
                             $albumdetails = $this->getGroupAlbumTable()->getAlbumDetailsForGroupOrAlbumOwner($post['albumid'], $userinfo->user_id, $group->group_id, $is_admin);
                             if (empty($albumdetails)){
                                 $dataArr[0]['flag'] = $this->flagFailure;
-                                $dataArr[0]['message'] = "This user is not the group owner or the album owner of the group";
+                                $dataArr[0]['message'] = "This user is not the group owner (or) the album owner of the group (or) albumid does not exists for the group";
                                 echo json_encode($dataArr);
                                 exit;
                             }
@@ -458,7 +458,7 @@ class GroupPostsController extends AbstractActionController
 
                     }else{
                         $userPermissionOnGroup = $this->getUserGroupTable()->getGroupUserDetails($group->group_id,$userinfo->user_id);
-                        $error =(empty($userPermissionOnGroup))?"User has no permission or not a member of the group to post.":$error;
+                        $error =(empty($userPermissionOnGroup))?"User has no permission (or) not a member of the group to post.":$error;
                         if (!empty($error)){
                             $dataArr[0]['flag'] = $this->flagFailure;
                             $dataArr[0]['message'] = $error;
@@ -898,6 +898,86 @@ class GroupPostsController extends AbstractActionController
         }
         return;
     }
+    public function deleteImageAction(){
+        $error = '';
+        $auth = new AuthenticationService();
+        $is_media_deleted = 0;
+        $media_id = 0;
+        if ($auth->hasIdentity()) {
+            $identity = $auth->getIdentity();
+            $request   = $this->getRequest();
+            if ($request->isPost()){
+                $post = $request->getPost();
+                if(!empty($post)){
+                    $system_type = $post['system_type'];
+                    $content_id = $post['content_id'];
+                    if($content_id!=''){
+                        $MediaContentdata = $this->getGroupMediaContentTable()->getMediafile($content_id);
+                        if(!empty($MediaContentdata)){
+                            $Mediadata =$this->getGroupMediaTable()->getMediaFromContent($content_id);
+                            $media_id = $Mediadata->group_media_id;
+                            $is_album_creator = 0;
+                            if($Mediadata->media_album_id!=''){
+                                $mediaAlbumData =$this->getGroupAlbumTable()->getAlbum($Mediadata->media_album_id);
+                                if($mediaAlbumData->creator_id == $identity->user_id){
+                                    $is_album_creator = 1;
+                                }
+                            }
+                            $is_event_owner = 0;
+                            $event_album_details = $this->getGroupEventAlbumTable()->getAlbumEvents($Mediadata->media_album_id);
+                            if(!empty($event_album_details)){
+
+                                if($event_album_details->group_activity_owner_user_id == $identity->user_id){
+                                    $is_event_owner = 1;
+                                }
+                            }
+                            if($Mediadata->media_added_user_id == $identity->user_id || $this->getUserGroupTable()->checkOwner($Mediadata->media_added_group_id,$identity->user_id) || $is_album_creator==1 || $is_event_owner==1){
+                                $MediaSystemTypeData = $this->getGroupTable()->fetchSystemType('Image');
+                                $this->getLikeTable()->deleteEventLike($MediaSystemTypeData->system_type_id,$MediaContentdata->media_content_id);
+                                $this->getLikeTable()->deleteEventCommentLike($MediaSystemTypeData->system_type_id,$MediaContentdata->media_content_id);
+                                $this->getCommentTable()->deleteEventComments($MediaSystemTypeData->system_type_id,$MediaContentdata->media_content_id);
+                                if($MediaContentdata->media_type=='image'){
+                                    $config = $this->getServiceLocator()->get('Config');
+                                    $group_image_path = $config['pathInfo']['group_img_path'];
+                                    @unlink($group_image_path.$Mediadata->media_added_group_id."/media/".$MediaContentdata->content);
+                                    @unlink($group_image_path.$Mediadata->media_added_group_id."/media/thumbnail/".$MediaContentdata->content);
+                                    @unlink($group_image_path.$Mediadata->media_added_group_id."/media/medium/".$MediaContentdata->content);
+                                }
+                                $media_content_id = $MediaContentdata->media_content_id;
+                                $this->getGroupMediaContentTable()->deleteContent($MediaContentdata->media_content_id);
+                                $arr_media_contents = json_decode($Mediadata->media_content);
+                                if (($key = array_search($media_content_id, $arr_media_contents)) !== false) {
+                                    array_splice($arr_media_contents, $key, 1);
+                                }
+                                if(!empty($arr_media_contents)){
+                                    $media_data['media_content'] = json_encode($arr_media_contents);
+                                    $this->getGroupMediaTable()->updateMedia($media_data,$Mediadata->group_media_id);
+                                }else{
+
+                                    $SystemTypeData = $this->getGroupTable()->fetchSystemType('Media');
+                                    $this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$Mediadata->group_media_id);
+                                    $this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$Mediadata->group_media_id);
+                                    $this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$Mediadata->group_media_id);
+                                    $this->getGroupMediaTable()->deleteMedia($Mediadata->group_media_id);
+                                    $this->getUserNotificationTable()->deleteSystemNotifications(8,$Mediadata->group_media_id);
+                                    $is_media_deleted = 1;
+                                }
+                            }else{$error = "Sorry, You need to be a member of the group to interact with the posts";}
+                        }else{$error = "This image is not existing in the system";}
+                    }else{$error = "Forms are incomplete. Some values are missing";}
+                }else{$error = "Unable to process";}
+            }else{$error = "Unable to process";}
+        }else{$error = "Your session expired, please log in again to continue";}
+        $return_array= array();
+        $return_array['process_status'] = (empty($error))?'success':'failed';
+        $return_array['process_info'] = $error;
+        $return_array['is_media_deleted'] = $is_media_deleted;
+        $return_array['media_id'] = $media_id;
+        $result = new JsonModel(array(
+            'return_array' => $return_array,
+        ));
+        return $result;
+    }
     public function manipulateProfilePic($user_path_id, $profile_path_photo = null, $fb_path_id = null){
         $config = $this->getServiceLocator()->get('Config');
         $return_photo = null;
@@ -1101,5 +1181,9 @@ class GroupPostsController extends AbstractActionController
 	public function getGroupMediaContentTable(){
 		$sm = $this->getServiceLocator();
 		return  $this->groupMediaContentTable = (!$this->groupMediaContentTable)?$sm->get('Groups\Model\GroupMediaContentTable'):$this->groupMediaContentTable;    
+    }
+    public function getGroupEventAlbumTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->groupEventAlbumTable = (!$this->groupEventAlbumTable)?$sm->get('Album\Model\GroupEventAlbumTable'):$this->groupEventAlbumTable;
     }
 }

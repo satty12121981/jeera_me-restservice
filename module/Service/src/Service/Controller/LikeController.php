@@ -123,15 +123,7 @@ class LikeController extends AbstractActionController
                                     $like_count = $like_details->likes_counts;
                                     $group  = $this->getGroupTable()->getPlanetinfo($media_data->media_added_group_id);
                                     if(!empty($like_details)){
-                                        $liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,2,0);
-                                        if($like_details['is_liked']==1){
-                                            $arr_likedUsers[] = 'you';
-                                        }
-                                        if($like_details['likes_counts']>0&&!empty($liked_users)){
-                                            foreach($liked_users as $likeuser){
-                                                $arr_likedUsers[] = $likeuser['user_given_name'];
-                                            }
-                                        }
+                                        $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
                                     }
                                     if($media_data->media_added_user_id!=$userinfo->user_id){
                                         $config = $this->getServiceLocator()->get('Config');
@@ -157,15 +149,7 @@ class LikeController extends AbstractActionController
                                     $like_count = $like_details->likes_counts;
                                     $group  = $this->getGroupTable()->getPlanetinfo($album_data->group_id);
                                     if(!empty($like_details)){
-                                        $liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,2,0);
-                                        if($like_details['is_liked']==1){
-                                            $arr_likedUsers[] = 'you';
-                                        }
-                                        if($like_details['likes_counts']>0&&!empty($liked_users)){
-                                            foreach($liked_users as $likeuser){
-                                                $arr_likedUsers[] = $likeuser['user_given_name'];
-                                            }
-                                        }
+                                        $liked_users = $this->getLikeTable()->likedUsersForRestAPI($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id,"","");
                                     }
                                     if($album_data->creator_id!=$userinfo->user_id){
                                         $config = $this->getServiceLocator()->get('Config');

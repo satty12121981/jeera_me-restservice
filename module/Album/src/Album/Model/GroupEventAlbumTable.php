@@ -40,5 +40,19 @@ class GroupEventAlbumTable extends AbstractTableGateway
                 throw new \Exception('Form id does not exist');
             }
         }
-    }	 
+    }
+    public function getAlbumEvents($album_id){
+        $select = new Select;
+        $select->from('y2m_group_activity')
+            ->join('y2m_group_event_album','y2m_group_activity.group_activity_id = y2m_group_event_album.event_id',array())
+            ->where(array('y2m_group_event_album.album_id'=>$album_id));
+        $statement = $this->adapter->createStatement();
+        $select->prepareStatement($this->adapter, $statement);
+        $resultSet = new ResultSet();
+        $resultSet->initialize($statement->execute());
+        return $resultSet->current();
+    }
+    public function deleteEventAlbum($album_id){
+        return $this->delete(array('event_id' => $album_id));
+    }
 }
