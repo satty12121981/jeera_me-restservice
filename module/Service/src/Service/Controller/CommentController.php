@@ -37,6 +37,7 @@ class CommentController extends AbstractActionController
     protected $userNotificationTable;
     protected $albumTagTable;
     protected $groupMediaTable;
+    protected $groupAlbumTable;
 	public function __construct(){
         $this->flagSuccess = "Success";
         $this->flagFailure = "Failure";
@@ -224,7 +225,7 @@ class CommentController extends AbstractActionController
                         $media_data = $this->getGroupMediaTable()->getMediaFromContent($refer_id);
                         if(!empty($media_data)){
                             if($this->getUserGroupTable()->is_member($userinfo->user_id,$media_data->media_added_group_id)){
-                                $comment_id = $this->addComment($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id,$comment);
+                                $comment_id = $this->postComment($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id,$comment);
                                 if($comment_id){
                                     $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                     $comment_count = $comment_details['comment_counts'];
@@ -263,7 +264,7 @@ class CommentController extends AbstractActionController
                         $album_data = $this->getGroupAlbumTable()->getAlbum($refer_id);
                         if(!empty($album_data)){
                             if($this->getUserGroupTable()->is_member($userinfo->user_id,$album_data->group_id)){
-                                $comment_id = $this->addComment($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id,$comment);
+                                $comment_id = $this->postComment($userinfo->user_id,$SystemTypeData->system_type_id,$refer_id,$comment);
                                 if($comment_id){
                                     $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$refer_id,$userinfo->user_id);
                                     $comment_count = $comment_details['comment_counts'];
@@ -652,5 +653,9 @@ class CommentController extends AbstractActionController
     public function getLikeTable(){
         $sm = $this->getServiceLocator();
         return  $this->likeTable = (!$this->likeTable)?$sm->get('Like\Model\LikeTable'):$this->likeTable;
+    }
+    public function getGroupAlbumTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->groupAlbumTable = (!$this->groupAlbumTable)?$sm->get('Album\Model\GroupAlbumTable'):$this->groupAlbumTable;
     }
 }
