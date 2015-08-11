@@ -2,14 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0b736442-2289-4c94-904e-bdd89460f66f" name="Default" comment="Adding New comment service to add edit delete getlist of comments&#10;">
-      <change type="DELETED" beforePath="C:\wamp\www\jeera_me-restservice\config\application.config.php.bak" afterPath="" />
-      <change type="DELETED" beforePath="C:\wamp\www\jeera_me-restservice\config\autoload\global.php.bak" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/AlbumController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/AlbumController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Album/src/Album/Model/GroupAlbumTable.php" afterPath="$PROJECT_DIR$/module/Album/src/Album/Model/GroupAlbumTable.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Album/src/Album/Model/GroupEventAlbumTable.php" afterPath="$PROJECT_DIR$/module/Album/src/Album/Model/GroupEventAlbumTable.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupMediaTable.php" afterPath="$PROJECT_DIR$/module/Groups/src/Groups/Model/GroupMediaTable.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" afterPath="$PROJECT_DIR$/module/Service/src/Service/Controller/LikeController.php" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="jeera_me-restservice.iws" />
@@ -35,13 +28,11 @@
       <file leaf-file-name="AlbumController.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/AlbumController.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-1.939759">
-              <caret line="76" column="39" selection-start-line="76" selection-start-column="24" selection-end-line="76" selection-end-column="39" />
+            <state vertical-scroll-proportion="-0.19965577">
+              <caret line="199" column="50" selection-start-line="199" selection-start-column="50" selection-end-line="199" selection-end-column="50" />
               <folding>
                 <element signature="e#36#85#0#PHP" expanded="true" />
                 <element signature="e#569#670#0#PHP" expanded="false" />
-                <element signature="e#10928#14590#0#PHP" expanded="false" />
-                <element signature="e#14592#19172#0#PHP" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -73,8 +64,8 @@
       <file leaf-file-name="GroupAlbumTable.php" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/module/Album/src/Album/Model/GroupAlbumTable.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-18.423077">
-              <caret line="113" column="76" selection-start-line="113" selection-start-column="76" selection-end-line="113" selection-end-column="76" />
+            <state vertical-scroll-proportion="-7.9615383">
+              <caret line="94" column="5" selection-start-line="94" selection-start-column="5" selection-end-line="94" selection-end-column="5" />
               <folding />
             </state>
           </provider>
@@ -900,7 +891,7 @@
         <state vertical-scroll-proportion="-1.3993115">
           <caret line="9" column="27" selection-start-line="9" selection-start-column="27" selection-end-line="9" selection-end-column="27" />
           <folding>
-            <element signature="e#32#56#0#PHP" expanded="true" />
+            <element signature="e#32#56#0#PHP" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -930,6 +921,14 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/module/Album/src/Album/Model/GroupAlbumTable.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-7.9615383">
+          <caret line="94" column="5" selection-start-line="94" selection-start-column="5" selection-end-line="94" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/GroupPostsController.php">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-15.153846">
@@ -951,23 +950,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/module/Album/src/Album/Model/GroupAlbumTable.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-18.423077">
-          <caret line="113" column="76" selection-start-line="113" selection-start-column="76" selection-end-line="113" selection-end-column="76" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/module/Service/src/Service/Controller/AlbumController.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-1.939759">
-          <caret line="76" column="39" selection-start-line="76" selection-start-column="24" selection-end-line="76" selection-end-column="39" />
+        <state vertical-scroll-proportion="-0.19965577">
+          <caret line="199" column="50" selection-start-line="199" selection-start-column="50" selection-end-line="199" selection-end-column="50" />
           <folding>
             <element signature="e#36#85#0#PHP" expanded="true" />
             <element signature="e#569#670#0#PHP" expanded="false" />
-            <element signature="e#10928#14590#0#PHP" expanded="false" />
-            <element signature="e#14592#19172#0#PHP" expanded="false" />
           </folding>
         </state>
       </provider>

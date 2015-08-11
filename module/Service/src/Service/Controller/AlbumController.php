@@ -71,6 +71,35 @@ class AlbumController extends AbstractActionController
 						exit;
 					}
 				}
+				$media_content = array();
+				$unsorted_media = $this->getGroupMediaTable()->getAllUnsortedMedia($group_id);
+				if(!empty($unsorted_media)) {
+					foreach ($unsorted_media as $unsorted) {
+						$unsortedmedia_ids = json_decode($unsorted['media_content']);
+						$media_content = array_merge($media_content, $unsortedmedia_ids);
+					}
+					$album_icon = $this->getGroupMediaContentTable()->getMediafile($media_content[0]);
+					if (!empty($album_icon)) {
+						if ($album_icon->media_type == 'image') {
+							$album_icon_url = $config['pathInfo']['group_img_path_absolute_path'] . $group_id . '/media/medium/' . $album_icon->content;
+						}
+						if ($album_icon->media_type == 'youtube') {
+							$video_id = $this->getYoutubeIdFromUrl($album_icon->content);
+							$album_icon_url = 'http://img.youtube.com/vi/' . $video_id . '/0.jpg';
+						}
+					} else {
+						$album_icon_url = $config['pathInfo']['base_url'] . "/public/images/album-thumb.png";
+					}
+					$media_details[] = array(
+						'album_id' => 'unsorted',
+						'album_title' => 'Post Images/Unsorted',
+						'album_icon_url' => $album_icon_url,
+						'album_image_count' => count($media_content),
+						'album_type' => "Unsorted",
+						"album_user_details" => "",
+						'album_created_date' => "",
+					);
+				}
 				$albums = $this->getGroupAlbumTable()->getAllActiveGroupAlbumsForAPI($group_id,$limit,$offset);
 				if (count($albums)){
 					foreach($albums as $album){
@@ -96,15 +125,16 @@ class AlbumController extends AbstractActionController
 						$media_details[] = array(
 							"album_id"=> $album->album_id,
 							"album_title"=> $album->album_title,
-							"usercreated"=> $userdetails,
-							'datecreated'=> $album->created_date,
-							'albumtype' => ($album->event_album_id)?"Event Album":"group Album",
-							"mediacount"=> (!empty($media_contents)) ? count($media_contents) : 0,
-							"albumpictureurl"=> $albumurl,
+							"album_user_details"=> $userdetails,
+							'album_created_date'=> $album->created_date,
+							'album_type' => ($album->event_album_id)?"Event Album":"group Album",
+							"album_image_count"=> (!empty($media_contents)) ? count($media_contents) : 0,
+							"album_icon_url"=> $albumurl,
 						);
 					}
 
 				}
+
 			}else{$error ='We are failed to identify the given group';}
 		}
 		$dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
