@@ -933,7 +933,7 @@ class GroupPostsController extends AbstractActionController
                                         $this->getUserNotificationTable()->deleteSystemNotifications(8,$Mediadata->group_media_id);
                                         $is_media_deleted = 1;
                                     }
-                                    $dataArr[0]['flag'] = $this->flagSuccess; $error = "Image Post Deleted successfully";
+                                    $dataArr[0]['flag'] = $this->flagSuccess; $error = "Media Content Deleted successfully";
                                     $dataArr[0]['is_media_deleted'] = $is_media_deleted;
                                     $dataArr[0]['media_id'] = $media_id;
                                 }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry, You need to be a member of the group to interact with the posts";}

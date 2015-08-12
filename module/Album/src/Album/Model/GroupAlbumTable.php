@@ -176,5 +176,7 @@ class GroupAlbumTable extends AbstractTableGateway
     public function deleteAlbum($album_id){
         return $this->delete(array('album_id' => $album_id));
     }
-
+    public function updateAlbum($data,$album_id){
+        return $this->update($data, array('album_id' => $album_id));
+    }
 }

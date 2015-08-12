@@ -78,7 +78,7 @@ class AlbumController extends AbstractActionController
 						$unsortedmedia_ids = json_decode($unsorted['media_content']);
 						$media_content = (is_array($unsortedmedia_ids)) ? array_merge($media_content, $unsortedmedia_ids):$media_content;
 					}
-					$album_icon = $this->getGroupMediaContentTable()->getMediafile($media_content[0]);
+					$album_icon = (isset($media_content[0]) && !empty($media_content[0])) ?$this->getGroupMediaContentTable()->getMediafile($media_content[0]):"";
 					if (!empty($album_icon)) {
 						if ($album_icon->media_type == 'image') {
 							$album_icon_url = $config['pathInfo']['group_img_path_absolute_path'] . $group_id . '/media/medium/' . $album_icon->content;
@@ -149,7 +149,7 @@ class AlbumController extends AbstractActionController
 		}
 		$dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
 		$dataArr[0]['message'] = $error;
-		$dataArr[0]['albums'] = $album_details;
+		$dataArr[0]['albums'] = (!empty($album_details))?$album_details:"";
 		echo json_encode($dataArr);
 		exit;
 	}
@@ -363,6 +363,88 @@ class AlbumController extends AbstractActionController
 
 		$dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
 		$dataArr[0]['message'] = (empty($error))?$message:$error;
+		echo json_encode($dataArr);
+		exit;
+	}
+	public function editAlbumAction(){
+		$error ='';
+		$msg = '';
+		$albums = array();
+		$request = $this->getRequest();
+		if ($request->isPost()) {
+			$post = $request->getPost();
+			$accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+			$error = (empty($accToken)) ? "Request Not Authorised." : $error;
+			$this->checkError($error);
+			$userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+			$error = (empty($userinfo)) ? "Invalid Access Token." : $error;
+			$this->checkError($error);
+			$error =($post['albumid']==null || $post['albumid']=='' || $post['albumid']=='undefined' || !is_numeric($post['albumid']))? "please input a valid album id":$error;
+			$this->checkError($error);
+			$album_id = $post['albumid'];
+			$title = $post['title'];
+			$description = $post['description'];
+			$event_id = $post['eventid'];
+			if ($event_id && !is_numeric($event_id)){
+				$error = "Please input a valid eventid";
+				$this->checkError($error);
+			}
+			$albumdata = $this->getGroupAlbumTable()->getAlbum($album_id);
+			if(!empty($albumdata)){
+				$is_admin = 0;
+				if($this->getUserGroupTable()->checkOwner($albumdata->group_id,$userinfo->user_id)){
+					$is_admin = 1;
+				}
+				if($title!=''){
+					if($is_admin==1 || $albumdata->creator_id == $userinfo->user_id){
+						$is_allow_edit = 1;
+						if($event_id!=''){
+							$event_details = $this->getActivityTable()->getActivity($event_id);
+							$rsvp_details = $this->getActivityRsvpTable()->getActivityRsvpOfUser($userinfo->user_id,$event_id);
+							if((!empty($rsvp_details)&&$rsvp_details->group_activity_rsvp_id!='')||(!empty($event_details)&&$event_details->group_activity_owner_user_id==$userinfo->user_id)){
+								$is_allow_edit = 1;
+							}else{
+								$dataArr[0]['flag'] = $this->flagFailure;
+								$error ='You don\'t have the permission to add this event to album';
+								$is_allow_edit =0;
+							}
+
+						}
+						if($is_allow_edit==1){
+							$album_data = array(
+								'album_title' =>$title,
+								'album_description' =>$description,
+							);
+							$this->getGroupAlbumTable()->updateAlbum($album_data,$album_id);
+							$eventAlbumData = $this->getGroupEventAlbumTable()->getAlbumEvents($album_id);
+							if($event_id==''&&!empty($eventAlbumData)){
+								$this->getGroupEventAlbumTable()->deleteEventAlbum($album_id);
+							}
+							if($event_id!=''&&empty($eventAlbumData)){
+								$objGroupEventAlbum = new GroupEventAlbum();
+								$objGroupEventAlbum->event_id = $event_id;
+								$objGroupEventAlbum->assignedby = $userinfo->user_id;
+								$objGroupEventAlbum->album_id = $album_id;
+								$newalbum_id = $this->getGroupEventAlbumTable()->saveEventAlbum($objGroupEventAlbum);
+							}
+							if($event_id!=''&&!empty($eventAlbumData)&&$eventAlbumData->event_id!=$event_id){
+								$objGroupEventAlbum = new GroupEventAlbum();
+								$objGroupEventAlbum->event_album_id = $eventAlbumData->event_album_id;
+								$objGroupEventAlbum->event_id = $event_id;
+								$objGroupEventAlbum->assignedby = $userinfo->user_id;
+								$objGroupEventAlbum->album_id = $album_id;
+								$newalbum_id = $this->getGroupEventAlbumTable()->saveEventAlbum($objGroupEventAlbum);
+							}
+
+							$dataArr[0]['flag'] = $this->flagFailure; $error ='Album Edited Successfully';
+						}
+					}
+				}else{ $dataArr[0]['flag'] = $this->flagFailure; $error ='Please add album title';}
+			}else{ $dataArr[0]['flag'] = $this->flagFailure; $error ='We are failed to identify the given group';}
+		}else{ $dataArr[0]['flag'] = $this->flagFailure; $error ='Unable to process';}
+
+		$dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
+		$dataArr[0]['message'] = $error;
 		echo json_encode($dataArr);
 		exit;
 	}

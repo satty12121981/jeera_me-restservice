@@ -724,7 +724,7 @@ class IndexController extends AbstractActionController
 											'media_type' => $mfile['media_type'],
 										);
 									} else {
-										$mediaurl = $config['pathInfo']['absolute_img_path'] . $config['image_folders']['group'] . $group_id . '/media/medium/' . $mfile['content'];
+										$mediaurl = $config['pathInfo']['absolute_img_path'] . $config['image_folders']['group'] . $list['group_id'] . '/media/medium/' . $mfile['content'];
 										$media_files[] = array(
 											'id' => $mfile['media_content_id'],
 											'files' => $mediaurl,

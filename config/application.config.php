@@ -16,8 +16,9 @@ return array(
 		'Like',
 		'Comment',
 		'Facebook',
+		'ZfCommons',
 		'Service',
-		'Spam'
+		'Spam',
     ), 
     'module_listener_options' => array(        
         'module_paths' => array(
