@@ -408,7 +408,6 @@ class AlbumController extends AbstractActionController
 								$error ='You don\'t have the permission to add this event to album';
 								$is_allow_edit =0;
 							}
-
 						}
 						if($is_allow_edit==1){
 							$album_data = array(
@@ -435,9 +434,12 @@ class AlbumController extends AbstractActionController
 								$objGroupEventAlbum->album_id = $album_id;
 								$newalbum_id = $this->getGroupEventAlbumTable()->saveEventAlbum($objGroupEventAlbum);
 							}
-
-							$dataArr[0]['flag'] = $this->flagFailure; $error ='Album Edited Successfully';
+							$dataArr[0]['flag'] = $this->flagSuccess; $error ='Album Edited Successfully';
+						}else{
+							$dataArr[0]['flag'] = $this->flagFailure; $error ='You don\'t have the permission to edit this event to album';
 						}
+					}else{
+						$dataArr[0]['flag'] = $this->flagFailure; $error ='You don\'t have the permission to edit this event to album';
 					}
 				}else{ $dataArr[0]['flag'] = $this->flagFailure; $error ='Please add album title';}
 			}else{ $dataArr[0]['flag'] = $this->flagFailure; $error ='We are failed to identify the given group';}
@@ -472,7 +474,6 @@ class AlbumController extends AbstractActionController
 						$is_event_owner = 0;
 						$event_album_details = $this->getGroupEventAlbumTable()->getAlbumEvents($content_id);
 						if(!empty($event_album_details)){
-
 							if($event_album_details->group_activity_owner_user_id == $userinfo->user_id){
 								$is_event_owner = 1;
 							}
