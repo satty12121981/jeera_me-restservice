@@ -96,7 +96,7 @@ class GroupAlbumTable extends AbstractTableGateway
     public function getAllActiveGroupAlbumsForAPI($group_id,$limit,$offset){
         $select = new Select;
         $select->from('y2m_group_album')
-            ->join("y2m_group_media","y2m_group_media.media_album_id = y2m_group_album.album_id",array("group_media_id","media_content"),'left')
+            //->join("y2m_group_media","y2m_group_media.media_album_id = y2m_group_album.album_id",array("group_media_id","media_content"),'left')
             ->join("y2m_group_event_album","y2m_group_event_album.album_id = y2m_group_album.album_id",array("event_album_id","event_id"),'left')
             ->where(array("y2m_group_album.group_id"=>$group_id,"y2m_group_album.album_status"=>'active'));
         if($limit){
@@ -132,7 +132,7 @@ class GroupAlbumTable extends AbstractTableGateway
         $select->from('y2m_group_album')
             ->where(array('y2m_group_album.album_status' => "active"));
         if($is_admin){
-            $select->where(array("group_id"=>$group_id));
+            $select->where(array("group_id"=>$group_id, "album_id" => $album_id));
         }else{
             $select->where(array('album_id'=>$album_id,'y2m_group_album.creator_id' => $user_id,"y2m_group_album.group_id"=>$group_id));
         }
@@ -172,6 +172,9 @@ class GroupAlbumTable extends AbstractTableGateway
         $resultSet = new ResultSet();
         $resultSet->initialize($statement->execute());
         return $resultSet->toArray();
+    }
+    public function deleteAlbum($album_id){
+        return $this->delete(array('album_id' => $album_id));
     }
 
 }

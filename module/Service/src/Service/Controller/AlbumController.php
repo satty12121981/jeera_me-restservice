@@ -76,7 +76,7 @@ class AlbumController extends AbstractActionController
 				if(!empty($unsorted_media)) {
 					foreach ($unsorted_media as $unsorted) {
 						$unsortedmedia_ids = json_decode($unsorted['media_content']);
-						$media_content = array_merge($media_content, $unsortedmedia_ids);
+						$media_content = (is_array($unsortedmedia_ids)) ? array_merge($media_content, $unsortedmedia_ids):$media_content;
 					}
 					$album_icon = $this->getGroupMediaContentTable()->getMediafile($media_content[0]);
 					if (!empty($album_icon)) {
@@ -90,7 +90,7 @@ class AlbumController extends AbstractActionController
 					} else {
 						$album_icon_url = $config['pathInfo']['base_url'] . "/public/images/album-thumb.png";
 					}
-					$media_details[] = array(
+					$album_details[] = array(
 						'album_id' => 'unsorted',
 						'album_title' => 'Post Images/Unsorted',
 						'album_icon_url' => $album_icon_url,
@@ -102,9 +102,15 @@ class AlbumController extends AbstractActionController
 				}
 				$albums = $this->getGroupAlbumTable()->getAllActiveGroupAlbumsForAPI($group_id,$limit,$offset);
 				if (count($albums)){
+					$media_content = array();
 					foreach($albums as $album){
-						$media_contents = $this->getGroupMediaContentTable()->getMediaContents(json_decode($album->media_content));
-						$media_files = [];
+						$media_details = $this->getGroupMediaTable()->getAllAlbumMedia($album->album_id,$offset,$limit);
+						if(!empty($media_details)) {
+							foreach ($media_details as $details) {
+								$media_ids = json_decode($details['media_content']);
+								$media_contents = (is_array($media_ids))?array_merge($media_content, $media_ids):$media_content;
+							}
+						}
 						$getAlbumCreatedUser = $this->getUserTable()->getUser($album->creator_id);
 						$creator_profile_pic =  $this->getUserTable()->getUserProfilePic($getAlbumCreatedUser->user_id);
 						$profile_details_photo = $this->manipulateProfilePic($getAlbumCreatedUser->user_id,$creator_profile_pic->biopic, $getAlbumCreatedUser->user_fbid);
@@ -113,33 +119,37 @@ class AlbumController extends AbstractActionController
 							"profilepicture"=>$profile_details_photo,
 						);
 						$albumurl = $config['pathInfo']['base_url']."/public/images/album-thumb.png";
-						if (isset($media_contents) && !empty($media_contents)){
-							if($media_contents[0]['media_type'] == 'youtube'){
-								$video_id = $this->get_youtube_id_from_url($media_contents[0]['content']);
-								$albumurl =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
-							}else{
-								$albumurl = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$group_id.'/media/medium/'.$media_contents[0]['content'];
+						$albumImage_count = count($media_content);
+						$album_icon = $this->getGroupMediaContentTable()->getAlbumIcon($album->album_id);
+						if(!empty($album_icon)){
+							if($album_icon->media_type=='image'){
+								$album_icon_url=$config['pathInfo']['group_img_path_absolute_path'].$group_id.'/media/medium/'.$album_icon->content;
 							}
+							if($album_icon->media_type=='youtube'){
+								$video_id = $this->getYoutubeIdFromUrl($album_icon->content);
+								$album_icon_url='http://img.youtube.com/vi/'.$video_id.'/0.jpg';
+							}
+						}else{
+							$album_icon_url=$config['pathInfo']['base_url']."/public/images/album-thumb.png";
 						}
 
-						$media_details[] = array(
+						$album_details[] = array(
 							"album_id"=> $album->album_id,
 							"album_title"=> $album->album_title,
 							"album_user_details"=> $userdetails,
 							'album_created_date'=> $album->created_date,
 							'album_type' => ($album->event_album_id)?"Event Album":"group Album",
-							"album_image_count"=> (!empty($media_contents)) ? count($media_contents) : 0,
-							"album_icon_url"=> $albumurl,
+							"album_image_count"=> $albumImage_count,
+							"album_icon_url"=> $album_icon_url,
 						);
 					}
-
 				}
 
 			}else{$error ='We are failed to identify the given group';}
 		}
 		$dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
 		$dataArr[0]['message'] = $error;
-		$dataArr[0]['albums'] = $media_details;
+		$dataArr[0]['albums'] = $album_details;
 		echo json_encode($dataArr);
 		exit;
 	}
@@ -204,7 +214,7 @@ class AlbumController extends AbstractActionController
 							$media_content = array();
 							foreach ($unsorted_media as $unsorted) {
 								$unsortedmedia_ids = json_decode($unsorted['media_content']);
-								$media_content = array_merge($media_content, $unsortedmedia_ids);
+								$media_content = (is_array($unsortedmedia_ids))?array_merge($media_content, $unsortedmedia_ids):$media_content;
 							}
 							if (!empty($media_content)) {
 								$media_files = $this->getGroupMediaContentTable()->getMediaContents($media_content);
@@ -215,7 +225,7 @@ class AlbumController extends AbstractActionController
 										$mediaurl =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
 										$arr_media_files[] = array(
 											'id' => $files['media_content_id'],
-											'files' => $mediaurl,
+											'media_files' => $mediaurl,
 											'video_id' => $this->get_youtube_id_from_url($files['content']),
 											'media_type' => $files['media_type'],
 										);
@@ -223,7 +233,7 @@ class AlbumController extends AbstractActionController
 										$mediaurl = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$group_id.'/media/medium/'.$files['content'];
 										$arr_media_files[] = array(
 											'id' => $files['media_content_id'],
-											'files' => $mediaurl,
+											'media_files' => $mediaurl,
 											'media_type' => $files['media_type'],
 										);
 									}
@@ -250,7 +260,7 @@ class AlbumController extends AbstractActionController
 											$mediaurl =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
 											$arr_media_files[] = array(
 												'id' => $files['media_content_id'],
-												'files' => $mediaurl,
+												'media_files' => $mediaurl,
 												'video_id' => $this->get_youtube_id_from_url($files['content']),
 												'media_type' => $files['media_type'],
 											);
@@ -258,7 +268,7 @@ class AlbumController extends AbstractActionController
 											$mediaurl = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$group_id.'/media/medium/'.$files['content'];
 											$arr_media_files[] = array(
 												'id' => $files['media_content_id'],
-												'files' => $mediaurl,
+												'media_files' => $mediaurl,
 												'media_type' => $files['media_type'],
 											);
 										}
@@ -266,14 +276,14 @@ class AlbumController extends AbstractActionController
 								}
 							}
 						} else {
-							$error = "Album not exist";
+							$error = "Album not exist for the group";
 						}
 					}
 				} else {
-					$error = "Unable to process";
+					$error = "Unable to process the request";
 				}
 			}else{$error ='We are failed to identify the given group';}
-		}else{$error = "Unable to process";}
+		}else{$error = "Unable to process the request";}
 
 		$dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
 		$dataArr[0]['message'] = $error;
@@ -358,82 +368,81 @@ class AlbumController extends AbstractActionController
 	}
 	public function deleteAlbumAction(){
 		$error = '';
-		$auth = new AuthenticationService();
+		$request = $this->getRequest();
 		$is_media_deleted = 0;
 		$media_id = 0;
 		$arr_deletedMedia = array();
-		if ($auth->hasIdentity()) {
-			$identity = $auth->getIdentity();
-			$request   = $this->getRequest();
-			if ($request->isPost()){
-				$post = $request->getPost();
-				if(!empty($post)){
-					$system_type = $post['system_type'];
-					$content_id = $post['content_id'];
-					if($content_id!=''){
-						$albumdata = $this->getGroupAlbumTable()->getAlbum($content_id);
-						if(!empty($albumdata)){
-							$Mediadata =$this->getGroupMediaTable()->getMediaFromContent($content_id);
-							$media_id = $Mediadata->group_media_id;
-							$is_event_owner = 0;
-							$event_album_details = $this->getGroupEventAlbumTable()->getAlbumEvents($content_id);
-							if(!empty($event_album_details)){
+		if ($request->isPost()) {
+			$post = $request->getPost();
+			$accToken = (isset($post['accesstoken']) && $post['accesstoken'] != null && $post['accesstoken'] != '' && $post['accesstoken'] != 'undefined') ? strip_tags(trim($post['accesstoken'])) : '';
+			$error = (empty($accToken)) ? "Request Not Authorised." : $error;
+			$this->checkError($error);
+			$userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
+			$error = (empty($userinfo)) ? "Invalid Access Token." : $error;
+			$this->checkError($error);
+			$error =($post['albumid']==null || $post['albumid']=='' || $post['albumid']=='undefined' || !is_numeric($post['albumid']))? "please input a valid album id":$error;
+			$this->checkError($error);
+			$content_id = $post['albumid'];
+			if(!empty($post)){
+				if($content_id!=''){
+					$albumdata = $this->getGroupAlbumTable()->getAlbum($content_id);
+					if(!empty($albumdata)){
+						$is_event_owner = 0;
+						$event_album_details = $this->getGroupEventAlbumTable()->getAlbumEvents($content_id);
+						if(!empty($event_album_details)){
 
-								if($event_album_details->group_activity_owner_user_id == $identity->user_id){
-									$is_event_owner = 1;
+							if($event_album_details->group_activity_owner_user_id == $userinfo->user_id){
+								$is_event_owner = 1;
+							}
+						}
+						if($albumdata->creator_id == $userinfo->user_id || $this->getUserGroupTable()->checkOwner($albumdata->group_id,$userinfo->user_id) || $is_event_owner==1){
+							$Mediadata =$this->getGroupMediaTable()->getAllAlbumFiles($content_id);
+							if(!empty($Mediadata)){
+								foreach($Mediadata as $mediafiles){
+									$arr_media_contents = json_decode($mediafiles['media_content']);
+									foreach($arr_media_contents as $items){
+										$media_content = $this->getGroupMediaContentTable()->getMediafile($items);
+										$MediaSystemTypeData = $this->getGroupTable()->fetchSystemType('Image');
+										$this->getLikeTable()->deleteEventLike($MediaSystemTypeData->system_type_id,$items);
+										$this->getLikeTable()->deleteEventCommentLike($MediaSystemTypeData->system_type_id,$items);
+										$this->getCommentTable()->deleteEventComments($MediaSystemTypeData->system_type_id,$items);
+										if($media_content->media_type=='image'){
+											$config = $this->getServiceLocator()->get('Config');
+											$group_image_path = $config['pathInfo']['group_img_path'];
+											@unlink($group_image_path.$Mediadata->media_added_group_id."/media/".$media_content->content);
+											@unlink($group_image_path.$Mediadata->media_added_group_id."/media/thumbnail/".$media_content->content);
+											@unlink($group_image_path.$Mediadata->media_added_group_id."/media/medium/".$media_content->content);
+										}
+										$media_content_id = $media_content->media_content_id;
+										$this->getGroupMediaContentTable()->deleteContent($media_content->media_content_id);
+									}
+									$SystemTypeData = $this->getGroupTable()->fetchSystemType('Media');
+									$this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$mediafiles['group_media_id']);
+									$this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$mediafiles['group_media_id']);
+									$this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$mediafiles['group_media_id']);
+									$this->getGroupMediaTable()->deleteMedia($mediafiles['group_media_id']);
+									$this->getUserNotificationTable()->deleteSystemNotifications(8,$mediafiles['group_media_id']);
+									$arr_deletedMedia[] = $mediafiles['group_media_id'];
 								}
 							}
-							if($albumdata->creator_id == $identity->user_id || $this->getUserGroupTable()->checkOwner($albumdata->group_id,$identity->user_id) || $is_event_owner==1){
-								$Mediadata =$this->getGroupMediaTable()->getAllAlbumFiles($content_id);
-								if(!empty($Mediadata)){
-									foreach($Mediadata as $mediafiles){
-										$arr_media_contents = json_decode($mediafiles['media_content']);
-										foreach($arr_media_contents as $items){
-											$media_content = $this->getGroupMediaContentTable()->getMediafile($items);
-											$MediaSystemTypeData = $this->getGroupTable()->fetchSystemType('Image');
-											$this->getLikeTable()->deleteEventLike($MediaSystemTypeData->system_type_id,$items);
-											$this->getLikeTable()->deleteEventCommentLike($MediaSystemTypeData->system_type_id,$items);
-											$this->getCommentTable()->deleteEventComments($MediaSystemTypeData->system_type_id,$items);
-											if($media_content->media_type=='image'){
-												$config = $this->getServiceLocator()->get('Config');
-												$group_image_path = $config['pathInfo']['group_img_path'];
-												@unlink($group_image_path.$Mediadata->media_added_group_id."/media/".$MediaContentdata->content);
-												@unlink($group_image_path.$Mediadata->media_added_group_id."/media/thumbnail/".$MediaContentdata->content);
-												@unlink($group_image_path.$Mediadata->media_added_group_id."/media/medium/".$MediaContentdata->content);
-											}
-											$media_content_id = $media_content->media_content_id;
-											$this->getGroupMediaContentTable()->deleteContent($media_content->media_content_id);
-										}
-										$SystemTypeData = $this->getGroupTable()->fetchSystemType('Media');
-										$this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$mediafiles['group_media_id']);
-										$this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$mediafiles['group_media_id']);
-										$this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$mediafiles['group_media_id']);
-										$this->getGroupMediaTable()->deleteMedia($mediafiles['group_media_id']);
-										$this->getUserNotificationTable()->deleteSystemNotifications(8,$mediafiles['group_media_id']);
-										$arr_deletedMedia[] = $mediafiles['group_media_id'];
-									}
-								}
-								$SystemTypeData = $this->getGroupTable()->fetchSystemType('Album');
-								$this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$content_id);
-								$this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$content_id);
-								$this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$content_id);
-								$this->getGroupEventAlbumTable()->deleteEventAlbum($content_id);
-								$this->getGroupAlbumTable()->deleteAlbum($content_id);
-								$this->getUserNotificationTable()->deleteSystemNotifications(8,$content_id);
-							}else{$error = "Sorry, You don't have the permission to do this operations";}
-						}else{$error = "This album is not existing in the system";}
-					}else{$error = "Forms are incomplete. Some values are missing";}
-				}else{$error = "Unable to process";}
-			}else{$error = "Unable to process";}
-		}else{$error = "Your session expired, please log in again to continue";}
-		$return_array= array();
-		$return_array['process_status'] = (empty($error))?'success':'failure';
-		$return_array['process_info'] = $error;
-		$return_array['media_id'] = $arr_deletedMedia;
-		$result = new JsonModel(array(
-			'return_array' => $return_array,
-		));
-		return $result;
+							$SystemTypeData = $this->getGroupTable()->fetchSystemType('Album');
+							$this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$content_id);
+							$this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$content_id);
+							$this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$content_id);
+							$this->getGroupEventAlbumTable()->deleteEventAlbum($content_id);
+							$this->getGroupAlbumTable()->deleteAlbum($content_id);
+							$this->getUserNotificationTable()->deleteSystemNotifications(8,$content_id);
+							$dataArr[0]['flag'] = $this->flagSuccess; $error = "Album deleted successfully";
+						}else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry, You don't have the permission to do this operations";}
+					}else{$dataArr[0]['flag'] = $this->flagFailure; $error = "This album is not existing in the system";}
+				}else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Forms are incomplete. Some values are missing";}
+			}else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Unable to process";}
+		}else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Unable to process";}
+
+		$dataArr[0]['flag'] = (empty($error))?$this->flagSuccess:$this->flagFailure;
+		$dataArr[0]['message'] = $error;
+		echo json_encode($dataArr);
+		exit;
 	}
 	public function manipulateProfilePic($user_path_id, $profile_path_photo = null, $fb_path_id = null){
 		$config = $this->getServiceLocator()->get('Config');

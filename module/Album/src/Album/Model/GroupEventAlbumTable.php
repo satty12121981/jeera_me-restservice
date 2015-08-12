@@ -53,6 +53,6 @@ class GroupEventAlbumTable extends AbstractTableGateway
         return $resultSet->current();
     }
     public function deleteEventAlbum($album_id){
-        return $this->delete(array('event_id' => $album_id));
+        return $this->delete(array('album_id' => $album_id));
     }
 }

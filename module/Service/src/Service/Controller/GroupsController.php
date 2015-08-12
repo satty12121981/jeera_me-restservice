@@ -52,6 +52,9 @@ class GroupsController extends AbstractActionController
     protected $userGroupJoiningRequestTable;
     protected $groupQuestionnaireAnswersTable;
     protected $userNotificationTable;
+    protected $groupAlbumTable;
+    protected $groupMediaContentTable;
+    protected $groupEventAlbumTable;
 
     public function __construct()
     {
@@ -822,39 +825,46 @@ class GroupsController extends AbstractActionController
 							); 
 						break;
 						case "New Media":
-							$media_details = array();
-							$media = $this->getGroupMediaTable()->getMediaForFeed($list['event_id']);
-							$video_id  = '';
-							if($media->media_type == 'video')
-							$video_id  = @$this->get_youtube_id_from_url($media->media_content);
-							$SystemTypeData = $this->getGroupsTable()->fetchSystemType("Media");
-							$like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$user_id);
-							$comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$user_id); 
-							$str_liked_users = '';
-							if(!empty($like_details)&&isset($like_details['likes_counts'])){  
-								$liked_users = $this->getLikeTable()->likedUsersWithoutLoggedOneWithFriendshipStatus($SystemTypeData->system_type_id,$list['event_id'],$user_id,2,0);
-							}
-							if (!empty($media->media_content)){
-								if($media->media_type == 'video'){
-									$media->media_content =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
-								}else{
-									$media->media_content = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$list['group_id'].'/media/medium/'.$media->media_content;
-								}								
-							}								
-							$media_details[] = array(
-												"group_media_id" => $media->group_media_id,
-												"media_type" => $media->media_type,
-												"media_content" => $media->media_content,
-												"media_caption" => $media->media_caption,
-												"video_id" => $video_id,
-												"group_title" =>$list['group_title'],
-												"group_seo_title" =>$list['group_seo_title'],	
-												"group_id" =>$list['group_id'],													
-												"like_count"	=>$like_details['likes_counts'],
-												"is_liked"	=>$like_details['is_liked'],	
-												"comment_counts"	=>$comment_details['comment_counts'],
-												"is_commented"	=>$comment_details['is_commented'],												 										
-												);
+                            $media_details = array();
+                            $media = $this->getGroupMediaTable()->getMediaForFeed($list['event_id']);
+                            $media_contents = $this->getGroupMediaContentTable()->getMediaContents(json_decode($media->media_content));
+                            $media_files = [];
+                            if (is_array($media_contents)) {
+                                foreach($media_contents as $mfile){
+                                    if($mfile['media_type'] == 'youtube'){
+                                        $video_id = $this->get_youtube_id_from_url($mfile['content']);
+                                        $mediaurl =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
+                                        $media_files[] = array(
+                                            'id'=>$mfile['media_content_id'],
+                                            'files'=>$mediaurl,
+                                            'video_id'=>$this->get_youtube_id_from_url($mfile['content']),
+                                            'media_type'=>$mfile['media_type'],
+                                        );
+                                    }else{
+                                        $mediaurl = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$group_id.'/media/medium/'.$mfile['content'];
+                                        $media_files[] = array(
+                                            'id'=>$mfile['media_content_id'],
+                                            'files'=>$mediaurl,
+                                            'media_type'=>$mfile['media_type'],
+                                        );
+                                    }
+                                }
+                            }
+                            $SystemTypeData = $this->groupTable->fetchSystemType("Media");
+                            $like_details  = $this->getLikeTable()->fetchLikesCountByReference($SystemTypeData->system_type_id,$list['event_id'],$user_id);
+                            $comment_details  = $this->getCommentTable()->fetchCommentCountByReference($SystemTypeData->system_type_id,$list['event_id'],$user_id);
+
+                            $media_details[] = array(
+                                "group_media_id" => $media->group_media_id,
+                                "media_content" => $media->media_content,
+                                "media_caption" => $media->media_caption,
+                                "media_files" => $media_files,
+                                "album_title"=>$media->album_title,
+                                "like_count"	=>$like_details['likes_counts'],
+                                "is_liked"	=>$like_details['is_liked'],
+                                "comment_counts"	=>$comment_details['comment_counts'],
+                                "is_commented"	=>$comment_details['is_commented'],
+                            );
 							$feeds[] = array('content' => $media_details,
 											'type'=>$list['type'],
 											'time'=>$this->timeAgo($list['update_time']),
@@ -1932,5 +1942,17 @@ class GroupsController extends AbstractActionController
     public function getUserNotificationTable(){         
 	$sm = $this->getServiceLocator();
 	return  $this->userNotificationTable = (!$this->userNotificationTable)?$sm->get('Notification\Model\UserNotificationTable'):$this->userNotificationTable;    
-    }	
+    }
+    public function getGroupAlbumTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->groupAlbumTable = (!$this->groupAlbumTable)?$sm->get('Album\Model\GroupAlbumTable'):$this->groupAlbumTable;
+    }
+    public function getGroupMediaContentTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->groupMediaContentTable = (!$this->groupMediaContentTable)?$sm->get('Groups\Model\GroupMediaContentTable'):$this->groupMediaContentTable;
+    }
+    public function getGroupEventAlbumTable(){
+        $sm = $this->getServiceLocator();
+        return  $this->groupEventAlbumTable = (!$this->groupEventAlbumTable)?$sm->get('Album\Model\GroupEventAlbumTable'):$this->groupEventAlbumTable;
+    }
 }

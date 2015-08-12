@@ -126,6 +126,7 @@ class GroupMediaTable extends AbstractTableGateway
 			->where(array('media_content like  \'%"'.$media_content_id.'"%\''));		 
 		$statement = $this->adapter->createStatement();		
 		$select->prepareStatement($this->adapter, $statement);
+		//echo $select->getSqlString();
 		$resultSet = new ResultSet();		
 		$resultSet->initialize($statement->execute());	  
 		return $resultSet->current();
@@ -134,8 +135,10 @@ class GroupMediaTable extends AbstractTableGateway
 		$select = new Select;
 		$select->from('y2m_group_media')			
 			->where(array("media_album_id"=>$album_id));
+		if ($limit){
 		$select->limit($limit);
 		$select->offset($offset);
+		}
 		$statement = $this->adapter->createStatement();		
 		$select->prepareStatement($this->adapter, $statement);
 		//echo $select->getSqlString();

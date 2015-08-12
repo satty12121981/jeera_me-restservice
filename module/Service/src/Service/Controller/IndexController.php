@@ -57,6 +57,9 @@ class IndexController extends AbstractActionController
     protected $tagCategoryTable;
     protected $groupTagTable;
     protected $countryTable;
+	protected $groupAlbumTable;
+	protected $groupMediaContentTable;
+	protected $groupEventAlbumTable;
 
 	public function  __construct() {
         $this->facebook = new Facebook(array(
@@ -709,23 +712,25 @@ class IndexController extends AbstractActionController
                             $media = $this->getGroupMediaTable()->getMediaForFeed($list['event_id']);
 							$media_contents = $this->getGroupMediaContentTable()->getMediaContents(json_decode($media->media_content));
 							$media_files = [];
-							foreach($media_contents as $mfile){
-								if($mfile['media_type'] == 'youtube'){
-									$video_id = $this->get_youtube_id_from_url($mfile['content']);
-									$mediaurl =	'http://img.youtube.com/vi/'.$video_id.'/0.jpg';
-									$media_files[] = array(
-										'id'=>$mfile['media_content_id'],
-										'files'=>$mediaurl,
-										'video_id'=>$this->get_youtube_id_from_url($mfile['content']),
-										'media_type'=>$mfile['media_type'],
-									);
-								}else{
-									$mediaurl = $config['pathInfo']['absolute_img_path'].$config['image_folders']['group'].$group_id.'/media/medium/'.$mfile['content'];
-									$media_files[] = array(
-										'id'=>$mfile['media_content_id'],
-										'files'=>$mediaurl,
-										'media_type'=>$mfile['media_type'],
-									);
+							if (is_array($media_contents)) {
+								foreach ($media_contents as $mfile) {
+									if ($mfile['media_type'] == 'youtube') {
+										$video_id = $this->get_youtube_id_from_url($mfile['content']);
+										$mediaurl = 'http://img.youtube.com/vi/' . $video_id . '/0.jpg';
+										$media_files[] = array(
+											'id' => $mfile['media_content_id'],
+											'files' => $mediaurl,
+											'video_id' => $this->get_youtube_id_from_url($mfile['content']),
+											'media_type' => $mfile['media_type'],
+										);
+									} else {
+										$mediaurl = $config['pathInfo']['absolute_img_path'] . $config['image_folders']['group'] . $group_id . '/media/medium/' . $mfile['content'];
+										$media_files[] = array(
+											'id' => $mfile['media_content_id'],
+											'files' => $mediaurl,
+											'media_type' => $mfile['media_type'],
+										);
+									}
 								}
 							}
 
@@ -1472,6 +1477,19 @@ class IndexController extends AbstractActionController
         $sm = $this->getServiceLocator();
         return $this->countryTable =(!$this->countryTable)?$sm->get('Country\Model\CountryTable'):$this->countryTable;
     }
+
+	public function getGroupAlbumTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupAlbumTable = (!$this->groupAlbumTable)?$sm->get('Album\Model\GroupAlbumTable'):$this->groupAlbumTable;
+	}
+	public function getGroupMediaContentTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupMediaContentTable = (!$this->groupMediaContentTable)?$sm->get('Groups\Model\GroupMediaContentTable'):$this->groupMediaContentTable;
+	}
+	public function getGroupEventAlbumTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->groupEventAlbumTable = (!$this->groupEventAlbumTable)?$sm->get('Album\Model\GroupEventAlbumTable'):$this->groupEventAlbumTable;
+	}
 
 	
 }

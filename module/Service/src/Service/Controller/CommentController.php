@@ -277,7 +277,7 @@ class CommentController extends AbstractActionController
                                     if(!empty($hashedUser)){
                                         $msg = $userinfo->user_given_name." mentioned you in a comment on media in the group ".$group->group_title;
                                         foreach($hashedUser as $users){
-                                            if($users!=$userinfo->user_id){
+                                            if($users!=$userinfo->user_id && is_numeric($users) && $this->userTable->getUser($users)){
                                                 $this->UpdateNotifications($users,$msg,8,$subject,$from,$userinfo->user_id,$refer_id,$process);
                                             }
                                         }

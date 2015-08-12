@@ -36,12 +36,11 @@ class GroupPostsController extends AbstractActionController
     protected $groupPhotoTable;
 	protected $groupMediaContentTable;
     protected $groupAlbumTable;
-
+    protected $groupEventAlbumTable;
 	public function __construct(){
         $this->flagSuccess = "Success";
 		$this->flagFailure = "Failure";
 	}
-
     public function MyFeedsAction(){
         $error = '';
         $feeds = array();
@@ -230,7 +229,7 @@ class GroupPostsController extends AbstractActionController
                         $media = $this->getGroupMediaTable()->getMediaForFeed($list['event_id']);
                         $media_contents = $this->getGroupMediaContentTable()->getMediaContents(json_decode($media->media_content));
                         $media_files = [];
-                        if (count($media_contents)){
+                        if (is_array($media_contents)) {
                             foreach($media_contents as $mfile){
                                 if($mfile['media_type'] == 'youtube'){
                                     $video_id = $this->get_youtube_id_from_url($mfile['content']);
@@ -794,7 +793,7 @@ class GroupPostsController extends AbstractActionController
             }
             $error =($post['mediatype']==null || $post['mediatype']=='' || $post['mediatype']=='undefined')? "Media Type Required":$error;
             $this->checkError($error);
-            $error =($post['mediatype']!="status" && $post['mediatype']!="media" && $post['mediatype']!="event")? "Please Post With Valid Media Type":$error;
+            $error =($post['mediatype']!="status" && $post['mediatype']!="media" && $post['mediatype']!="image" && $post['mediatype']!="event")? "Please Post With Valid Media Type":$error;
             $this->checkError($error);
             $userinfo = $this->getUserTable()->getUserByAccessToken($accToken);
             $error =(empty($userinfo))?"Invalid Access Token.":$error;
@@ -881,12 +880,72 @@ class GroupPostsController extends AbstractActionController
                             }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "This status is not existing in the system";}
                         }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Inputs are incomplete. Some values are missing";}
                         break;
+                    case 'image':
+                        if($content_id!=''){
+                            $MediaContentdata = $this->getGroupMediaContentTable()->getMediafile($content_id);
+                            if(!empty($MediaContentdata)){
+                                $Mediadata =$this->getGroupMediaTable()->getMediaFromContent($content_id);
+                                $media_id = $Mediadata->group_media_id;
+                                $is_album_creator = 0;
+                                if($Mediadata->media_album_id!=''){
+                                    $mediaAlbumData =$this->getGroupAlbumTable()->getAlbum($Mediadata->media_album_id);
+                                    if($mediaAlbumData->creator_id == $userinfo->user_id){
+                                        $is_album_creator = 1;
+                                    }
+                                }
+                                $is_event_owner = 0;
+                                $event_album_details = $this->getGroupEventAlbumTable()->getAlbumEvents($Mediadata->media_album_id);
+                                if(!empty($event_album_details)){
+
+                                    if($event_album_details->group_activity_owner_user_id == $userinfo->user_id){
+                                        $is_event_owner = 1;
+                                    }
+                                }
+                                $is_media_deleted=0;
+                                if($Mediadata->media_added_user_id == $userinfo->user_id || $this->getUserGroupTable()->checkOwner($Mediadata->media_added_group_id,$userinfo->user_id) || $is_album_creator==1 || $is_event_owner==1){
+                                    $MediaSystemTypeData = $this->getGroupTable()->fetchSystemType('Image');
+                                    $this->getLikeTable()->deleteEventLike($MediaSystemTypeData->system_type_id,$MediaContentdata->media_content_id);
+                                    $this->getLikeTable()->deleteEventCommentLike($MediaSystemTypeData->system_type_id,$MediaContentdata->media_content_id);
+                                    $this->getCommentTable()->deleteEventComments($MediaSystemTypeData->system_type_id,$MediaContentdata->media_content_id);
+                                    if($MediaContentdata->media_type=='image'){
+                                        $config = $this->getServiceLocator()->get('Config');
+                                        $group_image_path = $config['pathInfo']['group_img_path'];
+                                        @unlink($group_image_path.$Mediadata->media_added_group_id."/media/".$MediaContentdata->content);
+                                        @unlink($group_image_path.$Mediadata->media_added_group_id."/media/thumbnail/".$MediaContentdata->content);
+                                        @unlink($group_image_path.$Mediadata->media_added_group_id."/media/medium/".$MediaContentdata->content);
+                                    }
+                                    $media_content_id = $MediaContentdata->media_content_id;
+                                    $this->getGroupMediaContentTable()->deleteContent($MediaContentdata->media_content_id);
+                                    $arr_media_contents = json_decode($Mediadata->media_content);
+                                    if (($key = array_search($media_content_id, $arr_media_contents)) !== false) {
+                                        array_splice($arr_media_contents, $key, 1);
+                                    }
+                                    if(!empty($arr_media_contents)){
+                                        $media_data['media_content'] = json_encode($arr_media_contents);
+                                        $this->getGroupMediaTable()->updateMedia($media_data,$Mediadata->group_media_id);
+                                    }else{
+
+                                        $SystemTypeData = $this->getGroupTable()->fetchSystemType('Media');
+                                        $this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$Mediadata->group_media_id);
+                                        $this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$Mediadata->group_media_id);
+                                        $this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$Mediadata->group_media_id);
+                                        $this->getGroupMediaTable()->deleteMedia($Mediadata->group_media_id);
+                                        $this->getUserNotificationTable()->deleteSystemNotifications(8,$Mediadata->group_media_id);
+                                        $is_media_deleted = 1;
+                                    }
+                                    $dataArr[0]['flag'] = $this->flagSuccess; $error = "Image Post Deleted successfully";
+                                    $dataArr[0]['is_media_deleted'] = $is_media_deleted;
+                                    $dataArr[0]['media_id'] = $media_id;
+                                }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Sorry, You need to be a member of the group to interact with the posts";}
+                            }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "This image is not existing in the system";}
+                        }else{$dataArr[0]['flag'] = $this->flagFailure; $error = "Forms are incomplete. Some values are missing";}
                 }
                 $dataArr[0]['message'] = $error;
                 echo json_encode($dataArr);
                 exit;
             } else {
-                $error = "Unable to process";
+                $dataArr[0]['flag'] = $this->flagFailure;
+                $error = "Unable to process the request";
                 $dataArr[0]['message'] = $error;
             }
         }
@@ -897,86 +956,6 @@ class GroupPostsController extends AbstractActionController
             exit;
         }
         return;
-    }
-    public function deleteImageAction(){
-        $error = '';
-        $auth = new AuthenticationService();
-        $is_media_deleted = 0;
-        $media_id = 0;
-        if ($auth->hasIdentity()) {
-            $identity = $auth->getIdentity();
-            $request   = $this->getRequest();
-            if ($request->isPost()){
-                $post = $request->getPost();
-                if(!empty($post)){
-                    $system_type = $post['system_type'];
-                    $content_id = $post['content_id'];
-                    if($content_id!=''){
-                        $MediaContentdata = $this->getGroupMediaContentTable()->getMediafile($content_id);
-                        if(!empty($MediaContentdata)){
-                            $Mediadata =$this->getGroupMediaTable()->getMediaFromContent($content_id);
-                            $media_id = $Mediadata->group_media_id;
-                            $is_album_creator = 0;
-                            if($Mediadata->media_album_id!=''){
-                                $mediaAlbumData =$this->getGroupAlbumTable()->getAlbum($Mediadata->media_album_id);
-                                if($mediaAlbumData->creator_id == $identity->user_id){
-                                    $is_album_creator = 1;
-                                }
-                            }
-                            $is_event_owner = 0;
-                            $event_album_details = $this->getGroupEventAlbumTable()->getAlbumEvents($Mediadata->media_album_id);
-                            if(!empty($event_album_details)){
-
-                                if($event_album_details->group_activity_owner_user_id == $identity->user_id){
-                                    $is_event_owner = 1;
-                                }
-                            }
-                            if($Mediadata->media_added_user_id == $identity->user_id || $this->getUserGroupTable()->checkOwner($Mediadata->media_added_group_id,$identity->user_id) || $is_album_creator==1 || $is_event_owner==1){
-                                $MediaSystemTypeData = $this->getGroupTable()->fetchSystemType('Image');
-                                $this->getLikeTable()->deleteEventLike($MediaSystemTypeData->system_type_id,$MediaContentdata->media_content_id);
-                                $this->getLikeTable()->deleteEventCommentLike($MediaSystemTypeData->system_type_id,$MediaContentdata->media_content_id);
-                                $this->getCommentTable()->deleteEventComments($MediaSystemTypeData->system_type_id,$MediaContentdata->media_content_id);
-                                if($MediaContentdata->media_type=='image'){
-                                    $config = $this->getServiceLocator()->get('Config');
-                                    $group_image_path = $config['pathInfo']['group_img_path'];
-                                    @unlink($group_image_path.$Mediadata->media_added_group_id."/media/".$MediaContentdata->content);
-                                    @unlink($group_image_path.$Mediadata->media_added_group_id."/media/thumbnail/".$MediaContentdata->content);
-                                    @unlink($group_image_path.$Mediadata->media_added_group_id."/media/medium/".$MediaContentdata->content);
-                                }
-                                $media_content_id = $MediaContentdata->media_content_id;
-                                $this->getGroupMediaContentTable()->deleteContent($MediaContentdata->media_content_id);
-                                $arr_media_contents = json_decode($Mediadata->media_content);
-                                if (($key = array_search($media_content_id, $arr_media_contents)) !== false) {
-                                    array_splice($arr_media_contents, $key, 1);
-                                }
-                                if(!empty($arr_media_contents)){
-                                    $media_data['media_content'] = json_encode($arr_media_contents);
-                                    $this->getGroupMediaTable()->updateMedia($media_data,$Mediadata->group_media_id);
-                                }else{
-
-                                    $SystemTypeData = $this->getGroupTable()->fetchSystemType('Media');
-                                    $this->getLikeTable()->deleteEventCommentLike($SystemTypeData->system_type_id,$Mediadata->group_media_id);
-                                    $this->getLikeTable()->deleteEventLike($SystemTypeData->system_type_id,$Mediadata->group_media_id);
-                                    $this->getCommentTable()->deleteEventComments($SystemTypeData->system_type_id,$Mediadata->group_media_id);
-                                    $this->getGroupMediaTable()->deleteMedia($Mediadata->group_media_id);
-                                    $this->getUserNotificationTable()->deleteSystemNotifications(8,$Mediadata->group_media_id);
-                                    $is_media_deleted = 1;
-                                }
-                            }else{$error = "Sorry, You need to be a member of the group to interact with the posts";}
-                        }else{$error = "This image is not existing in the system";}
-                    }else{$error = "Forms are incomplete. Some values are missing";}
-                }else{$error = "Unable to process";}
-            }else{$error = "Unable to process";}
-        }else{$error = "Your session expired, please log in again to continue";}
-        $return_array= array();
-        $return_array['process_status'] = (empty($error))?'success':'failed';
-        $return_array['process_info'] = $error;
-        $return_array['is_media_deleted'] = $is_media_deleted;
-        $return_array['media_id'] = $media_id;
-        $result = new JsonModel(array(
-            'return_array' => $return_array,
-        ));
-        return $result;
     }
     public function manipulateProfilePic($user_path_id, $profile_path_photo = null, $fb_path_id = null){
         $config = $this->getServiceLocator()->get('Config');
