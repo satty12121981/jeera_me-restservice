@@ -18,6 +18,7 @@ class AlbumController extends AbstractActionController
 	protected $likeTable;
 	protected $commentTable;
 	protected $userNotificationTable;
+	protected $activityRsvpTable;
 	public function __construct(){
 		$this->flagSuccess = "Success";
 		$this->flagFailure = "Failure";
@@ -415,6 +416,7 @@ class AlbumController extends AbstractActionController
 								'album_description' =>$description,
 							);
 							$this->getGroupAlbumTable()->updateAlbum($album_data,$album_id);
+							$dataArr[0]['flag'] = $this->flagSuccess; $error ='Album Edited Successfully';
 							$eventAlbumData = $this->getGroupEventAlbumTable()->getAlbumEvents($album_id);
 							if($event_id==''&&!empty($eventAlbumData)){
 								$this->getGroupEventAlbumTable()->deleteEventAlbum($album_id);
@@ -425,6 +427,7 @@ class AlbumController extends AbstractActionController
 								$objGroupEventAlbum->assignedby = $userinfo->user_id;
 								$objGroupEventAlbum->album_id = $album_id;
 								$newalbum_id = $this->getGroupEventAlbumTable()->saveEventAlbum($objGroupEventAlbum);
+								$dataArr[0]['flag'] = $this->flagSuccess; $error ='Event Album Edited Successfully';
 							}
 							if($event_id!=''&&!empty($eventAlbumData)&&$eventAlbumData->event_id!=$event_id){
 								$objGroupEventAlbum = new GroupEventAlbum();
@@ -433,13 +436,13 @@ class AlbumController extends AbstractActionController
 								$objGroupEventAlbum->assignedby = $userinfo->user_id;
 								$objGroupEventAlbum->album_id = $album_id;
 								$newalbum_id = $this->getGroupEventAlbumTable()->saveEventAlbum($objGroupEventAlbum);
+								$dataArr[0]['flag'] = $this->flagSuccess; $error ='Event Album Edited Successfully';
 							}
-							$dataArr[0]['flag'] = $this->flagSuccess; $error ='Album Edited Successfully';
 						}else{
-							$dataArr[0]['flag'] = $this->flagFailure; $error ='You don\'t have the permission to edit this event to album';
+							$dataArr[0]['flag'] = $this->flagFailure; $error ='You don\'t have the permission to add this event to album';
 						}
 					}else{
-						$dataArr[0]['flag'] = $this->flagFailure; $error ='You don\'t have the permission to edit this event to album';
+						$dataArr[0]['flag'] = $this->flagFailure; $error ='You don\'t have the permission to edit the album';
 					}
 				}else{ $dataArr[0]['flag'] = $this->flagFailure; $error ='Please add album title';}
 			}else{ $dataArr[0]['flag'] = $this->flagFailure; $error ='We are failed to identify the given group';}
@@ -596,5 +599,9 @@ class AlbumController extends AbstractActionController
 	public function getUserNotificationTable(){
 		$sm = $this->getServiceLocator();
 		return $this->userNotificationTable= (!$this->userNotificationTable)?$sm->get('Notification\Model\UserNotificationTable'):$this->userNotificationTable;
+	}
+	public function getActivityRsvpTable(){
+		$sm = $this->getServiceLocator();
+		return  $this->activityRsvpTable = (!$this->activityRsvpTable)?$sm->get('Activity\Model\ActivityRsvpTable'):$this->activityRsvpTable;
 	}
 }
