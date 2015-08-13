@@ -44,7 +44,7 @@ class GroupEventAlbumTable extends AbstractTableGateway
     public function getAlbumEvents($album_id){
         $select = new Select;
         $select->from('y2m_group_activity')
-            ->join('y2m_group_event_album','y2m_group_activity.group_activity_id = y2m_group_event_album.event_id',array())
+            ->join('y2m_group_event_album','y2m_group_activity.group_activity_id = y2m_group_event_album.event_id',array('event_id'=>'event_id','event_album_id'=>'event_album_id'))
             ->where(array('y2m_group_event_album.album_id'=>$album_id));
         $statement = $this->adapter->createStatement();
         $select->prepareStatement($this->adapter, $statement);
